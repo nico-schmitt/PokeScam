@@ -1,0 +1,16 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <form
+    th:action="@{/api/addPokemonToTeam}"
+    method="post"
+    th:object="${pokemon}"
+  >
+    <label class="label" for="name"></label>
+    <input
+      class="input"
+      type="text"
+      th:field="*{name}"
+      placeholder="Pokemon to add"
+    />
+  </form>
+  <h1 th:text="${p}"></h1>
+</div>
