@@ -12,8 +12,11 @@
       placeholder="Pokemon to add"
     />
   </form>
-  <h1 th:text="${p}"></h1>
-  <div th:each="pkmn : ${pkmnTeam}">
-    <img th:src="${pkmn.imageURL}" alt="" />
+  <div class="fixed-grid">
+    <div class="grid">
+      <div th:each="pkmn : ${pkmnTeam}">
+        <div th:replace="~{fragments :: pkmnPreview (pkmnInfo=${pkmn})}"></div>
+      </div>
+    </div>
   </div>
 </div>

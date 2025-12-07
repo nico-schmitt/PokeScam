@@ -1,8 +1,8 @@
 package com.PokeScam.PokeScam.Services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,8 @@ import com.PokeScam.PokeScam.Repos.UserRepository;
 
 @Service
 public class PokemonDataService {
+    private static final int POKEMON_TEAM_SIZE = 6;
+
     private final PokemonRepository pokemonRepo;
     private final UserRepository userRepo;
     private final PokeAPIService pokeAPIService;
@@ -26,14 +28,20 @@ public class PokemonDataService {
     }
 
     public List<PokemonDTO> getPkmnTeamInfo() {
-        return getPkmnTeam().stream().map(
+        List<PokemonDTO> teamList = getPkmnTeam().stream().map(
             p -> {
                 PokemonDTO pDTO = new PokemonDTO();
                 pDTO.setName(p.getName());
                 pDTO.setImageURL(pokeAPIService.getImageURL(p.getName()));
                 return pDTO;
             })
-            .toList();
+            .collect(Collectors.toList());
+        if(teamList.size() < POKEMON_TEAM_SIZE) {
+            for(int i = teamList.size(); i < POKEMON_TEAM_SIZE; i++) {
+                teamList.add(PokemonDTO.getEmpty());
+            }
+        }
+        return teamList;
     }
 
     public void savePkmn(Pokemon pkmnToSave) {

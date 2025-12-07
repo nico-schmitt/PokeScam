@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.security.config.Customizer;
 
@@ -30,6 +31,10 @@ public class Config {
 
     @Bean
     public WebClient.Builder webClientBuilder() {
-        return WebClient.builder();
+        ExchangeStrategies strategies = ExchangeStrategies.builder()
+        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16 MB
+        .build();
+
+        return WebClient.builder() .exchangeStrategies(strategies);
     }
 }
