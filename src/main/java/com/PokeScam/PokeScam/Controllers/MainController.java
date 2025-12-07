@@ -8,22 +8,21 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
-import com.PokeScam.PokeScam.Services.PokeAPIService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
 import com.PokeScam.PokeScam.Services.RegisterUserService;
 
 
 @Controller
 public class MainController {
-    private final PokeAPIService pkmnAPIService;
+
     private final PokemonDataService pkmnDataService;
     private final RegisterUserService registerUserService;
 
-    public MainController(PokeAPIService pkmn, PokemonDataService pkmnData, RegisterUserService registerUserService) {
-        this.pkmnAPIService = pkmn;
+    public MainController(PokemonDataService pkmnData, RegisterUserService registerUserService) {
         this.pkmnDataService = pkmnData;
         this.registerUserService = registerUserService;
     }
@@ -36,10 +35,10 @@ public class MainController {
         return "home";
     }
 
-    @PostMapping("/api/addPokemonToTeam")
-    public String addPokemonToTeam(@ModelAttribute Pokemon pokemonToAdd) {
-        pkmnDataService.savePkmn(pokemonToAdd);
-        System.out.println(pokemonToAdd.getName()+"\n\n\n\n\n\n\n\n");
+    @PostMapping("/api/addPokemon")
+    public String addPokemon(@ModelAttribute Pokemon pokemonToAdd, RedirectAttributes redirectAttributes) {
+        String addMsg = pkmnDataService.addPokemon(pokemonToAdd);
+        redirectAttributes.addFlashAttribute("addMsg", addMsg);
         return "redirect:/";
     }
 

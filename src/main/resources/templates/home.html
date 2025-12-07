@@ -1,17 +1,25 @@
 <div layout:decorate="~{layout}" layout:fragment="content">
-  <form
-    th:action="@{/api/addPokemonToTeam}"
-    method="post"
-    th:object="${pokemon}"
-  >
-    <label class="label" for="name"></label>
-    <input
-      class="input"
-      type="text"
-      th:field="*{name}"
-      placeholder="Pokemon to add"
-    />
-  </form>
+  <div class="block">
+    <form th:action="@{/api/addPokemon}" method="post" th:object="${pokemon}">
+      <div class="field">
+        <label class="label" for="name"></label>
+        <input
+          class="input"
+          type="text"
+          th:field="*{name}"
+          placeholder="Pokemon to add"
+        />
+        <p class="help is-success" th:if="${addMsg}" th:text="${addMsg}">
+          Added
+        </p>
+      </div>
+
+      <div class="field">
+        <button class="button is-link">Add</button>
+      </div>
+    </form>
+  </div>
+
   <div class="fixed-grid">
     <div class="grid">
       <div th:each="pkmn : ${pkmnTeam}">

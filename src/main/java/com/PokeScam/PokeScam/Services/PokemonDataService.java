@@ -28,7 +28,7 @@ public class PokemonDataService {
     }
 
     public List<PokemonDTO> getPkmnTeamInfo() {
-        List<PokemonDTO> teamList = getPkmnTeam().stream().map(
+        List<PokemonDTO> teamList = getPkmnTeam().stream().filter(p->!p.isInBox()).map(
             p -> {
                 PokemonDTO pDTO = new PokemonDTO();
                 pDTO.setName(p.getName());
@@ -44,12 +44,23 @@ public class PokemonDataService {
         return teamList;
     }
 
-    public void savePkmn(Pokemon pkmnToSave) {
-        Pokemon p = new Pokemon();
+    public String addPokemon(Pokemon pkmnToSave) {
         User user = userRepo.findByUsername(getUserDetails().getUsername());
+        String addMsg;
+        Pokemon p = new Pokemon();
         p.setName(pkmnToSave.getName());
         p.setOwnerID(user);
+
+        if(getPkmnTeam().size() < POKEMON_TEAM_SIZE) {
+            p.setInBox(false);
+            addMsg = "Added to team";
+        } else {
+            p.setInBox(true);
+            addMsg = "Added to box";
+        }
+
         pokemonRepo.save(p);
+        return addMsg;
     }
 
     public UserDetails getUserDetails() {

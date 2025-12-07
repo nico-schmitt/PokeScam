@@ -25,4 +25,7 @@ public class Pokemon {
     @OneToOne
     @JoinColumn(name="owner_id")
     private User ownerID;
+
+    @Column(name="in_box")
+    private boolean inBox;
 }
