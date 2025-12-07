@@ -1,4 +1,5 @@
 package com.PokeScam.PokeScam;
+import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.UserRepository;
 
 import org.springframework.security.core.userdetails.UserDetails;

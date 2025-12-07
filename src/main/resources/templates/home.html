@@ -13,4 +13,7 @@
     />
   </form>
   <h1 th:text="${p}"></h1>
+  <div th:each="pkmn : ${pkmnTeam}">
+    <img th:src="${pkmn.imageURL}" alt="" />
+  </div>
 </div>

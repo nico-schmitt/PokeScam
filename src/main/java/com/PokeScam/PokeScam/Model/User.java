@@ -1,4 +1,4 @@
-package com.PokeScam.PokeScam;
+package com.PokeScam.PokeScam.Model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
