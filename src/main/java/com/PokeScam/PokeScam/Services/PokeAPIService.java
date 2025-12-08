@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.Services;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -11,17 +13,16 @@ import tools.jackson.databind.JsonNode;
 @Service
 public class PokeAPIService {
     private final String pokeAPIBaseURL = "https://pokeapi.co/api/v2";
-    private final WebClient webClientBuilder;
+    private final WebClient webClient;
 
     public PokeAPIService(WebClient.Builder webClientBuilder) {
-        this.webClientBuilder = webClientBuilder.baseUrl(pokeAPIBaseURL).build();
+        this.webClient = webClientBuilder.baseUrl(pokeAPIBaseURL).build();
     }
 
     public String getImageURL(String name) {
-        return webClientBuilder
+        return webClient
             .get().uri("/pokemon/"+name).retrieve().bodyToMono(JsonNode.class)
-            .map(json->json.at("/sprites/front_default")
-            .asString())
+            .map(json->json.at("/sprites/front_default").asString())
             .block();
     }
 
@@ -30,5 +31,25 @@ public class PokeAPIService {
         pDTO.setName(pkmnToUse.getName());
         pDTO.setImageURL(getImageURL(pkmnToUse.getName()));
         return pDTO;
+    }
+
+    public PokemonDTO getRandomPokemon() {
+        return populatePokemonDTO(getRandomPokemonName());
+    }
+
+    private PokemonDTO populatePokemonDTO(String pkmnToUse) {
+        PokemonDTO pDTO = new PokemonDTO();
+        pDTO.setName(pkmnToUse);
+        pDTO.setImageURL(getImageURL(pkmnToUse));
+        return pDTO;
+    }
+
+    private String getRandomPokemonName() {
+        final int existingPkmnCount = 1025;
+        final int randPkmnID = ThreadLocalRandom.current().nextInt(1, existingPkmnCount+1);
+        return webClient
+            .get().uri("/pokemon/"+randPkmnID).retrieve().bodyToMono(JsonNode.class)
+            .map(json->json.at("/name").asString())
+            .block();
     }
 }

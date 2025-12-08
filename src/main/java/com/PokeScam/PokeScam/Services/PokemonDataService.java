@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
