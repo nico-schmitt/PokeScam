@@ -2,6 +2,10 @@ package com.PokeScam.PokeScam.Services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.PokeScam.PokeScam.DTOs.PokemonDTO;
+import com.PokeScam.PokeScam.Model.Pokemon;
+
 import tools.jackson.databind.JsonNode;
 
 @Service
@@ -19,5 +23,12 @@ public class PokeAPIService {
             .map(json->json.at("/sprites/front_default")
             .asString())
             .block();
+    }
+
+    public PokemonDTO populatePokemonDTO(Pokemon pkmnToUse) {
+        PokemonDTO pDTO = new PokemonDTO();
+        pDTO.setName(pkmnToUse.getName());
+        pDTO.setImageURL(getImageURL(pkmnToUse.getName()));
+        return pDTO;
     }
 }

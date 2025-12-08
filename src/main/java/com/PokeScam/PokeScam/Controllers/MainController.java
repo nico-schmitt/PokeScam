@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @Controller
@@ -23,4 +25,11 @@ public class MainController {
         m.addAttribute("pkmnTeam", pkmnDataService.getPkmnTeamInfo());
         return "home";
     }
+
+    @GetMapping("/box")
+    public String box(Model m) {
+        m.addAttribute("pkmnInBox", pkmnDataService.getPkmnInBox());
+        return "box";
+    }
+    
 }

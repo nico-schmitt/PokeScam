@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
+import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
@@ -15,6 +15,7 @@ import com.PokeScam.PokeScam.Repos.UserRepository;
 
 @Service
 public class PokemonDataService {
+
     private static final int POKEMON_TEAM_SIZE = 6;
 
     private final PokemonRepository pokemonRepo;
@@ -28,20 +29,27 @@ public class PokemonDataService {
     }
 
     public List<PokemonDTO> getPkmnTeamInfo() {
-        List<PokemonDTO> teamList = getPkmnTeam().stream().filter(p->!p.isInBox()).map(
-            p -> {
-                PokemonDTO pDTO = new PokemonDTO();
-                pDTO.setName(p.getName());
-                pDTO.setImageURL(pokeAPIService.getImageURL(p.getName()));
-                return pDTO;
-            })
-            .collect(Collectors.toList());
+        List<PokemonDTO> teamList =
+            getAllPkmn()
+                .stream()
+                .filter(p -> !p.isInBox())
+                .map(p -> pokeAPIService.populatePokemonDTO(p))
+                .collect(Collectors.toList());
         if(teamList.size() < POKEMON_TEAM_SIZE) {
             for(int i = teamList.size(); i < POKEMON_TEAM_SIZE; i++) {
                 teamList.add(PokemonDTO.getEmpty());
             }
         }
         return teamList;
+    }
+
+    public List<PokemonDTO> getPkmnInBox() {
+        return
+            getAllPkmn()
+                .stream()
+                .filter(p -> p.isInBox())
+                .map(p -> pokeAPIService.populatePokemonDTO(p))
+                .toList();
     }
 
     public String addPokemon(Pokemon pkmnToSave) {
@@ -51,7 +59,7 @@ public class PokemonDataService {
         p.setName(pkmnToSave.getName());
         p.setOwnerID(user);
 
-        if(getPkmnTeam().size() < POKEMON_TEAM_SIZE) {
+        if(getAllPkmn().size() < POKEMON_TEAM_SIZE) {
             p.setInBox(false);
             addMsg = "Added to team";
         } else {
@@ -68,7 +76,7 @@ public class PokemonDataService {
         return (UserDetails)principal;
     }
 
-    private List<Pokemon> getPkmnTeam() {
+    private List<Pokemon> getAllPkmn() {
         return pokemonRepo.findByOwnerID(userRepo.findByUsername(getUserDetails().getUsername()));
     }
 }

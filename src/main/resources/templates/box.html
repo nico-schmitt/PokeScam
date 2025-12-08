@@ -1,0 +1,9 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="fixed-grid">
+    <div class="grid">
+      <div th:each="pkmn : ${pkmnInBox}">
+        <div th:replace="~{fragments :: pkmnPreview (pkmnInfo=${pkmn})}"></div>
+      </div>
+    </div>
+  </div>
+</div>
