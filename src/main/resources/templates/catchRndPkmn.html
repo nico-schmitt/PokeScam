@@ -1,5 +1,37 @@
 <div layout:decorate="~{layout}" layout:fragment="content">
-  <div
-    th:replace="~{fragments :: pkmnPreview (pkmnInfo=${encounterPkmn})}"
-  ></div>
+  <div class="is-flex is-flex-direction-column is-aling-items-center is-gap-3">
+    <figure class="box image is-128x128">
+      <img
+        th:src="${encounterPkmn.imageURL}"
+        th:alt="${encounterPkmn.name}"
+        id="encounterPkmn"
+      />
+    </figure>
+    <p class="help is-success" id="helpText"></p>
+    <button class="button is-info" onclick="tryCatchPkmn()" id="catchButton">
+      Catch!
+    </button>
+  </div>
 </div>
+
+<script th:inline="javascript">
+  async function tryCatchPkmn() {
+    let encounterPkmnData = /*[[${encounterPkmn}]]*/ null;
+    const encounter = document.getElementById("encounterPkmn");
+    const encounterPkmnImgURL = encounter.src;
+    const pokeBallImgURL =
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
+    encounter.src = pokeBallImgURL;
+    let isCatchSuccessful = await fetch(
+      `/api/tryCatchPkmn?name=${encounterPkmnData.name}`
+    );
+    let data = await isCatchSuccessful.text();
+    if (data === "true") {
+      encounter.style.filter = "brightness(50%)";
+      document.getElementById("helpText").innerHTML = "Caught!";
+      document.getElementById("catchButton").disabled = true;
+    } else {
+      encounter.src = encounterPkmnImgURL;
+    }
+  }
+</script>
