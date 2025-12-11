@@ -12,11 +12,11 @@ import com.PokeScam.PokeScam.Repos.PokemonRepository;
 
 @Service
 public class BoxService {
+    private static final int BOX_CAPACITY = 5;
+
     private final BoxRepository boxRepo;
     private final PokemonRepository pokemonRepo;
     private final CustomUserDetails userDetails;
-
-    private final int BOX_CAPACITY = 5;
     
     public BoxService(BoxRepository boxRepo, PokemonRepository pokemonRepo, CustomUserDetails userDetails) {
         this.boxRepo = boxRepo;

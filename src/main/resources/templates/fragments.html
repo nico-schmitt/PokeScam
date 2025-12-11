@@ -1,5 +1,23 @@
 <div th:fragment="pkmnPreview">
-  <figure class="box image is-128x128">
-    <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.name}" />
-  </figure>
+  <div class="modal-trigger" th:data-target="${pkmnInfo.id}">
+    <figure class="box image is-128x128">
+      <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.name}" />
+    </figure>
+  </div>
+
+  <div th:id="${pkmnInfo.id}" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title is-capitalized" th:text="${pkmnInfo.name}"></p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <figure class="box image is-128x128">
+          <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.name}" />
+        </figure>
+      </section>
+      <footer class="modal-card-foot"></footer>
+    </div>
+  </div>
 </div>

@@ -28,6 +28,7 @@ public class PokeAPIService {
 
     public PokemonDTO populatePokemonDTO(Pokemon pkmnToUse) {
         PokemonDTO pDTO = new PokemonDTO();
+        pDTO.setId(pkmnToUse.getId());
         pDTO.setName(pkmnToUse.getName());
         pDTO.setImageURL(getImageURL(pkmnToUse.getName()));
         return pDTO;
