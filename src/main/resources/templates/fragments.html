@@ -17,7 +17,11 @@
           <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.name}" />
         </figure>
       </section>
-      <footer class="modal-card-foot"></footer>
+      <footer class="modal-card-foot">
+        <form th:action="@{/pokemon}" th:method="delete">
+          <button class="button is-danger">Release</button>
+        </form>
+      </footer>
     </div>
   </div>
 </div>
