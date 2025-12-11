@@ -1,0 +1,14 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-justify-center">
+    <div th:each="box : ${boxes}">
+      <a th:href="@{/box/{boxID}(boxID=${box.userBoxID})}">
+        <h1 th:text="${box.userBoxID}" class="box">aaa</h1>
+      </a>
+    </div>
+  </div>
+  <form th:action="@{/boxes}" method="post">
+    <div class="field">
+      <button class="button is-link">Add box</button>
+    </div>
+  </form>
+</div>

@@ -7,30 +7,22 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name="pokemons")
+@Table(name="boxes")
 @Data
-public class Pokemon {
+public class Box {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
 
-    @Column(name = "name")
-    private String name;
-
-    @OneToOne
-    @JoinColumn(name="owner_id")
-    private User ownerID;
-
-    @Column(name="in_box")
-    private boolean inBox;
+    @Column(name="user_box_id")
+    private int userBoxID;
 
     @ManyToOne
-    @JoinColumn(name="box_id")
-    private Box boxID;
+    @JoinColumn(name = "owner_id")
+    private User ownerID;
 }

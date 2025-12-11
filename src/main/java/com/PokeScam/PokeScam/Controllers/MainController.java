@@ -3,12 +3,12 @@ package com.PokeScam.PokeScam.Controllers;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Services.PokeAPIService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 
 @Controller
@@ -29,16 +29,10 @@ public class MainController {
         return "home";
     }
 
-    @GetMapping("/box")
-    public String box(Model m) {
-        m.addAttribute("pkmnInBox", pkmnDataService.getPkmnInBox());
-        return "box";
-    }
     
     @GetMapping("/catch")
     public String catchRndPkmn(Model m) {
         m.addAttribute("encounterPkmn", pokeAPIService.getRandomPokemon());
         return "catchRndPkmn";
     }
-    
 }

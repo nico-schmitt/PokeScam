@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.security.config.Customizer;
+import static org.springframework.security.config.Customizer.withDefaults;;
 
 @Configuration
 @EnableWebSecurity
@@ -17,10 +17,15 @@ public class Config {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
-        .formLogin(Customizer.withDefaults())
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/register", "/login").permitAll()
-            .anyRequest().authenticated());
+            .anyRequest().authenticated())
+            .formLogin(withDefaults());
+        /* .formLogin(form -> form
+            .loginPage("/login")
+            .defaultSuccessUrl("/")
+            .permitAll()
+        );*/
         return http.build();
     }
 

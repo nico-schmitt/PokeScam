@@ -1,16 +1,17 @@
 package com.PokeScam.PokeScam.Services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
+import com.PokeScam.PokeScam.Model.Box;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.PokemonRepository;
-import com.PokeScam.PokeScam.Repos.UserRepository;
 
 @Service
 public class PokemonDataService {
@@ -18,13 +19,15 @@ public class PokemonDataService {
     private static final int POKEMON_TEAM_SIZE = 6;
 
     private final PokemonRepository pokemonRepo;
-    private final UserRepository userRepo;
+    private final BoxService boxService;
     private final PokeAPIService pokeAPIService;
+    private final CustomUserDetails userDetails;
 
-    public PokemonDataService(PokemonRepository pokemonRepo, UserRepository userRepo, PokeAPIService pokeAPIService) {
+    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService, CustomUserDetails userDetails) {
         this.pokemonRepo = pokemonRepo;
-        this.userRepo = userRepo;
+        this.boxService = boxService;
         this.pokeAPIService = pokeAPIService;
+        this.userDetails = userDetails;
     }
 
     public List<PokemonDTO> getPkmnTeamInfo() {
@@ -42,19 +45,20 @@ public class PokemonDataService {
         return teamList;
     }
 
-    public List<PokemonDTO> getPkmnInBox() {
+    public List<PokemonDTO> getPkmnInBox(int boxID) {
         return
             getAllPkmn()
                 .stream()
-                .filter(p -> p.isInBox())
+                .filter(p -> p.isInBox() && p.getBoxID().getUserBoxID() == boxID)
                 .map(p -> pokeAPIService.populatePokemonDTO(p))
                 .toList();
     }
 
     public String addPokemon(Pokemon pkmnToSave) {
-        User user = userRepo.findByUsername(getUserDetails().getUsername());
-        String addMsg;
         Pokemon p = new Pokemon();
+        User user = userDetails.getThisUser();
+        String addMsg;
+        boolean errOccuredWhileAdding = false;
         p.setName(pkmnToSave.getName());
         p.setOwnerID(user);
 
@@ -63,19 +67,23 @@ public class PokemonDataService {
             addMsg = "Added to team";
         } else {
             p.setInBox(true);
-            addMsg = "Added to box";
+            Optional<Box> nextFreeBox = boxService.getNextFreeBox();
+            if(nextFreeBox.isPresent()) {
+                p.setBoxID(nextFreeBox.get());
+                addMsg = "Added to box " + nextFreeBox.get().getUserBoxID();
+            } else {
+                errOccuredWhileAdding = true;
+                addMsg = "Couldn't add Pokemon. No box had enough space";
+            }
         }
 
-        pokemonRepo.save(p);
+        if(!errOccuredWhileAdding) {
+            pokemonRepo.save(p);
+        }
         return addMsg;
     }
 
-    public UserDetails getUserDetails() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return (UserDetails)principal;
-    }
-
     private List<Pokemon> getAllPkmn() {
-        return pokemonRepo.findByOwnerID(userRepo.findByUsername(getUserDetails().getUsername()));
+        return pokemonRepo.findByOwnerID(userDetails.getThisUser());
     }
 }
