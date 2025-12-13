@@ -1,9 +1,11 @@
 <div th:fragment="pkmnPreview">
-  <div class="modal-trigger" th:data-target="${pkmnInfo.id}">
+  <div th:class="${enableModal} ? 'modal-trigger' : ''" th:data-target="${pkmnInfo.id}">
     <figure class="box image is-128x128">
       <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.name}" />
     </figure>
   </div>
 
-  <div th:replace="~{fragments/pkmnModal :: pkmnModal (pkmnInfo=${pkmnInfo})}"></div>
+  <div th:if="${enableModal}">
+    <div th:replace="~{fragments/pkmnModal :: pkmnModal (pkmnInfo=${pkmnInfo})}"></div>
+  </div>
 </div>

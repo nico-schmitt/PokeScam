@@ -31,6 +31,7 @@ public class PokeAPIService {
         pDTO.setId(pkmnToUse.getId());
         pDTO.setName(pkmnToUse.getName());
         pDTO.setImageURL(getImageURL(pkmnToUse.getName()));
+        pDTO.setInBox(pkmnToUse.isInBox());
         return pDTO;
     }
 

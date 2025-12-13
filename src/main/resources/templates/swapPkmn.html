@@ -1,0 +1,28 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <a href="/box">
+    <button class="button is-danger">Back</button>
+  </a>
+
+  <div class="fixed-grid">
+    <div class="grid">
+      <div th:each="teamPkmn : ${pkmnTeam}">
+        <form th:action="@{/pokemon/swap}" method="post">
+          <input type="hidden" th:name="teamPkmnToSwap" th:value=${teamPkmn.id}>
+          <input type="hidden" th:name="otherPkmnToSwap" th:value=${swapPkmn.id}>
+          <button>
+            <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${teamPkmn})}"></div>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${swapPkmn})}"></div>
+</div>
+
+<script th:inline="javascript">
+  function selectForSwap(event) {
+    const teamPkmnId = event.currentTarget.dataset.team_pkmn_id;
+    fetch("/swap", {method:"post"}).then(e => console.log(e));
+  }
+</script>

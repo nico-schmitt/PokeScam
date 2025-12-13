@@ -65,7 +65,7 @@ public class PokemonDataService {
         p.setName(pkmnToSave.getName());
         p.setOwnerId(user);
 
-        if(getAllPkmn().size() < POKEMON_TEAM_SIZE) {
+        if(getTeamPkmn().size() < POKEMON_TEAM_SIZE) {
             p.setInBox(false);
             addMsg = "Added to team";
         } else {
@@ -90,13 +90,17 @@ public class PokemonDataService {
         return pokemonRepo.findByOwnerId(userDetails.getThisUser());
     }
 
+    private List<Pokemon> getTeamPkmn() {
+        return pokemonRepo.findByOwnerIdAndInBox(userDetails.getThisUser(), false);
+    }
+
     @Transactional
     public void deletePkmn(int id) {
-        if(pokemonRepo.findByIdAndOwnerId(id, userDetails.getThisUser()) != null)
-        {
-
         pokemonRepo.deleteByIdAndOwnerId(id, userDetails.getThisUser());
-        System.out.println(id+"\n\n\n\n\n\n");
-        }
+    }
+
+    public PokemonDTO getPkmnInfo(int id) {
+        Pokemon pkmn = pokemonRepo.findByIdAndOwnerId(id, userDetails.getThisUser());
+        return pokeAPIService.populatePokemonDTO(pkmn);
     }
 }

@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.Model.Box;
+import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Repos.BoxRepository;
 import com.PokeScam.PokeScam.Repos.PokemonRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class BoxService {
@@ -63,5 +66,20 @@ public class BoxService {
 
     public Box getBox(int boxId) {
         return boxRepo.findByOwnerIdAndUserBoxId(userDetails.getThisUser(), boxId);
+    }
+
+    @Transactional
+    public void swapTeamPkmnToBox(int teamPkmnToSwap, int otherPkmnToSwap) {
+        Pokemon teamPkmn = pokemonRepo.findByIdAndOwnerId(teamPkmnToSwap, userDetails.getThisUser());
+        Pokemon otherPkmn = pokemonRepo.findByIdAndOwnerId(otherPkmnToSwap, userDetails.getThisUser());
+        teamPkmn.setInBox(true);
+        teamPkmn.setBoxId(otherPkmn.getBoxId());
+        otherPkmn.setInBox(false);
+        otherPkmn.setBoxId(null);
+        pokemonRepo.save(teamPkmn);
+        pokemonRepo.save(otherPkmn);
+        pokemonRepo.flush();
+        System.out.println(teamPkmnToSwap+"\n\n\n\n\n\n\n\n");
+        System.out.println(otherPkmnToSwap+"\n\n\n\n\n\n\n\n");
     }
 }
