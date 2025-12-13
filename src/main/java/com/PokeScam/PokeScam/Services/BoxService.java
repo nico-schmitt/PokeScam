@@ -26,31 +26,31 @@ public class BoxService {
 
     public void addBox() {
         Box newBox = new Box();
-        newBox.setOwnerID(userDetails.getThisUser());
+        newBox.setOwnerId(userDetails.getThisUser());
         Optional<Integer> nextUserBoxID = getNextUserBoxID();
         if(nextUserBoxID.isPresent()) {
-            newBox.setUserBoxID(nextUserBoxID.get());
+            newBox.setUserBoxId(nextUserBoxID.get());
         } else {
-            newBox.setUserBoxID(0);
+            newBox.setUserBoxId(0);
         }
         boxRepo.save(newBox);
     }
 
     public Optional<Box> getNextFreeBox() {
-        List<Box> boxes = boxRepo.findByOwnerID(userDetails.getThisUser());
+        List<Box> boxes = boxRepo.findByOwnerId(userDetails.getThisUser());
         for(Box b : boxes) {
-            if(pokemonRepo.countByBoxID(b) < BOX_CAPACITY)
+            if(pokemonRepo.countByBoxId(b) < BOX_CAPACITY)
                 return Optional.of(b);
         }
         return Optional.empty();
     }
 
     private Optional<Integer> getNextUserBoxID() {
-        List<Box> boxes = boxRepo.findByOwnerID(userDetails.getThisUser());
+        List<Box> boxes = boxRepo.findByOwnerId(userDetails.getThisUser());
         if(boxes.size() > 0) {
             int nextUserBoxID = 0;
             for(Box b : boxes) {
-                nextUserBoxID = b.getUserBoxID() + 1;
+                nextUserBoxID = b.getUserBoxId() + 1;
             }
             return Optional.of(nextUserBoxID);
         }
@@ -58,6 +58,10 @@ public class BoxService {
     }
 
     public List<Box> getAllBoxes() {
-        return boxRepo.findByOwnerID(userDetails.getThisUser());
+        return boxRepo.findByOwnerId(userDetails.getThisUser());
+    }
+
+    public Box getBox(int boxId) {
+        return boxRepo.findByOwnerIdAndUserBoxId(userDetails.getThisUser(), boxId);
     }
 }

@@ -2,13 +2,28 @@
   <a href="/box">
     <button class="button is-primary">View all boxes</button>
   </a>
-  <div class="fixed-grid">
-    <div class="grid">
+  <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+    <thead>
+      <tr>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody>
       <div th:each="pkmn : ${pkmnInBox}">
-        <div th:replace="~{fragments :: pkmnPreview (pkmnInfo=${pkmn})}"></div>
+        <div th:replace="~{fragments/pkmnBoxRow :: pkmnBoxRow (pkmnInfo=${pkmn})}"></div>
       </div>
-    </div>
-  </div>
+    </tbody>
+  </table>
+
+  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+    <a th:href="${pageInfo.isFirst} ? '' : @{/box/{boxId}(boxId=${boxId}, page=${pageInfo.number-1}, size=${pageSize})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>
+    <a th:href="${pageInfo.isLast} ? '' : @{/box/{boxId}(boxId=${boxId}, page=${pageInfo.number+1}, size=${pageSize})}" class="pagination-next" th:classappend="${pageInfo.isLast} ? ' is-disabled' : ''">Next</a>
+    <ul th:if="${pageInfo.totalElements <= 4 and pageInfo.totalElements > 0}" class="pagination-list">
+      <li th:each="i : ${#numbers.sequence(0, pageInfo.totalPages-1)}">
+        <a th:href="@{/box/{boxId}(boxId=${boxId}, page=${i}, size=${pageSize})}" class="pagination-link" th:classappend="${pageInfo.number == i} ? ' is-current' : ''">[[${i+1}]]</a>
+      </li>
+    </ul>
+  </nav>
 </div>
 
 <script>

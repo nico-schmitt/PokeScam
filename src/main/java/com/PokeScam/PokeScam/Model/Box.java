@@ -19,10 +19,11 @@ public class Box {
     @Column(name = "id")
     private int id;
 
-    @Column(name="user_box_id")
-    private int userBoxID;
-
     @ManyToOne
     @JoinColumn(name = "owner_id")
-    private User ownerID;
+    private User ownerId;
+
+    @Column(name="user_box_id")
+    private int userBoxId;
+
 }

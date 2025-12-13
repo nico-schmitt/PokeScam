@@ -18,7 +18,7 @@
         </figure>
       </section>
       <footer class="modal-card-foot">
-        <form th:action="@{/pokemon}" th:method="delete">
+        <form th:action="@{/pokemon/{id}(id=${pkmnInfo.id})}" th:method="delete">
           <button class="button is-danger">Release</button>
         </form>
       </footer>

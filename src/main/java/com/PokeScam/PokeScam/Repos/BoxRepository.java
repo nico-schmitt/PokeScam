@@ -11,5 +11,7 @@ import java.util.List;
 
 @Repository
 public interface BoxRepository extends JpaRepository<Box, Integer>{
-    List<Box> findByOwnerID(User ownerID);
+    List<Box> findByOwnerId(User ownerId);
+
+    Box findByOwnerIdAndUserBoxId(User ownerId, int userBoxId);
 }

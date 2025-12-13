@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.Repos;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,7 +14,10 @@ import java.util.List;
 
 @Repository
 public interface PokemonRepository extends JpaRepository<Pokemon, Integer>{
-    List<Pokemon> findByOwnerID(User ownerID);
-    List<Pokemon> findByBoxID(Box boxID);
-    long countByBoxID(Box boxID);
+    List<Pokemon> findByOwnerId(User ownerID);
+    List<Pokemon> findByBoxId(Box boxID);
+    Pokemon findByIdAndOwnerId(int id, User ownerID);
+    long countByBoxId(Box boxID);
+    Page<Pokemon> findByOwnerIdAndInBoxAndBoxId(User ownerId, boolean inBox, Box boxId, Pageable pageable);
+    void deleteByIdAndOwnerId(int id, User thisUser);
 }

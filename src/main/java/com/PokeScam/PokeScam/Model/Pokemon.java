@@ -25,12 +25,12 @@ public class Pokemon {
 
     @OneToOne
     @JoinColumn(name="owner_id")
-    private User ownerID;
+    private User ownerId;
 
     @Column(name="in_box")
     private boolean inBox;
 
     @ManyToOne
     @JoinColumn(name="box_id")
-    private Box boxID;
+    private Box boxId;
 }

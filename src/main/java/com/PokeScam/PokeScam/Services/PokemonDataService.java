@@ -4,7 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
@@ -12,6 +17,8 @@ import com.PokeScam.PokeScam.Model.Box;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.PokemonRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class PokemonDataService {
@@ -45,13 +52,9 @@ public class PokemonDataService {
         return teamList;
     }
 
-    public List<PokemonDTO> getPkmnInBox(int boxID) {
-        return
-            getAllPkmn()
-                .stream()
-                .filter(p -> p.isInBox() && p.getBoxID().getUserBoxID() == boxID)
-                .map(p -> pokeAPIService.populatePokemonDTO(p))
-                .toList();
+    public Page<Pokemon> getPkmnInBoxPage(int boxId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true , boxService.getBox(boxId), pageable);
     }
 
     public String addPokemon(Pokemon pkmnToSave) {
@@ -60,7 +63,7 @@ public class PokemonDataService {
         String addMsg;
         boolean errOccuredWhileAdding = false;
         p.setName(pkmnToSave.getName());
-        p.setOwnerID(user);
+        p.setOwnerId(user);
 
         if(getAllPkmn().size() < POKEMON_TEAM_SIZE) {
             p.setInBox(false);
@@ -69,8 +72,8 @@ public class PokemonDataService {
             p.setInBox(true);
             Optional<Box> nextFreeBox = boxService.getNextFreeBox();
             if(nextFreeBox.isPresent()) {
-                p.setBoxID(nextFreeBox.get());
-                addMsg = "Added to box " + nextFreeBox.get().getUserBoxID();
+                p.setBoxId(nextFreeBox.get());
+                addMsg = "Added to box " + nextFreeBox.get().getUserBoxId();
             } else {
                 errOccuredWhileAdding = true;
                 addMsg = "Couldn't add Pokemon. No box had enough space";
@@ -84,6 +87,16 @@ public class PokemonDataService {
     }
 
     private List<Pokemon> getAllPkmn() {
-        return pokemonRepo.findByOwnerID(userDetails.getThisUser());
+        return pokemonRepo.findByOwnerId(userDetails.getThisUser());
+    }
+
+    @Transactional
+    public void deletePkmn(int id) {
+        if(pokemonRepo.findByIdAndOwnerId(id, userDetails.getThisUser()) != null)
+        {
+
+        pokemonRepo.deleteByIdAndOwnerId(id, userDetails.getThisUser());
+        System.out.println(id+"\n\n\n\n\n\n");
+        }
     }
 }
