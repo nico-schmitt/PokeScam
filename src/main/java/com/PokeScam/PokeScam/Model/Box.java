@@ -25,5 +25,4 @@ public class Box {
 
     @Column(name="user_box_id")
     private int userBoxId;
-
 }

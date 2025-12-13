@@ -79,7 +79,5 @@ public class BoxService {
         pokemonRepo.save(teamPkmn);
         pokemonRepo.save(otherPkmn);
         pokemonRepo.flush();
-        System.out.println(teamPkmnToSwap+"\n\n\n\n\n\n\n\n");
-        System.out.println(otherPkmnToSwap+"\n\n\n\n\n\n\n\n");
     }
 }

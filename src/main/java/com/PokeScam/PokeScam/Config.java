@@ -27,7 +27,7 @@ public class Config {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/register", "/login").permitAll()
+            .requestMatchers("/register", "/login", "/verify").permitAll()
             .anyRequest().authenticated())
             .formLogin(withDefaults());
         /* .formLogin(form -> form
