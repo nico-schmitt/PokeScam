@@ -30,13 +30,6 @@ public class APIController {
         this.pkmnDataService = pkmnData;
     }
 
-    @PostMapping("/addPokemon")
-    public String addPokemon(@ModelAttribute Pokemon pokemonToAdd, RedirectAttributes redirectAttributes) {
-        String addMsg = pkmnDataService.addPokemon(pokemonToAdd);
-        redirectAttributes.addFlashAttribute("addMsg", addMsg);
-        return "redirect:/";
-    }
-
     @GetMapping("/tryCatchPkmn")
     @ResponseBody
     public String isCatchSuccessful(@RequestParam("name") String pkmnToCatchName) {

@@ -1,6 +1,6 @@
 <div layout:decorate="~{layout}" layout:fragment="content">
   <div class="block">
-    <form th:action="@{/api/addPokemon}" method="post" th:object="${pokemon}">
+    <form th:action="@{/pokemon/addPokemon}" method="post" th:object="${pokemon}">
       <div class="field">
         <label class="label" for="name"></label>
         <input
@@ -10,12 +10,12 @@
           placeholder="Pokemon to add"
         />
         <p class="help is-success" th:if="${addMsg}" th:text="${addMsg}">
-          Added
+          [[#{added_pokemon_help_text}]]
         </p>
       </div>
 
       <div class="field">
-        <button class="button is-link">Add</button>
+        <button class="button is-link">[[#{add_pokemon_button}]]</button>
       </div>
     </form>
   </div>
