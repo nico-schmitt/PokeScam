@@ -21,4 +21,5 @@ public interface PokemonRepository extends JpaRepository<Pokemon, Integer>{
     Page<Pokemon> findByOwnerIdAndInBoxAndBoxId(User ownerId, boolean inBox, Box boxId, Pageable pageable);
     void deleteByIdAndOwnerId(int id, User thisUser);
     List<Pokemon> findByOwnerIdAndInBox(User thisUser, boolean inBox);
+    List<Pokemon> findByOwnerIdAndInBoxFalse(User ownerId);
 }

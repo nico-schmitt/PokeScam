@@ -36,18 +36,14 @@ public class PokemonDataService {
     }
 
     public List<PokemonDTO> getPkmnTeamInfo() {
-        List<PokemonDTO> teamList =
-            getAllPkmn()
-                .stream()
-                .filter(p -> !p.isInBox())
-                .map(p -> pokeAPIService.populatePokemonDTO(p))
-                .collect(Collectors.toList());
-        if(teamList.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamList.size(); i < POKEMON_TEAM_SIZE; i++) {
-                teamList.add(PokemonDTO.getEmpty());
+        List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
+        if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
+            for(int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
+                teamPkmnDTO.add(PokemonDTO.getEmpty());
             }
         }
-        return teamList;
+        return teamPkmnDTO;
     }
 
     public Page<Pokemon> getPkmnInBoxPage(int boxId, int page, int size) {
@@ -60,6 +56,12 @@ public class PokemonDataService {
         User user = userDetails.getThisUser();
         String addMsg;
         boolean errOccuredWhileAdding = false;
+        boolean pokemonExists = pokeAPIService.pokemonExists(pkmnToSave.getName());
+        if(!pokemonExists) {
+            addMsg = "Pokemon does not exist";
+            return addMsg;
+        }
+
         p.setName(pkmnToSave.getName());
         p.setOwnerId(user);
 
