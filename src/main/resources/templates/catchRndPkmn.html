@@ -23,7 +23,7 @@
       "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
     encounter.src = pokeBallImgURL;
     let isCatchSuccessful = await fetch(
-      `/api/tryCatchPkmn?name=${encounterPkmnData.name}`
+      `/tryCatchPkmn?name=${encounterPkmnData.name}`
     );
     let data = await isCatchSuccessful.text();
     if (data === "true") {

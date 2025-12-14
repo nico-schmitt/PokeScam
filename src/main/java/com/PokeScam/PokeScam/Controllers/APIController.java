@@ -29,17 +29,4 @@ public class APIController {
     public APIController(PokemonDataService pkmnData) {
         this.pkmnDataService = pkmnData;
     }
-
-    @GetMapping("/tryCatchPkmn")
-    @ResponseBody
-    public String isCatchSuccessful(@RequestParam("name") String pkmnToCatchName) {
-        final long catchDelay = ThreadLocalRandom.current().nextLong(100, 1500);
-        boolean isSuccessful = ThreadLocalRandom.current().nextFloat() < 0.5 ? true : false; 
-        if(isSuccessful) {
-            Pokemon pkmnToAdd = new Pokemon();
-            pkmnToAdd.setName(pkmnToCatchName);
-            pkmnDataService.addPokemon(pkmnToAdd);
-        }
-        return Mono.delay(Duration.ofMillis(catchDelay)).thenReturn(Boolean.toString(isSuccessful)).block();
-    }
 }
