@@ -3,6 +3,7 @@ package com.PokeScam.PokeScam.Controllers;
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.catalina.startup.Catalina;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,14 +37,18 @@ public class CatchController {
 
     @GetMapping("/tryCatchPkmn")
     @ResponseBody
-    public String isCatchSuccessful(@RequestParam("name") String pkmnToCatchName) {
+    public Mono<CatchResponse> isCatchSuccessful(@RequestParam("name") String pkmnToCatchName) throws InterruptedException {
         final long catchDelay = ThreadLocalRandom.current().nextLong(100, 1500);
-        boolean isSuccessful = ThreadLocalRandom.current().nextFloat() < 0.5 ? true : false; 
-        if(isSuccessful) {
+        boolean catchSuccessful = ThreadLocalRandom.current().nextFloat() < 0.5 ? true : false; 
+        String addMsg = "";
+        if(catchSuccessful) {
             Pokemon pkmnToAdd = new Pokemon();
             pkmnToAdd.setName(pkmnToCatchName);
-            pkmnDataService.addPokemon(pkmnToAdd);
+            addMsg = pkmnDataService.addPokemon(pkmnToAdd);
         }
-        return Mono.delay(Duration.ofMillis(catchDelay)).thenReturn(Boolean.toString(isSuccessful)).block();
+        return Mono.delay(Duration.ofMillis(catchDelay))
+            .thenReturn(new CatchResponse(catchSuccessful, addMsg));
     }
+
+    record CatchResponse(boolean catchSuccessful, String addMsg) {}
 }

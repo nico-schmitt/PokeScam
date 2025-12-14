@@ -6,7 +6,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.servlet.LocaleResolver;
 
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.Model.Pokemon;
@@ -28,7 +27,8 @@ public class PokeAPIService {
         return new PokemonDTO(
             pkmnToUse.getId(),
             pkmnToUse.isInBox(),
-            apiData.name,
+            pkmnToUse.getName(),
+            apiData.displayName,
             apiData.spriteURL,
             apiData.flavorText
         );
@@ -39,7 +39,8 @@ public class PokeAPIService {
         return new PokemonDTO(
             -1,
             false,
-            apiData.name,
+            pkmnToUse,
+            apiData.displayName,
             apiData.spriteURL,
             apiData.flavorText
         );
@@ -85,5 +86,5 @@ public class PokeAPIService {
    public record FlavorText(String flavor_text, Language language) {}
    public record Language(String name) {}
 
-   public record PokemonAPIDTOHelper(String name, String spriteURL, String flavorText) {}
+   public record PokemonAPIDTOHelper(String displayName, String spriteURL, String flavorText) {}
 }
