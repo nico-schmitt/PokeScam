@@ -26,8 +26,9 @@ public class Config {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
+        .csrf(csrf->csrf.ignoringRequestMatchers("/api/**"))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/register", "/login", "/verify").permitAll()
+            .requestMatchers("/register", "/login", "/verify", "/api/**").permitAll()
             .anyRequest().authenticated())
             .formLogin(withDefaults());
         /* .formLogin(form -> form

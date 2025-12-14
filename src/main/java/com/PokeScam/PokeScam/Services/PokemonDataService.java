@@ -21,7 +21,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class PokemonDataService {
 
-    private static final int POKEMON_TEAM_SIZE = 6;
+    public static final int POKEMON_TEAM_SIZE = 6;
 
     private final PokemonRepository pokemonRepo;
     private final BoxService boxService;
@@ -102,5 +102,10 @@ public class PokemonDataService {
     public PokemonDTO getPkmnInfo(int id) {
         Pokemon pkmn = pokemonRepo.findByIdAndOwnerId(id, userDetails.getThisUser());
         return pokeAPIService.populatePokemonDTO(pkmn);
+    }
+
+    public boolean isTeamFull(User user) {
+        List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
+        return teamPkmn.size() >= POKEMON_TEAM_SIZE;
     }
 }
