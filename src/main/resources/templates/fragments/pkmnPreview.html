@@ -1,6 +1,6 @@
 <div th:fragment="pkmnPreview">
   <div th:class="${enableModal} ? 'modal-trigger' : ''" th:data-target="${pkmnInfo.id}">
-    <figure class="box image is-128x128">
+    <figure class="box image" style="width: 200px;">
       <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.displayName}" />
     </figure>
   </div>

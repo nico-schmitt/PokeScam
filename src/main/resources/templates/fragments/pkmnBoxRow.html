@@ -2,7 +2,7 @@
   <tr class="modal-trigger" th:data-target="${pkmnInfo.id}">
     <td>[[${#strings.capitalize(pkmnInfo.displayName)}]]</td>
     <td>
-      <figure class="box image is-96x96">
+      <figure class="box image" style="width: 200px;">
         <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.displayName}" />
       </figure>
     </td>
