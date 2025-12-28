@@ -19,9 +19,6 @@ import com.PokeScam.PokeScam.Services.PokemonDataService;
 
 import lombok.Data;
 
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestBody;
-
 
 @Controller
 @RequestMapping("/pokemon")

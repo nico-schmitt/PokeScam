@@ -72,12 +72,7 @@
 
           <div class="navbar-end">
             <div class="navbar-item">
-              <div class="buttons">
-                <a class="button is-primary">
-                  <strong>Sign up</strong>
-                </a>
-                <a class="button is-light"> Log in </a>
-              </div>
+              <strong>You have $[[${userCurrency}]]</strong>
             </div>
             <div class="navbar-item has-dropdown is-hoverable">
               <a class="navbar-link">
@@ -89,6 +84,13 @@
                 </a>
                 <a href="?lang=de" class="navbar-item">
                   [[#{de_lang_switch}]]
+                </a>
+              </div>
+            </div>
+            <div class="navbar-item">
+              <div class="buttons">
+                <a class="button is-danger" href="/logout">
+                  <strong>Logout</strong>
                 </a>
               </div>
             </div>

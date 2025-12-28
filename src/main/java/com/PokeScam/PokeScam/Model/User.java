@@ -25,4 +25,6 @@ public class User {
     private String roles;
     @Column(name="is_verified")
     private boolean isVerified;
+    @Column(name="currency")
+    private int currency;
 }
