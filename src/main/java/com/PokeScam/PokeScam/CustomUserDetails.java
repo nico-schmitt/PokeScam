@@ -31,7 +31,15 @@ public class CustomUserDetails implements UserDetailsService {
 
     public UserDetails getUserDetails() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return (UserDetails)principal;
+
+        if (principal instanceof UserDetails userDetails) {
+            return userDetails;
+        } else if (principal instanceof String username) {
+            // fallback if principal is just a String
+            return loadUserByUsername(username);
+        } else {
+            throw new IllegalStateException("Principal is not UserDetails or String");
+        }
     }
 
     public User getThisUser() {

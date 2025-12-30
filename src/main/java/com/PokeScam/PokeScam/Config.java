@@ -24,18 +24,17 @@ import java.util.TimeZone;
 @EnableWebSecurity
 public class Config {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler) {
         http
         .csrf(csrf->csrf.ignoringRequestMatchers("/api/**"))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/register", "/login", "/verify", "/api/**").permitAll()
             .anyRequest().authenticated())
-            .formLogin(withDefaults());
-        /* .formLogin(form -> form
-            .loginPage("/login")
-            .defaultSuccessUrl("/")
-            .permitAll()
-        );*/
+            .formLogin(form -> form
+                .defaultSuccessUrl("/")
+                .successHandler(loginSuccessHandler)
+                .permitAll()
+            );
         return http.build();
     }
 

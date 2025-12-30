@@ -1,4 +1,6 @@
 package com.PokeScam.PokeScam.Model;
+import java.time.Instant;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,4 +29,6 @@ public class User {
     private boolean isVerified;
     @Column(name="currency")
     private int currency;
+    @Column(name="last_login")
+    private Instant lastLogin;
 }
