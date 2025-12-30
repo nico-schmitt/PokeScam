@@ -65,9 +65,34 @@
       <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-menu">
           <div class="navbar-start">
-            <a class="navbar-item" href="/">Team</a>
-            <a class="navbar-item" href="/box">Box</a>
-            <a class="navbar-item" href="/catch">Catch</a>
+            <div class="tabs is-large is-toggle is-toggle-rounded">
+              <ul>
+                <li th:classappend="${currentPath == '/'} ? 'is-active' : ''">
+                  <a href="/">
+                    <span class="icon is-small"
+                      ><i class="fas fa-users"></i
+                    ></span>
+                    <span>Team</span>
+                  </a>
+                </li>
+                <li th:classappend="${currentPath.startsWith('/box')} ? 'is-active' : ''">
+                  <a href="/box">
+                    <span class="icon is-small"
+                      ><i class="fas fa-box"></i
+                    ></span>
+                    <span>Box</span>
+                  </a>
+                </li>
+                <li th:classappend="${currentPath.startsWith('/catch')} ? 'is-active' : ''">
+                  <a href="/catch">
+                    <span class="icon is-small"
+                      ><i class="fas fa-bullseye"></i
+                    ></span>
+                    <span>Catch</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="navbar-end">

@@ -1,14 +1,17 @@
 <div layout:decorate="~{layout}" layout:fragment="content">
-  <div class="is-flex is-justify-center">
+  <div class="is-flex is-justify-center is-gap-2">
     <div th:each="box : ${boxes}">
-      <a th:href="@{/box/{boxId}(boxId=${box.userBoxId})}">
-        <h1 th:text="${box.userBoxId}" class="box">aaa</h1>
+      <a th:href="@{/box/{boxId}(boxId=${box.userBoxId})}" class="box has-text-centered">
+        <span class="icon">
+          <i class="fa-solid fa-box fa-4x"></i>
+        </span>
+        <h1 th:text="|Box ${box.userBoxId}|" class="title is-1">Box number</h1>
       </a>
     </div>
   </div>
-  <form th:action="@{/boxes}" method="post">
+  <form th:action="@{/boxes}" method="post" class="mt-5">
     <div class="field">
-      <button class="button is-link">Add box</button>
+      <button class="button is-link title has-text-white">Add box</button>
     </div>
   </form>
 </div>
