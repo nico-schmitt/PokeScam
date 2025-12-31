@@ -28,16 +28,18 @@ public class Config {
         http
         .csrf(csrf->csrf.ignoringRequestMatchers("/api/**"))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/register", "/login", "/verify", "/api/**").permitAll()
-            .anyRequest().authenticated())
-            .formLogin(form -> form
-                .defaultSuccessUrl("/")
-                .successHandler(loginSuccessHandler)
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutSuccessHandler(logoutSuccessHandler)
-            );
+            .requestMatchers("/register", "/login", "/verify", "/api/**", "/static/**").permitAll()
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        )
+        .formLogin(form -> form
+            .defaultSuccessUrl("/")
+            .successHandler(loginSuccessHandler)
+            .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutSuccessHandler(logoutSuccessHandler)
+        );
         return http.build();
     }
 

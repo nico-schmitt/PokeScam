@@ -37,6 +37,14 @@
                     <span>Shop</span>
                   </a>
                 </li>
+                <li th:classappend="${currentPath.startsWith('/admin')} ? 'is-active' : ''" sec:authorize="hasRole('ADMIN')">
+                  <a href="/admin">
+                    <span class="icon is-small"
+                      ><i class="fas fa-sliders"></i
+                    ></span>
+                    <span>Admin</span>
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
