@@ -31,4 +31,6 @@ public class User {
     private int currency;
     @Column(name="last_login")
     private Instant lastLogin;
+    @Column(name="last_logout")
+    private Instant lastLogout;
 }

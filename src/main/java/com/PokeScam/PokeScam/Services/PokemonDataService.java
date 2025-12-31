@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.Services;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -130,5 +132,18 @@ public class PokemonDataService {
     public boolean isTeamFull(User user) {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
         return teamPkmn.size() >= POKEMON_TEAM_SIZE;
+    }
+
+    public void healPkmnByLastLogout(Instant lastLogout) {
+        long secondsSinceLastLogout = Duration.between(lastLogout, Instant.now()).getSeconds();
+        List<Pokemon> allPkmnInBox = pokemonRepo.findByOwnerIdAndInBox(userDetails.getThisUser(), true);
+        int amountToHealBy = (int)secondsSinceLastLogout;
+        allPkmnInBox.forEach(pkmn->adjustPkmnHealth(pkmn, amountToHealBy));
+        pokemonRepo.saveAll(allPkmnInBox);
+    }
+
+    public void adjustPkmnHealth(Pokemon pkmnToHeal, int adjustment) {
+        int newHealth = Math.clamp(pkmnToHeal.getCurHp()+adjustment, 0, pkmnToHeal.getMaxHp());
+        pkmnToHeal.setCurHp(newHealth);
     }
 }

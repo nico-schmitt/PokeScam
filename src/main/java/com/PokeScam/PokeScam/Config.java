@@ -24,7 +24,7 @@ import java.util.TimeZone;
 @EnableWebSecurity
 public class Config {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler, LogoutSuccessHandler logoutSuccessHandler) {
         http
         .csrf(csrf->csrf.ignoringRequestMatchers("/api/**"))
         .authorizeHttpRequests(auth -> auth
@@ -34,6 +34,9 @@ public class Config {
                 .defaultSuccessUrl("/")
                 .successHandler(loginSuccessHandler)
                 .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessHandler(logoutSuccessHandler)
             );
         return http.build();
     }

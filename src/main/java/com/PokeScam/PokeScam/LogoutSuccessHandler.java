@@ -5,6 +5,7 @@ import java.time.Instant;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import com.PokeScam.PokeScam.Repos.UserRepository;
@@ -15,24 +16,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class LogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
     private final UserRepository userRepo;
     private final PokemonDataService pokemonDataService;
 
-    public LoginSuccessHandler(UserRepository userRepo, PokemonDataService pokemonDataService) {
+    public LogoutSuccessHandler(UserRepository userRepo, PokemonDataService pokemonDataService) {
         this.userRepo = userRepo;
         this.pokemonDataService = pokemonDataService;
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         userRepo.findByUsername(authentication.getName()).ifPresent(user -> {
-            Instant lastLogout = user.getLastLogout();
-            pokemonDataService.healPkmnByLastLogout(lastLogout);
-            user.setLastLogin(Instant.now());
+            user.setLastLogout(Instant.now());
             userRepo.save(user);
         });
 
-        super.onAuthenticationSuccess(request, response, authentication);
+        setDefaultTargetUrl("/login?logout");
+        setAlwaysUseDefaultTargetUrl(true);
+        super.onLogoutSuccess(request, response, authentication);
     }
 }
