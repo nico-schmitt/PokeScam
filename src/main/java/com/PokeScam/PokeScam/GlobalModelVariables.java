@@ -19,6 +19,11 @@ public class GlobalModelVariables {
         this.userDetails = userDetails;
     }
 
+    @ModelAttribute("currentPath")
+    public String currentPath(HttpServletRequest request) {
+        return request.getRequestURI();
+    }
+
     @ModelAttribute("userCurrency")
     public int addUserCurrency() {
         return userDetails.getThisUser().getCurrency();
@@ -37,10 +42,5 @@ public class GlobalModelVariables {
     @ModelAttribute("healPkmnForCurrencyHealAmount")
     public int healPkmnAmount() {
         return healAmount;
-    }
-
-    @ModelAttribute("currentPath")
-    public String currentPath(HttpServletRequest request) {
-        return request.getRequestURI();
     }
 }

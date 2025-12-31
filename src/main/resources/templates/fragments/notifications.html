@@ -1,8 +1,8 @@
 <div th:fragment="notifications">
   <script th:src="@{/closeNotifications.js}"></script>
 
-  <div th:if="${healMsg}" class="notification" th:classappend="${healMsg.healSuccess} ? 'is-success' : 'is-warning'">
-    <p th:text="${healMsg.msg}" class="subtitle is-3"></p>
+  <div th:if="${notifMsg}" class="notification" th:classappend="${notifMsg.success} ? 'is-success' : 'is-warning'">
+    <p th:text="${notifMsg.msg}" class="subtitle is-3"></p>
     <button class="delete"></button>
   </div>
 </div>

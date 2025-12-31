@@ -9,13 +9,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import org.springframework.beans.factory.annotation.Value;
 
+import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Services.BoxService;
 import com.PokeScam.PokeScam.Services.PokeAPIService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
-import com.PokeScam.PokeScam.Services.PokemonDataService.HealMsg;
 
 import lombok.Data;
 
@@ -66,8 +67,8 @@ public class PokemonController {
 
     @PostMapping("/healcost/{id}")
     public String healPkmnById(@PathVariable int id, @RequestHeader(name="Referer", defaultValue = "/") String referer, RedirectAttributes redirectAttributes) {
-        HealMsg healMsg = pkmnDataService.healPkmnForCost(id, healCost, healAmount);
-        redirectAttributes.addFlashAttribute("healMsg", healMsg);
+        NotificationMsg notifMsg = pkmnDataService.healPkmnForCost(id, healCost, healAmount);
+        redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
         return "redirect:" + referer;
     }
     

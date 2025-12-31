@@ -29,6 +29,14 @@
                     <span>Catch</span>
                   </a>
                 </li>
+                <li th:classappend="${currentPath.startsWith('/shop')} ? 'is-active' : ''">
+                  <a href="/shop">
+                    <span class="icon is-small"
+                      ><i class="fas fa-shop"></i
+                    ></span>
+                    <span>Shop</span>
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
+import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.Model.Box;
 import com.PokeScam.PokeScam.Model.Pokemon;
@@ -162,29 +163,27 @@ public class PokemonDataService {
         });
     }
 
-    public HealMsg healPkmnForCost(int id, int cost, int healAmount) {
+    public NotificationMsg healPkmnForCost(int id, int cost, int healAmount) {
         User user = userDetails.getThisUser();
         Pokemon pkmnToHeal = pokemonRepo.findByIdAndOwnerId(id, user);
-        HealMsg healMsg;
+        NotificationMsg msg;
 
         if(pkmnToHeal != null && user.getCurrency() >= cost) {
             user.setCurrency(user.getCurrency()-cost);
             userRepo.save(user);
             int actualHealAmount = adjustPkmnHealth(pkmnToHeal, healAmount);
             pokemonRepo.save(pkmnToHeal);
-            healMsg = new HealMsg(
+            msg = new NotificationMsg(
                 String.format("Healed %s for %d", pkmnToHeal.getName(), actualHealAmount),
                 true
             );
         } else {
-            healMsg = new HealMsg(
+            msg = new NotificationMsg(
             "Not enough currency",
             false
             );
         }
 
-        return healMsg;
+        return msg;
     }
-
-    public record HealMsg(String msg, boolean healSuccess) {}
 }
