@@ -7,7 +7,11 @@ public record PokemonDTO(
     String apiName,
     String displayName,
     String imageURL,
-    String flavorText
+    String flavorText,
+    int level, int exp,
+    int maxHp, int curHp,
+    int atk, int def, int spa, int spd, int spe,
+    int atkBase, int defBase, int spaBase, int spdBase, int speBase, int hpBase
 ) {
     public static PokemonDTO getEmpty() {
         return new PokemonDTO(
@@ -16,7 +20,11 @@ public record PokemonDTO(
             "",
             "Not set",
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/201-question.png",
-            ""
+            "",
+            0, 0,
+            0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0
         );
     }
 }

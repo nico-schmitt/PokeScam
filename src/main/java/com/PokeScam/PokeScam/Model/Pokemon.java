@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Entity
@@ -20,18 +19,44 @@ public class Pokemon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
-
     @Column(name = "name")
     private String name;
-
     @OneToOne
     @JoinColumn(name="owner_id")
     private User ownerId;
-
     @Column(name="in_box")
     private boolean inBox;
-
     @ManyToOne
     @JoinColumn(name="box_id")
     private Box boxId;
+    @Column(name="level")
+    private int level;
+    @Column(name="exp")
+    private int exp;
+    @Column(name="max_hp")
+    private int maxHp;
+    @Column(name="cur_hp")
+    private int curHp;
+    @Column(name="atk")
+    private int atk;
+    @Column(name="def")
+    private int def;
+    @Column(name="spa")
+    private int spa;
+    @Column(name="spd")
+    private int spd;
+    @Column(name="spe")
+    private int spe;
+    @Column(name="atk_base_stat")
+    private int atkBaseStat;
+    @Column(name="def_base_stat")
+    private int defBaseStat;
+    @Column(name="spa_base_stat")
+    private int spaBaseStat;
+    @Column(name="spd_base_stat")
+    private int spdBaseStat;
+    @Column(name="spe_base_stat")
+    private int speBaseStat;
+    @Column(name="hp_base_stat")
+    private int hpBaseStat;
 }

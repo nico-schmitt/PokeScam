@@ -17,9 +17,12 @@ import tools.jackson.databind.JsonNode;
 public class PokeAPIService {
     private final String pokeAPIBaseURL = "https://pokeapi.co/api/v2";
     private final WebClient webClient;
+    private final PokemonCalcService pokemonCalcService;
 
-    public PokeAPIService(WebClient.Builder webClientBuilder) {
+    public PokeAPIService(WebClient.Builder webClientBuilder, PokemonCalcService pokemonCalcService) {
         this.webClient = webClientBuilder.baseUrl(pokeAPIBaseURL).build();
+        this.pokemonCalcService = pokemonCalcService;
+
     }
 
     public PokemonDTO populatePokemonDTO(Pokemon pkmnToUse) {
@@ -30,19 +33,33 @@ public class PokeAPIService {
             pkmnToUse.getName(),
             apiData.displayName,
             apiData.spriteURL,
-            apiData.flavorText
+            apiData.flavorText,
+            pkmnToUse.getLevel(), pkmnToUse.getExp(),
+            pkmnToUse.getMaxHp(), pkmnToUse.getCurHp(),
+            pkmnToUse.getAtk(), pkmnToUse.getDef(), pkmnToUse.getSpa(), pkmnToUse.getSpd(), pkmnToUse.getSpe(),
+            pkmnToUse.getAtkBaseStat(), pkmnToUse.getDefBaseStat(), pkmnToUse.getSpaBaseStat(), pkmnToUse.getSpdBaseStat(), pkmnToUse.getSpeBaseStat(), pkmnToUse.getHpBaseStat()
         );
     }
 
-    private PokemonDTO populatePokemonDTO(String pkmnToUse) {
+    public PokemonDTO populateRandomPokemonDTO(String pkmnToUse) {
         PokemonAPIDTOHelper apiData = getPokeAPIData(pkmnToUse);
+
         return new PokemonDTO(
             -1,
             false,
             pkmnToUse,
             apiData.displayName,
             apiData.spriteURL,
-            apiData.flavorText
+            apiData.flavorText,
+            pokemonCalcService.calcRndPkmnLevel(),
+            0,
+            pokemonCalcService.calcPkmnMaxHp(apiData.hp_baseStat), pokemonCalcService.calcPkmnMaxHp(apiData.hp_baseStat),
+            pokemonCalcService.calcPkmnAtk(apiData.atk_baseStat),
+            pokemonCalcService.calcPkmnDef(apiData.def_baseStat),
+            pokemonCalcService.calcPkmnSpa(apiData.spa_baseStat),
+            pokemonCalcService.calcPkmnSpd(apiData.spd_baseStat),
+            pokemonCalcService.calcPkmnSpe(apiData.spe_baseStat),
+            apiData.atk_baseStat, apiData.def_baseStat, apiData.spa_baseStat, apiData.spd_baseStat, apiData.spe_baseStat, apiData.hp_baseStat
         );
     }
 
@@ -52,15 +69,26 @@ public class PokeAPIService {
         PokeAPIDTO_PokemonData pokemonData = webClient.get().uri("/pokemon/"+pkmnName).retrieve().bodyToMono(PokeAPIDTO_PokemonData.class).block();
         PokeAPIDTO_PokemonSpeciesData pokemonSpeciesData = webClient.get().uri("/pokemon-species/"+pokemonData.species.name).retrieve().bodyToMono(PokeAPIDTO_PokemonSpeciesData.class).block();
 
-        String name = pokemonSpeciesData.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("kek");
-        String description = pokemonSpeciesData.flavor_text_entries.stream().filter(f->languageToUse.equals(f.language.name)).map(f->f.flavor_text).findFirst().orElse("ha");
+        String name = pokemonSpeciesData.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("No name");
+        String description = pokemonSpeciesData.flavor_text_entries.stream().filter(f->languageToUse.equals(f.language.name)).map(f->f.flavor_text).findFirst().orElse("No description");
         String sprite = pokemonData.sprites.front_default;
+        int hp_baseStat = pokemonData.stats.stream().filter(stats->"hp".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
+        int atk_baseStat = pokemonData.stats.stream().filter(stats->"attack".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
+        int def_baseStat = pokemonData.stats.stream().filter(stats->"defense".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
+        int spa_baseStat = pokemonData.stats.stream().filter(stats->"special-attack".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
+        int spd_baseStat = pokemonData.stats.stream().filter(stats->"special-defense".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
+        int spe_baseStat = pokemonData.stats.stream().filter(stats->"speed".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
 
-        return new PokemonAPIDTOHelper(name, sprite, description);
+        return new PokemonAPIDTOHelper(
+            name,
+            sprite,
+            description,
+            atk_baseStat, def_baseStat, spa_baseStat, spd_baseStat, spe_baseStat, hp_baseStat
+        );
     }
 
     public PokemonDTO getRandomPokemon() {
-        return populatePokemonDTO(getRandomPokemonName());
+        return populateRandomPokemonDTO(getRandomPokemonName());
     }
 
     public boolean pokemonExists(String name) {
@@ -77,14 +105,19 @@ public class PokeAPIService {
             .block();
     }
 
-   public record PokeAPIDTO_PokemonData(Sprites sprites, Species species) {}
+   public record PokeAPIDTO_PokemonData(Sprites sprites, Species species, List<Stat> stats) {}
    public record PokeAPIDTO_PokemonSpeciesData(List<Name> names, List<FlavorText> flavor_text_entries) {}
 
    public record Sprites(String front_default) {}
+   public record Stat(int base_stat, StatInfo stat) {}
+   public record StatInfo(String name) {}
    public record Name(Language language, String name) {}
    public record Species(String name) {}
    public record FlavorText(String flavor_text, Language language) {}
    public record Language(String name) {}
 
-   public record PokemonAPIDTOHelper(String displayName, String spriteURL, String flavorText) {}
+   public record PokemonAPIDTOHelper(
+        String displayName, String spriteURL, String flavorText,
+        int atk_baseStat, int def_baseStat, int spa_baseStat, int spd_baseStat, int spe_baseStat, int hp_baseStat
+    ) {}
 }

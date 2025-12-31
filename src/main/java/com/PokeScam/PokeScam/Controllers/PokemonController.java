@@ -37,7 +37,7 @@ public class PokemonController {
 
     @PostMapping("/addPokemon")
     public String addPokemon(@ModelAttribute Pokemon pokemonToAdd, RedirectAttributes redirectAttributes) {
-        String addMsg = pkmnDataService.addPokemon(pokemonToAdd);
+        String addMsg = pkmnDataService.addPokemonFromName(pokemonToAdd.getName());
         redirectAttributes.addFlashAttribute("addMsg", addMsg);
         return "redirect:/";
     }

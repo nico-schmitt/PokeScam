@@ -2,6 +2,7 @@ package com.PokeScam.PokeScam.Services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -51,18 +52,18 @@ public class PokemonDataService {
         return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true , boxService.getBox(boxId), pageable);
     }
 
-    public String addPokemon(Pokemon pkmnToSave) {
+    public String addPokemon(PokemonDTO pkmnToSave) {
         Pokemon p = new Pokemon();
         User user = userDetails.getThisUser();
         String addMsg;
         boolean errOccuredWhileAdding = false;
-        boolean pokemonExists = pokeAPIService.pokemonExists(pkmnToSave.getName());
+        boolean pokemonExists = pokeAPIService.pokemonExists(pkmnToSave.apiName());
         if(!pokemonExists) {
             addMsg = "Pokemon does not exist";
             return addMsg;
         }
 
-        p.setName(pkmnToSave.getName());
+        p.setName(pkmnToSave.apiName());
         p.setOwnerId(user);
 
         if(getTeamPkmn().size() < POKEMON_TEAM_SIZE) {
@@ -80,9 +81,31 @@ public class PokemonDataService {
             }
         }
 
+        p.setLevel(pkmnToSave.level());
+        p.setExp(pkmnToSave.exp());
+        p.setMaxHp(pkmnToSave.maxHp());
+        p.setCurHp(pkmnToSave.curHp());
+        p.setAtk(pkmnToSave.atk());
+        p.setDef(pkmnToSave.def());
+        p.setSpa(pkmnToSave.spa());
+        p.setSpd(pkmnToSave.spd());
+        p.setSpe(pkmnToSave.spe());
+        p.setHpBaseStat(pkmnToSave.hpBase());
+        p.setAtkBaseStat(pkmnToSave.atkBase());
+        p.setDefBaseStat(pkmnToSave.defBase());
+        p.setSpaBaseStat(pkmnToSave.spaBase());
+        p.setSpdBaseStat(pkmnToSave.spdBase());
+        p.setSpeBaseStat(pkmnToSave.speBase());
+
         if(!errOccuredWhileAdding) {
             pokemonRepo.save(p);
         }
+        return addMsg;
+    }
+
+    public String addPokemonFromName(String pkmnName) {
+        PokemonDTO pkmn = pokeAPIService.populateRandomPokemonDTO(pkmnName);
+        String addMsg = addPokemon(pkmn);
         return addMsg;
     }
 

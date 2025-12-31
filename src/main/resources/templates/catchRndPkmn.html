@@ -1,4 +1,6 @@
 <div layout:decorate="~{layout}" layout:fragment="content">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <div class="is-flex is-flex-direction-column is-aling-items-center is-gap-3">
     <figure class="box image" style="width: 200px;">
       <img
@@ -16,14 +18,25 @@
 
 <script th:inline="javascript">
   async function tryCatchPkmn() {
+    const token = document.querySelector('meta[name="_csrf"]').content;
+    const header = document.querySelector('meta[name="_csrf_header"]').content;
     let encounterPkmnData = /*[[${encounterPkmn}]]*/ null;
+    console.log(encounterPkmnData);
     const encounter = document.getElementById("encounterPkmn");
     const encounterPkmnImgURL = encounter.src;
     const pokeBallImgURL =
       "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
     encounter.src = pokeBallImgURL;
     let isCatchSuccessful = await fetch(
-      `/tryCatchPkmn?name=${encounterPkmnData.apiName}`
+      "/tryCatchPkmn",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          [header]: token
+        },
+        body: JSON.stringify(encounterPkmnData)
+      }
     );
     let data = await isCatchSuccessful.json();
     if (data.catchSuccessful === true) {
