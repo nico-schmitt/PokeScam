@@ -1,0 +1,77 @@
+<div th:fragment="navbar">
+    <header>
+      <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-menu">
+          <div class="navbar-start">
+            <div class="tabs is-large is-toggle is-toggle-rounded">
+              <ul>
+                <li th:classappend="${currentPath == '/'} ? 'is-active' : ''">
+                  <a href="/">
+                    <span class="icon is-small"
+                      ><i class="fas fa-users"></i
+                    ></span>
+                    <span>Team</span>
+                  </a>
+                </li>
+                <li th:classappend="${currentPath.startsWith('/box')} ? 'is-active' : ''">
+                  <a href="/box">
+                    <span class="icon is-small"
+                      ><i class="fas fa-box"></i
+                    ></span>
+                    <span>Box</span>
+                  </a>
+                </li>
+                <li th:classappend="${currentPath.startsWith('/catch')} ? 'is-active' : ''">
+                  <a href="/catch">
+                    <span class="icon is-small"
+                      ><i class="fas fa-bullseye"></i
+                    ></span>
+                    <span>Catch</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <strong>You have 
+                <span class="icon">
+                  <i class="fa-solid fa-dollar-sign"></i>
+                </span>
+                [[${userCurrency}]]
+              </strong>
+            </div>
+            <div class="navbar-item">
+              <strong>You have 
+                <span class="icon">
+                  <i class="fa-solid fa-bolt-lightning"></i>
+                </span>
+                [[${userEnergy}]]
+              </strong>
+            </div>
+            <div class="navbar-item has-dropdown is-hoverable">
+              <a class="navbar-link">
+                [[#{change_lang}]]
+              </a>
+              <div class="navbar-dropdown">
+                <a href="?lang=en" class="navbar-item">
+                  [[#{en_lang_switch}]]
+                </a>
+                <a href="?lang=de" class="navbar-item">
+                  [[#{de_lang_switch}]]
+                </a>
+              </div>
+            </div>
+            <div class="navbar-item">
+              <div class="buttons">
+                <a class="button is-danger" href="/logout">
+                  <strong>Logout</strong>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+</div>

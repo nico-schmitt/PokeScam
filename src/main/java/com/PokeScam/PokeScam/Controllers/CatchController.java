@@ -31,7 +31,6 @@ public class CatchController {
         this.pokeAPIService = pokeAPIService;
     }
 
-
     @GetMapping("/catch")
     public String catchRndPkmn(Model m) {
         m.addAttribute("encounterPkmn", pokeAPIService.getRandomPokemon());

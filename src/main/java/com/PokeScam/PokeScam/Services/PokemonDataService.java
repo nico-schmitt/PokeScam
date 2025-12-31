@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
@@ -18,7 +19,9 @@ import com.PokeScam.PokeScam.Model.Box;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.PokemonRepository;
+import com.PokeScam.PokeScam.Repos.UserRepository;
 
+import groovyjarjarantlr4.v4.parse.ANTLRParser.elementOptions_return;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -27,15 +30,17 @@ public class PokemonDataService {
     public static final int POKEMON_TEAM_SIZE = 6;
 
     private final PokemonRepository pokemonRepo;
+    private final UserRepository userRepo;
     private final BoxService boxService;
     private final PokeAPIService pokeAPIService;
     private final CustomUserDetails userDetails;
 
-    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService, CustomUserDetails userDetails) {
+    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService, CustomUserDetails userDetails, UserRepository userRepo) {
         this.pokemonRepo = pokemonRepo;
         this.boxService = boxService;
         this.pokeAPIService = pokeAPIService;
         this.userDetails = userDetails;
+        this.userRepo = userRepo;
     }
 
     public List<PokemonDTO> getPkmnTeamInfo() {
@@ -142,8 +147,44 @@ public class PokemonDataService {
         pokemonRepo.saveAll(allPkmnInBox);
     }
 
-    public void adjustPkmnHealth(Pokemon pkmnToHeal, int adjustment) {
+    public int adjustPkmnHealth(Pokemon pkmnToHeal, int adjustment) {
+        int curHpBefore = pkmnToHeal.getCurHp();
         int newHealth = Math.clamp(pkmnToHeal.getCurHp()+adjustment, 0, pkmnToHeal.getMaxHp());
         pkmnToHeal.setCurHp(newHealth);
+        int curHpAfter = pkmnToHeal.getCurHp();
+        int actualHealAmount = curHpAfter - curHpBefore;
+        return actualHealAmount;
     }
+
+    public void adjustPkmnHealth(int id, int adjustment) {
+        pokemonRepo.findById(id).ifPresent(pkmn->{
+            adjustPkmnHealth(pkmn, adjustment);
+        });
+    }
+
+    public HealMsg healPkmnForCost(int id, int cost, int healAmount) {
+        User user = userDetails.getThisUser();
+        Pokemon pkmnToHeal = pokemonRepo.findByIdAndOwnerId(id, user);
+        HealMsg healMsg;
+
+        if(pkmnToHeal != null && user.getCurrency() >= cost) {
+            user.setCurrency(user.getCurrency()-cost);
+            userRepo.save(user);
+            int actualHealAmount = adjustPkmnHealth(pkmnToHeal, healAmount);
+            pokemonRepo.save(pkmnToHeal);
+            healMsg = new HealMsg(
+                String.format("Healed %s for %d", pkmnToHeal.getName(), actualHealAmount),
+                true
+            );
+        } else {
+            healMsg = new HealMsg(
+            "Not enough currency",
+            false
+            );
+        }
+
+        return healMsg;
+    }
+
+    public record HealMsg(String msg, boolean healSuccess) {}
 }

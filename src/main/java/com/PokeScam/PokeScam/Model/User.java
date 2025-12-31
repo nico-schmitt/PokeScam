@@ -29,6 +29,8 @@ public class User {
     private boolean isVerified;
     @Column(name="currency")
     private int currency;
+    @Column(name="energy")
+    private int energy;
     @Column(name="last_login")
     private Instant lastLogin;
     @Column(name="last_logout")

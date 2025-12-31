@@ -3,19 +3,19 @@ package com.PokeScam.PokeScam.Controllers;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Services.BoxService;
 import com.PokeScam.PokeScam.Services.PokeAPIService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
+import com.PokeScam.PokeScam.Services.PokemonDataService.HealMsg;
 
 import lombok.Data;
 
@@ -23,9 +23,12 @@ import lombok.Data;
 @Controller
 @RequestMapping("/pokemon")
 public class PokemonController {
+    @Value("${heal_cost}")
+    private int healCost;
+    @Value("${heal_amount}")
+    private int healAmount;
 
     private final BoxService boxService;
-
     private final PokemonDataService pkmnDataService;
     private final PokeAPIService pokeAPIService;
 
@@ -60,6 +63,14 @@ public class PokemonController {
         boxService.swapTeamPkmnToBox(swapRequest.teamPkmnToSwap, swapRequest.otherPkmnToSwap);
         return "redirect:/";
     }
+
+    @PostMapping("/healcost/{id}")
+    public String healPkmnById(@PathVariable int id, @RequestHeader(name="Referer", defaultValue = "/") String referer, RedirectAttributes redirectAttributes) {
+        HealMsg healMsg = pkmnDataService.healPkmnForCost(id, healCost, healAmount);
+        redirectAttributes.addFlashAttribute("healMsg", healMsg);
+        return "redirect:" + referer;
+    }
+    
     
     @Data
     public static class SwapRequest {
