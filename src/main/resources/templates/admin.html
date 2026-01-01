@@ -1,3 +1,21 @@
 <div layout:decorate="~{layout}" layout:fragment="content">
-  <p>aoeu</p>
+  <div class="panel">
+    <p class="panel-heading">Admin Board</p>
+
+      <form th:action="@{/admin/ban}" method="post" th:object="${user}">
+        <div class="field">
+          <label class="label" for="username">Ban User</label>
+          <input
+            th:field="*{username}"
+            class="input"
+            type="text"
+            placeholder="Username"
+          />
+        </div>
+        <div class="field">
+          <button class="button is-link" type="submit">Submit</button>
+        </div>
+      </form>
+    </main>
+  </div>
 </div>

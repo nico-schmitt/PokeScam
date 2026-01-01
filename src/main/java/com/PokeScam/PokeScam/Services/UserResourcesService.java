@@ -22,10 +22,10 @@ public class UserResourcesService {
     public void addResourcesByLastLogout(Instant lastLogout) {
         long secondsSinceLastLogout = Duration.between(lastLogout, Instant.now()).getSeconds();
         User user = userDetails.getThisUser();
-        int currencyToGive = user.getCurrency() + (int)secondsSinceLastLogout;
-        int energyToGive = user.getEnergy() + (int)secondsSinceLastLogout;
-        user.setCurrency(currencyToGive);
-        user.setEnergy(energyToGive);
+        int currencyToGive = Math.clamp((int)secondsSinceLastLogout, 0, 100);
+        int energyToGive = Math.clamp((int)secondsSinceLastLogout, 0, 100);
+        user.setCurrency(user.getCurrency() + currencyToGive);
+        user.setEnergy(user.getEnergy() + energyToGive);
 
         userRepo.save(user);
     }

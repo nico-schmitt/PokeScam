@@ -1,0 +1,30 @@
+<head>
+<title>
+    Error
+</title>
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
+/>
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+/>
+</head>
+
+<body class="is-flex">
+    <div class=" is-flex is-flex-direction-column is-justify-content-center is-align-items-center" style="flex: 1;">
+        <div class="block">
+            <h1 class="title is-1">Message</h1>
+            <p class="subtitle is-3">[[${message}]]</p>
+        </div>
+        <div class="block">
+            <h1 class="title is-1">Status Code</h1>
+            <p class="subtitle is-3">[[${statusCode}]]</p>
+        </div>
+        <div class="block">
+            <h1 class="title is-1">Exception</h1>
+            <p class="subtitle is-3">[[${exception}]]</p>
+        </div>
+    </div>
+</body>
