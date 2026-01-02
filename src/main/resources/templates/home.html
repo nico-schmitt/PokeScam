@@ -23,7 +23,7 @@
   <div class="fixed-grid">
     <div class="grid">
       <div th:each="pkmn : ${pkmnTeam}">
-        <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmn}, enableModal=true)}"></div>
+        <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmn}, enableModal=${pkmn.apiName != ''})}"></div>
       </div>
     </div>
   </div>

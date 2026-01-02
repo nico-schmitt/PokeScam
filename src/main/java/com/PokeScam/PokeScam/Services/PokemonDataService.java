@@ -104,6 +104,10 @@ public class PokemonDataService {
         p.setSpaBaseStat(pkmnToSave.spaBase());
         p.setSpdBaseStat(pkmnToSave.spdBase());
         p.setSpeBaseStat(pkmnToSave.speBase());
+        p.setMove1(pkmnToSave.move1());
+        p.setMove2(pkmnToSave.move2());
+        p.setMove3(pkmnToSave.move3());
+        p.setMove4(pkmnToSave.move4());
 
         if(!errOccuredWhileAdding) {
             pokemonRepo.save(p);
@@ -141,6 +145,8 @@ public class PokemonDataService {
     }
 
     public void healPkmnByLastLogout(Instant lastLogout) {
+        if(lastLogout == null)
+            return;
         long secondsSinceLastLogout = Duration.between(lastLogout, Instant.now()).getSeconds();
         List<Pokemon> allPkmnInBox = pokemonRepo.findByOwnerIdAndInBox(userDetails.getThisUser(), true);
         int amountToHealBy = (int)secondsSinceLastLogout;

@@ -1,7 +1,10 @@
 package com.PokeScam.PokeScam.Services;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,7 +40,8 @@ public class PokeAPIService {
             pkmnToUse.getLevel(), pkmnToUse.getExp(),
             pkmnToUse.getMaxHp(), pkmnToUse.getCurHp(),
             pkmnToUse.getAtk(), pkmnToUse.getDef(), pkmnToUse.getSpa(), pkmnToUse.getSpd(), pkmnToUse.getSpe(),
-            pkmnToUse.getAtkBaseStat(), pkmnToUse.getDefBaseStat(), pkmnToUse.getSpaBaseStat(), pkmnToUse.getSpdBaseStat(), pkmnToUse.getSpeBaseStat(), pkmnToUse.getHpBaseStat()
+            pkmnToUse.getAtkBaseStat(), pkmnToUse.getDefBaseStat(), pkmnToUse.getSpaBaseStat(), pkmnToUse.getSpdBaseStat(), pkmnToUse.getSpeBaseStat(), pkmnToUse.getHpBaseStat(),
+            pkmnToUse.getMove1(), pkmnToUse.getMove2(), pkmnToUse.getMove3(), pkmnToUse.getMove4()
         );
     }
 
@@ -59,7 +63,8 @@ public class PokeAPIService {
             pokemonCalcService.calcPkmnSpa(apiData.spa_baseStat),
             pokemonCalcService.calcPkmnSpd(apiData.spd_baseStat),
             pokemonCalcService.calcPkmnSpe(apiData.spe_baseStat),
-            apiData.atk_baseStat, apiData.def_baseStat, apiData.spa_baseStat, apiData.spd_baseStat, apiData.spe_baseStat, apiData.hp_baseStat
+            apiData.atk_baseStat, apiData.def_baseStat, apiData.spa_baseStat, apiData.spd_baseStat, apiData.spe_baseStat, apiData.hp_baseStat,
+            apiData.move1, apiData.move2, apiData.move3, apiData.move4
         );
     }
 
@@ -79,12 +84,28 @@ public class PokeAPIService {
         int spd_baseStat = pokemonData.stats.stream().filter(stats->"special-defense".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
         int spe_baseStat = pokemonData.stats.stream().filter(stats->"speed".equals(stats.stat.name)).mapToInt(stats->stats.base_stat).findFirst().orElse(0);
 
+        List<String> randomMoves = getRandomMoves(pokemonData);
+        String move1 = randomMoves.get(0);
+        String move2 = randomMoves.get(1);
+        String move3 = randomMoves.get(2);
+        String move4 = randomMoves.get(3);
+
         return new PokemonAPIDTOHelper(
             name,
             sprite,
             description,
-            atk_baseStat, def_baseStat, spa_baseStat, spd_baseStat, spe_baseStat, hp_baseStat
+            atk_baseStat, def_baseStat, spa_baseStat, spd_baseStat, spe_baseStat, hp_baseStat,
+            move1, move2, move3, move4
         );
+    }
+
+    private List<String> getRandomMoves(PokeAPIDTO_PokemonData pokemonData) {
+        final int moveAmount = 4;
+        List<String> randomMoves = new ArrayList<>(pokemonData.moves.stream().map(move->move.move.name).toList());
+        System.out.println(randomMoves);
+        System.out.println("\n\n\n");
+        Collections.shuffle(randomMoves);
+        return randomMoves.stream().limit(moveAmount).toList();
     }
 
     public PokemonDTO getRandomPokemon() {
@@ -105,12 +126,14 @@ public class PokeAPIService {
             .block();
     }
 
-   public record PokeAPIDTO_PokemonData(Sprites sprites, Species species, List<Stat> stats) {}
+   public record PokeAPIDTO_PokemonData(Sprites sprites, Species species, List<Stat> stats, List<Move> moves) {}
    public record PokeAPIDTO_PokemonSpeciesData(List<Name> names, List<FlavorText> flavor_text_entries) {}
 
    public record Sprites(String front_default) {}
    public record Stat(int base_stat, StatInfo stat) {}
    public record StatInfo(String name) {}
+   public record Move(MoveInfo move) {}
+   public record MoveInfo(String name) {}
    public record Name(Language language, String name) {}
    public record Species(String name) {}
    public record FlavorText(String flavor_text, Language language) {}
@@ -118,6 +141,7 @@ public class PokeAPIService {
 
    public record PokemonAPIDTOHelper(
         String displayName, String spriteURL, String flavorText,
-        int atk_baseStat, int def_baseStat, int spa_baseStat, int spd_baseStat, int spe_baseStat, int hp_baseStat
+        int atk_baseStat, int def_baseStat, int spa_baseStat, int spd_baseStat, int spe_baseStat, int hp_baseStat,
+        String move1, String move2, String move3, String move4
     ) {}
 }

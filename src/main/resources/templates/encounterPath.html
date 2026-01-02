@@ -1,0 +1,36 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center is-gap-3">
+    <div class="is-flex is-gap-5">
+      <form th:action="@{/encounterPath/start}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="button is-info">Start Path</button>
+      </form>
+      <form th:action="@{/encounterPath/reset}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="button is-danger">Reset Path</button>
+      </form>
+    </div>
+
+    <div style="position: relative;" th:if="${encounterList}">
+      <div style="position: absolute; height: 10px; width: 100%; top: 50%; transform: translateY(-50%); background-color: #7b561f; z-index: -1;"></div>
+      <div class="is-flex" style="gap: 80px;">
+        <div th:each="encounter : ${encounterList}">
+          <a th:href="@{/encounterPath/{encounterOrder}(encounterOrder=${encounter.order})}" style="color: inherit;" th:classappend="${encounter.order <= encounterProgress} ? '' : ' not-clickable'">
+            <span class="icon" th:classappend="${encounter.order <= encounterProgress} ? ' has-background-warning' : ' has-background-dark'" style="padding: 4rem; border-radius: 1rem;">
+              <i class="fas fa-5x" th:classappend="${encounter.isPokemon} ? ' fa-dog' : ' fa-user'"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <style>
+    .not-clickable {
+      cursor: default;
+      pointer-events: none;
+    }
+  </style>
+</div>

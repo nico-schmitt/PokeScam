@@ -11,7 +11,8 @@ public record PokemonDTO(
     int level, int exp,
     int maxHp, int curHp,
     int atk, int def, int spa, int spd, int spe,
-    int atkBase, int defBase, int spaBase, int spdBase, int speBase, int hpBase
+    int atkBase, int defBase, int spaBase, int spdBase, int speBase, int hpBase,
+    String move1, String move2, String move3, String move4
 ) {
     public static PokemonDTO getEmpty() {
         return new PokemonDTO(
@@ -24,7 +25,8 @@ public record PokemonDTO(
             0, 0,
             0, 0,
             0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0
+            0, 0, 0, 0, 0, 0,
+            "", "", "", ""
         );
     }
 }

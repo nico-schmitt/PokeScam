@@ -37,6 +37,14 @@
                     <span>Shop</span>
                   </a>
                 </li>
+                <li th:classappend="${currentPath.startsWith('/encounterPath')} ? 'is-active' : ''">
+                  <a href="/encounterPath">
+                    <span class="icon is-small"
+                      ><i class="fas fa-crosshairs"></i
+                    ></span>
+                    <span>Encounter</span>
+                  </a>
+                </li>
                 <li th:classappend="${currentPath.startsWith('/admin')} ? 'is-active' : ''" sec:authorize="hasRole('ADMIN')">
                   <a href="/admin">
                     <span class="icon is-small"

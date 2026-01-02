@@ -1,0 +1,26 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <a href="/encounterPath">
+    <button class="button is-info">Return to path</button>
+  </a>
+
+  <div class="is-flex is-justify-content-center is-align-items-center mt-3" style="gap: 200px;">
+    <div class="fixed-grid" style="width: 400px;">
+      <div class="grid">
+        <button class="button">[[${activePkmn.move1}]]</button>
+        <button class="button">[[${activePkmn.move2}]]</button>
+        <button class="button">[[${activePkmn.move3}]]</button>
+        <button class="button">[[${activePkmn.move4}]]</button>
+      </div>
+    </div>
+    <div class="fixed-grid" style="width: 400px;">
+      <div class="grid">
+        <div th:each="pkmn, iter : ${pkmnTeam}">
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmn}, showHp=true, isActivePkmn=${activePkmnIdx==iter.index})}"></div>
+        </div>
+      </div>
+    </div>
+    <div th:each="pkmnToFight : ${encounterList}">
+      <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight}, showHp=true)}"></div>
+    </div>
+  </div>
+</div>

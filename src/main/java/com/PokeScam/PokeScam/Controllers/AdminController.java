@@ -47,5 +47,4 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
         return "redirect:/admin";
     }
-    
 }

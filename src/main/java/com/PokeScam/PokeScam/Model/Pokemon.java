@@ -59,4 +59,12 @@ public class Pokemon {
     private int speBaseStat;
     @Column(name="hp_base_stat")
     private int hpBaseStat;
+    @Column(name="move1")
+    private String move1;
+    @Column(name="move2")
+    private String move2;
+    @Column(name="move3")
+    private String move3;
+    @Column(name="move4")
+    private String move4;
 }

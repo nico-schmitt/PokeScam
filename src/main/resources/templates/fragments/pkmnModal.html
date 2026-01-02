@@ -28,19 +28,27 @@
             </div>
           </div>
         </div>
-        <div class="tags mt-3">
-          <div class="tags are-medium has-addons"><span class="tag is-danger">Atk</span><span class="tag">[[${pkmnInfo.atk}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-info">Def</span><span class="tag">[[${pkmnInfo.def}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-dark">Spa</span><span class="tag">[[${pkmnInfo.spa}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-primary">Spd</span><span class="tag">[[${pkmnInfo.spd}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-warning">Spe</span><span class="tag">[[${pkmnInfo.spe}]]</span></div>
+        <p class="subtitle">Moves</p>
+        <div class="tags are-medium">
+          <span class="tag is-info">[[${pkmnInfo.move1}]]</span>
+          <span class="tag is-info">[[${pkmnInfo.move3}]]</span>
+          <span class="tag is-info">[[${pkmnInfo.move3}]]</span>
+          <span class="tag is-info">[[${pkmnInfo.move4}]]</span>
         </div>
-        <div class="tags">
-          <div class="tags are-medium has-addons"><span class="tag is-danger">Base Atk</span><span class="tag">[[${pkmnInfo.atkBase}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-info">Base Def</span><span class="tag">[[${pkmnInfo.defBase}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-dark">Base Spa</span><span class="tag">[[${pkmnInfo.spaBase}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-primary">Base Spd</span><span class="tag">[[${pkmnInfo.spdBase}]]</span></div>
-          <div class="tags are-medium has-addons"><span class="tag is-warning">Base Spe</span><span class="tag">[[${pkmnInfo.speBase}]]</span></div>
+        <p class="subtitle">Stats</p>
+        <div class="tags are-medium">
+          <div class="tags has-addons"><span class="tag is-danger">Atk</span><span class="tag">[[${pkmnInfo.atk}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-info">Def</span><span class="tag">[[${pkmnInfo.def}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-dark">Spa</span><span class="tag">[[${pkmnInfo.spa}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-primary">Spd</span><span class="tag">[[${pkmnInfo.spd}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-warning">Spe</span><span class="tag">[[${pkmnInfo.spe}]]</span></div>
+        </div>
+        <div class="tags are-medium">
+          <div class="tags has-addons"><span class="tag is-danger">Base Atk</span><span class="tag">[[${pkmnInfo.atkBase}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-info">Base Def</span><span class="tag">[[${pkmnInfo.defBase}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-dark">Base Spa</span><span class="tag">[[${pkmnInfo.spaBase}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-primary">Base Spd</span><span class="tag">[[${pkmnInfo.spdBase}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-warning">Base Spe</span><span class="tag">[[${pkmnInfo.speBase}]]</span></div>
         </div>
         <p class="subtitle is-3" th:text="${pkmnInfo.flavorText}"></p>
       </section>

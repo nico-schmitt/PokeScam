@@ -20,6 +20,8 @@ public class UserResourcesService {
     }
 
     public void addResourcesByLastLogout(Instant lastLogout) {
+        if(lastLogout == null)
+            return;
         long secondsSinceLastLogout = Duration.between(lastLogout, Instant.now()).getSeconds();
         User user = userDetails.getThisUser();
         int currencyToGive = Math.clamp((int)secondsSinceLastLogout, 0, 100);

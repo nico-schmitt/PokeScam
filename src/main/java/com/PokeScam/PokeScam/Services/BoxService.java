@@ -72,11 +72,13 @@ public class BoxService {
     public void swapTeamPkmnToBox(int teamPkmnToSwap, int otherPkmnToSwap) {
         Pokemon teamPkmn = pokemonRepo.findByIdAndOwnerId(teamPkmnToSwap, userDetails.getThisUser());
         Pokemon otherPkmn = pokemonRepo.findByIdAndOwnerId(otherPkmnToSwap, userDetails.getThisUser());
-        teamPkmn.setInBox(true);
-        teamPkmn.setBoxId(otherPkmn.getBoxId());
+        if(teamPkmn != null) {
+            teamPkmn.setInBox(true);
+            teamPkmn.setBoxId(otherPkmn.getBoxId());
+            pokemonRepo.save(teamPkmn);
+        }
         otherPkmn.setInBox(false);
         otherPkmn.setBoxId(null);
-        pokemonRepo.save(teamPkmn);
         pokemonRepo.save(otherPkmn);
         pokemonRepo.flush();
     }
