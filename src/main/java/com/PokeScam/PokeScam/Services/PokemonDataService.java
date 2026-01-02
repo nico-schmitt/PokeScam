@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
+import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_AllStats;
 import com.PokeScam.PokeScam.Model.Box;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
@@ -93,21 +94,22 @@ public class PokemonDataService {
         p.setExp(pkmnToSave.exp());
         p.setMaxHp(pkmnToSave.maxHp());
         p.setCurHp(pkmnToSave.curHp());
-        p.setAtk(pkmnToSave.atk());
-        p.setDef(pkmnToSave.def());
-        p.setSpa(pkmnToSave.spa());
-        p.setSpd(pkmnToSave.spd());
-        p.setSpe(pkmnToSave.spe());
-        p.setHpBaseStat(pkmnToSave.hpBase());
-        p.setAtkBaseStat(pkmnToSave.atkBase());
-        p.setDefBaseStat(pkmnToSave.defBase());
-        p.setSpaBaseStat(pkmnToSave.spaBase());
-        p.setSpdBaseStat(pkmnToSave.spdBase());
-        p.setSpeBaseStat(pkmnToSave.speBase());
-        p.setMove1(pkmnToSave.move1());
-        p.setMove2(pkmnToSave.move2());
-        p.setMove3(pkmnToSave.move3());
-        p.setMove4(pkmnToSave.move4());
+
+        p.setAtk(pkmnToSave.allStats().atk().statValue());
+        p.setDef(pkmnToSave.allStats().def().statValue());
+        p.setSpa(pkmnToSave.allStats().spa().statValue());
+        p.setSpd(pkmnToSave.allStats().spd().statValue());
+        p.setSpe(pkmnToSave.allStats().spe().statValue());
+        p.setHpBaseStat(pkmnToSave.allStats().hp().baseStat());
+        p.setAtkBaseStat(pkmnToSave.allStats().atk().baseStat());
+        p.setDefBaseStat(pkmnToSave.allStats().def().baseStat());
+        p.setSpaBaseStat(pkmnToSave.allStats().spa().baseStat());
+        p.setSpdBaseStat(pkmnToSave.allStats().spd().baseStat());
+        p.setSpeBaseStat(pkmnToSave.allStats().spe().baseStat());
+        p.setMove1(pkmnToSave.allMoves().move1().apiName());
+        p.setMove2(pkmnToSave.allMoves().move2().apiName());
+        p.setMove3(pkmnToSave.allMoves().move3().apiName());
+        p.setMove4(pkmnToSave.allMoves().move4().apiName());
 
         if(!errOccuredWhileAdding) {
             pokemonRepo.save(p);

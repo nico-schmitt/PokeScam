@@ -57,6 +57,7 @@ public class EncounterController {
         m.addAttribute("encounterList", encounterService.getEncounterAtIdx(encounterIdx));
         m.addAttribute("activePkmnIdx", sessionData.getActivePkmnIdx());
         m.addAttribute("activePkmn", pkmnTeamInfo.get(sessionData.getActivePkmnIdx()));
+        System.out.println(pkmnTeamInfo.get(sessionData.getActivePkmnIdx()) + "\n\n\n\n\n");
         return "encounterBattle";
     }
 }

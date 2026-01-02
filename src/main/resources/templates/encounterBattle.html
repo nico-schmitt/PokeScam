@@ -6,10 +6,10 @@
   <div class="is-flex is-justify-content-center is-align-items-center mt-3" style="gap: 200px;">
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
-        <button class="button">[[${activePkmn.move1}]]</button>
-        <button class="button">[[${activePkmn.move2}]]</button>
-        <button class="button">[[${activePkmn.move3}]]</button>
-        <button class="button">[[${activePkmn.move4}]]</button>
+        <button class="button" onclick=damage(event) th:data-movename="${activePkmn.allMoves.move1.apiName}">[[${activePkmn.allMoves.move1.displayName}]]</button>
+        <button class="button" onclick=damage(event) th:data-movename="${activePkmn.allMoves.move2.apiName}">[[${activePkmn.allMoves.move2.displayName}]]</button>
+        <button class="button" onclick=damage(event) th:data-movename="${activePkmn.allMoves.move3.apiName}">[[${activePkmn.allMoves.move3.displayName}]]</button>
+        <button class="button" onclick=damage(event) th:data-movename="${activePkmn.allMoves.move4.apiName}">[[${activePkmn.allMoves.move4.displayName}]]</button>
       </div>
     </div>
     <div class="fixed-grid" style="width: 400px;">
@@ -24,3 +24,37 @@
     </div>
   </div>
 </div>
+
+<script th:inline="javascript">
+  async function damage(event) {
+    console.log(event.target.dataset.movename)
+    // const token = document.querySelector('meta[name="_csrf"]').content;
+    // const header = document.querySelector('meta[name="_csrf_header"]').content;
+    // let encounterPkmnData = /*[[${encounterPkmn}]]*/ null;
+    // console.log(encounterPkmnData);
+    // const encounter = document.getElementById("encounterPkmn");
+    // const encounterPkmnImgURL = encounter.src;
+    // const pokeBallImgURL =
+    //   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
+    // encounter.src = pokeBallImgURL;
+    // let isCatchSuccessful = await fetch(
+    //   "/tryCatchPkmn",
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       [header]: token
+    //     },
+    //     body: JSON.stringify(encounterPkmnData)
+    //   }
+    // );
+    // let data = await isCatchSuccessful.json();
+    // if (data.catchSuccessful === true) {
+    //   encounter.style.filter = "brightness(50%)";
+    //   document.getElementById("helpText").innerHTML = data.addMsg;
+    //   document.getElementById("catchButton").disabled = true;
+    // } else {
+    //   encounter.src = encounterPkmnImgURL;
+    // }
+  }
+</script>
