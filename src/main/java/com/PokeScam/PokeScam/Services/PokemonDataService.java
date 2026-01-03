@@ -106,10 +106,10 @@ public class PokemonDataService {
         p.setSpaBaseStat(pkmnToSave.allStats().spa().baseStat());
         p.setSpdBaseStat(pkmnToSave.allStats().spd().baseStat());
         p.setSpeBaseStat(pkmnToSave.allStats().spe().baseStat());
-        p.setMove1(pkmnToSave.allMoves().move1().apiName());
-        p.setMove2(pkmnToSave.allMoves().move2().apiName());
-        p.setMove3(pkmnToSave.allMoves().move3().apiName());
-        p.setMove4(pkmnToSave.allMoves().move4().apiName());
+        p.setMove1(pkmnToSave.allMoves().moves().get(0).apiName());
+        p.setMove2(pkmnToSave.allMoves().moves().get(1).apiName());
+        p.setMove3(pkmnToSave.allMoves().moves().get(2).apiName());
+        p.setMove4(pkmnToSave.allMoves().moves().get(3).apiName());
 
         if(!errOccuredWhileAdding) {
             pokemonRepo.save(p);
@@ -156,11 +156,11 @@ public class PokemonDataService {
         pokemonRepo.saveAll(allPkmnInBox);
     }
 
-    public int adjustPkmnHealth(Pokemon pkmnToHeal, int adjustment) {
-        int curHpBefore = pkmnToHeal.getCurHp();
-        int newHealth = Math.clamp(pkmnToHeal.getCurHp()+adjustment, 0, pkmnToHeal.getMaxHp());
-        pkmnToHeal.setCurHp(newHealth);
-        int curHpAfter = pkmnToHeal.getCurHp();
+    public int adjustPkmnHealth(Pokemon pkmnToAdjust, int adjustment) {
+        int curHpBefore = pkmnToAdjust.getCurHp();
+        int newHealth = Math.clamp(pkmnToAdjust.getCurHp()+adjustment, 0, pkmnToAdjust.getMaxHp());
+        pkmnToAdjust.setCurHp(newHealth);
+        int curHpAfter = pkmnToAdjust.getCurHp();
         int actualHealAmount = curHpAfter - curHpBefore;
         return actualHealAmount;
     }

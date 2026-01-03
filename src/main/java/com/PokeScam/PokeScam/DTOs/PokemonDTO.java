@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.DTOs;
 
+import java.util.List;
 
 public record PokemonDTO(
     int id,
@@ -30,6 +31,6 @@ public record PokemonDTO(
 
     public record PokemonDTO_AllStats(PokemonDTO_StatInfo hp, PokemonDTO_StatInfo atk, PokemonDTO_StatInfo def, PokemonDTO_StatInfo spa, PokemonDTO_StatInfo spd, PokemonDTO_StatInfo spe) {}
     public record PokemonDTO_StatInfo(int baseStat, int statValue, String name) {}
-    public record PokemonDTO_AllMoves(PokemonDTO_MoveInfo move1, PokemonDTO_MoveInfo move2, PokemonDTO_MoveInfo move3, PokemonDTO_MoveInfo move4) {}
-    public record PokemonDTO_MoveInfo(String apiName, String displayName, int power) {}
+    public record PokemonDTO_AllMoves(List<PokemonDTO_MoveInfo> moves) {}
+    public record PokemonDTO_MoveInfo(String apiName, String displayName, String damageClass, int power, int accuracy, int pp) {}
 }

@@ -7,7 +7,11 @@
     </div>
     <div th:if="${showHp}" class="tags are-medium has-addons">
       <span class="tag is-success">Hp</span>
-      <span class="tag">[[${pkmnInfo.curHp}]]/[[${pkmnInfo.maxHp}]]</span>
+      <span class="tag" >
+        <span th:id="${isActivePkmn} ? 'activePkmnHp' : (${giveIdOfEnemyHp} ? 'enemyHp')">[[${pkmnInfo.curHp}]]</span>
+        /
+        [[${pkmnInfo.maxHp}]]
+      </span>
     </div>
   </div>
 

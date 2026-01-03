@@ -7,9 +7,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.PokeScam.PokeScam.SessionData;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
+import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_MoveInfo;
 import com.PokeScam.PokeScam.Services.EncounterService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
 
@@ -60,4 +62,13 @@ public class EncounterController {
         System.out.println(pkmnTeamInfo.get(sessionData.getActivePkmnIdx()) + "\n\n\n\n\n");
         return "encounterBattle";
     }
+
+    @PostMapping("/encounter/dealDamage")
+    @ResponseBody
+    public BattleInfo dealDamage(@RequestBody PokemonDTO_MoveInfo moveInfo) {
+        // return String.valueOf(moveInfo.power());
+        return new BattleInfo(moveInfo.power());
+    }
+
+    private record BattleInfo(int damage) {}
 }

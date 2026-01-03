@@ -46,11 +46,14 @@ public class PokeAPIService {
             new PokemonDTO_StatInfo(pkmnToUse.getSpeBaseStat(), pkmnToUse.getSpe(), "SPE")
         );
         PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(
-            new PokemonDTO_MoveInfo(apiData.allMoves.move1.apiName, apiData.allMoves.move1.displayName, apiData.allMoves.move1.power),
-            new PokemonDTO_MoveInfo(apiData.allMoves.move2.apiName, apiData.allMoves.move2.displayName, apiData.allMoves.move2.power),
-            new PokemonDTO_MoveInfo(apiData.allMoves.move3.apiName, apiData.allMoves.move3.displayName, apiData.allMoves.move3.power),
-            new PokemonDTO_MoveInfo(apiData.allMoves.move4.apiName, apiData.allMoves.move4.displayName, apiData.allMoves.move4.power)
+            List.of(
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(0)),
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(1)),
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(2)),
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(3))
+            )
         );
+
         return new PokemonDTO(
             pkmnToUse.getId(),
             pkmnToUse.isInBox(),
@@ -76,10 +79,12 @@ public class PokeAPIService {
             new PokemonDTO_StatInfo(apiData.allStats.spe.baseStat, pokemonCalcService.calcPkmnSpe(apiData.allStats.spe.baseStat), "SPE")
         );
         PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(
-            new PokemonDTO_MoveInfo(apiData.allMoves.move1.apiName, apiData.allMoves.move1.displayName, apiData.allMoves.move1.power),
-            new PokemonDTO_MoveInfo(apiData.allMoves.move2.apiName, apiData.allMoves.move2.displayName, apiData.allMoves.move2.power),
-            new PokemonDTO_MoveInfo(apiData.allMoves.move3.apiName, apiData.allMoves.move3.displayName, apiData.allMoves.move3.power),
-            new PokemonDTO_MoveInfo(apiData.allMoves.move4.apiName, apiData.allMoves.move4.displayName, apiData.allMoves.move4.power)
+            List.of(
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(0)),
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(1)),
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(2)),
+                populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(3))
+            )
         );
 
         return new PokemonDTO(
@@ -95,6 +100,17 @@ public class PokeAPIService {
             pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat),
             allStats,
             allMoves
+        );
+    }
+
+    private PokemonDTO_MoveInfo populatePokemonDTOAllMovesInfo(AllMoveInfo allMoveInfo) {
+        return new PokemonDTO_MoveInfo(
+            allMoveInfo.apiName,
+            allMoveInfo.displayName,
+            allMoveInfo.damageClass,
+            allMoveInfo.power,
+            allMoveInfo.accuracy,
+            allMoveInfo.pp
         );
     }
 
@@ -124,29 +140,37 @@ public class PokeAPIService {
             apiMovesLookup == null 
                 ? getMovesInfo(pokemonData, null)
                 : getMovesInfo(pokemonData, List.of(apiMovesLookup.move1, apiMovesLookup.move2, apiMovesLookup.move3, apiMovesLookup.move4));
-        String move1_apiName = moves.get(0).name;
-        String move2_apiName = moves.get(1).name;
-        String move3_apiName = moves.get(2).name;
-        String move4_apiName = moves.get(3).name;
-        PokeAPIDTO_PokemonMoveData pokemonMoveData1 = normalWebClient.get().uri(moves.get(0).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class).block();
-        PokeAPIDTO_PokemonMoveData pokemonMoveData2 = normalWebClient.get().uri(moves.get(1).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class).block();
-        PokeAPIDTO_PokemonMoveData pokemonMoveData3 = normalWebClient.get().uri(moves.get(2).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class).block();
-        PokeAPIDTO_PokemonMoveData pokemonMoveData4 = normalWebClient.get().uri(moves.get(3).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class).block();
-        String move1_displayName = pokemonMoveData1.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("No name");
-        String move2_displayName = pokemonMoveData2.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("No name");
-        String move3_displayName = pokemonMoveData3.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("No name");
-        String move4_displayName = pokemonMoveData4.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("No name");
-        int move1_power = pokemonMoveData1.power.orElse(0);
-        int move2_power = pokemonMoveData2.power.orElse(0);
-        int move3_power = pokemonMoveData3.power.orElse(0);
-        int move4_power = pokemonMoveData4.power.orElse(0);
+        Mono<PokeAPIDTO_PokemonMoveData> pokemonMoveData1_mono = normalWebClient.get().uri(moves.get(0).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class);
+        Mono<PokeAPIDTO_PokemonMoveData> pokemonMoveData2_mono = normalWebClient.get().uri(moves.get(1).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class);
+        Mono<PokeAPIDTO_PokemonMoveData> pokemonMoveData3_mono = normalWebClient.get().uri(moves.get(2).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class);
+        Mono<PokeAPIDTO_PokemonMoveData> pokemonMoveData4_mono = normalWebClient.get().uri(moves.get(3).url).retrieve().bodyToMono(PokeAPIDTO_PokemonMoveData.class);
+        List<AllMoveInfo> allMoveInfo = Mono.zip(pokemonMoveData1_mono, pokemonMoveData2_mono, pokemonMoveData3_mono, pokemonMoveData4_mono).map(tuple->{
+            return List.of(
+                getMoveData(tuple.getT1(), languageToUse),
+                getMoveData(tuple.getT2(), languageToUse),
+                getMoveData(tuple.getT3(), languageToUse),
+                getMoveData(tuple.getT4(), languageToUse)
+            );
+        }).block();
         AllMoves allMoves = new AllMoves(
-            new AllMoveInfo(move1_apiName, move1_displayName, move1_power),
-            new AllMoveInfo(move2_apiName, move2_displayName, move2_power),
-            new AllMoveInfo(move3_apiName, move3_displayName, move3_power),
-            new AllMoveInfo(move4_apiName, move4_displayName, move4_power)
+            List.of(
+                allMoveInfo.get(0),
+                allMoveInfo.get(1),
+                allMoveInfo.get(2),
+                allMoveInfo.get(3)
+            )
         );
         return allMoves;
+    }
+
+    private AllMoveInfo getMoveData(PokeAPIDTO_PokemonMoveData moveData, String languageToUse) {
+        String apiName = moveData.name;
+        String displayName = moveData.names.stream().filter(names->languageToUse.equals(names.language.name)).map(names->names.name).findFirst().orElse("No name");
+        String damageClass = moveData.damage_class.name;
+        int power = moveData.power.orElse(0);
+        int accuracy = moveData.accuracy.orElse(0);
+        int pp = moveData.pp.orElse(0);
+        return new AllMoveInfo(apiName, displayName, damageClass, power, accuracy, pp);
     }
 
     private AllStats getAllStats(PokeAPIDTO_PokemonData pokemonData) {
@@ -204,7 +228,7 @@ public class PokeAPIService {
 
    public record PokeAPIDTO_PokemonData(Sprites sprites, Species species, List<Stat> stats, List<Move> moves) {}
    public record PokeAPIDTO_PokemonSpeciesData(List<Name> names, List<FlavorText> flavor_text_entries) {}
-   public record PokeAPIDTO_PokemonMoveData(OptionalInt power, List<Name> names, DamageClass damage_class) {}
+   public record PokeAPIDTO_PokemonMoveData(String name, List<Name> names, DamageClass damage_class, OptionalInt power, OptionalInt accuracy, OptionalInt pp) {}
 
    public record Sprites(String front_default) {}
    public record Stat(int base_stat, StatInfo stat) {}
@@ -227,6 +251,6 @@ public class PokeAPIService {
 
     public record AllStats(AllStatInfo hp, AllStatInfo atk, AllStatInfo def, AllStatInfo spa, AllStatInfo spd, AllStatInfo spe) {}
     public record AllStatInfo(int baseStat) {}
-    public record AllMoves(AllMoveInfo move1, AllMoveInfo move2, AllMoveInfo move3, AllMoveInfo move4) {}
-    public record AllMoveInfo(String apiName, String displayName, int power) {}
+    public record AllMoves(List<AllMoveInfo> moves) {}
+    public record AllMoveInfo(String apiName, String displayName, String damageClass, int power, int accuracy, int pp) {}
 }

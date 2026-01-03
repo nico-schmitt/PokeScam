@@ -30,10 +30,9 @@
         </div>
         <p class="subtitle">Moves</p>
         <div class="tags are-medium">
-          <span class="tag is-info">[[${pkmnInfo.allMoves.move1.displayName}]]</span>
-          <span class="tag is-info">[[${pkmnInfo.allMoves.move2.displayName}]]</span>
-          <span class="tag is-info">[[${pkmnInfo.allMoves.move3.displayName}]]</span>
-          <span class="tag is-info">[[${pkmnInfo.allMoves.move4.displayName}]]</span>
+          <div th:each="moveInfo : ${pkmnInfo.allMoves.moves}">
+            <span class="tag is-info">[[${moveInfo.displayName}]]</span>
+          </div>
         </div>
         <p class="subtitle">Stats</p>
         <div class="tags are-medium">
@@ -49,6 +48,7 @@
           <div class="tags has-addons"><span class="tag is-dark">Base Spa</span><span class="tag">[[${pkmnInfo.allStats.spa.baseStat}]]</span></div>
           <div class="tags has-addons"><span class="tag is-primary">Base Spd</span><span class="tag">[[${pkmnInfo.allStats.spd.baseStat}]]</span></div>
           <div class="tags has-addons"><span class="tag is-warning">Base Spe</span><span class="tag">[[${pkmnInfo.allStats.spe.baseStat}]]</span></div>
+          <div class="tags has-addons"><span class="tag is-success">Base Hp</span><span class="tag">[[${pkmnInfo.allStats.hp.baseStat}]]</span></div>
         </div>
         <p class="subtitle is-3" th:text="${pkmnInfo.flavorText}"></p>
       </section>
