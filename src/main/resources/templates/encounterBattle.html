@@ -9,19 +9,19 @@
   <div class="is-flex is-justify-content-center is-align-items-center mt-3" style="gap: 200px;">
     <div class="is-flex is-flex-direction-column is-align-items-center">
       <div class="box">
-        <p class="subtitle">[[${activePkmn.displayName}]]</p>
+        <p class="subtitle">[[${activePkmn.pkmn.displayName}]]</p>
         <div class="field is-grouped is-grouped-multiline">
           <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${activePkmn.level}]]</span></div>
+            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${activePkmn.pkmn.level}]]</span></div>
           </div>
           <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${activePkmn.curHp}]]/[[${activePkmn.maxHp}]]</span></div>
+            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${activePkmn.pkmn.curHp}]]/[[${activePkmn.pkmn.maxHp}]]</span></div>
           </div>
         </div>
       </div>
       <div class="fixed-grid" style="width: 400px;">
         <div class="grid">
-          <div th:each="moveInfo, iter : ${activePkmn.allMoves.moves}">
+          <div th:each="moveInfo, iter : ${activePkmn.pkmn.allMoves.moves}">
             <div class="is-flex is-flex-direction-column is-align-items-center">
               <form th:action="@{/encounter/executeTurn(moveIdx=${iter.count})}" method="post" class="mt-5">
                 <div class="field">
@@ -46,27 +46,31 @@
           </div>
         </div>
       </div>
-
     </div>
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
-        <div th:each="pkmn, iter : ${pkmnTeam}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmn}, showHp=true, showLvl=true, isActivePkmn=${activePkmnIdx==iter.index})}"></div>
+        <div th:each="myPkmn, iter : ${pkmnTeam}">
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${myPkmn.pkmn}, showHp=true, showLvl=true, isActivePkmn=${activePkmnIdx==iter.index}, isDefeated=${myPkmn.isDefeated})}"></div>
         </div>
       </div>
     </div>
-    <div th:each="pkmnToFight : ${encounterList}">
-      <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight}, showHp=true, showLvl=true, giveIdOfEnemyHp=true)}"></div>
+    <div class="fixed-grid" style="width: 400px;">
+      <div class="grid">
+        <div th:each="pkmnToFight : ${encounterList}">
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight.pkmn}, showHp=true, showLvl=true, giveIdOfEnemyHp=true, isDefeated=${pkmnToFight.isDefeated})}"></div>
+        </div>
+      </div>
     </div>
     <div class="is-flex is-flex-direction-column is-align-items-center">
       <div class="box">
-        <p class="subtitle">[[${enemyPkmn.displayName}]]</p>
+        <h1 class="title" th:if="${encounterData.encounterType.toString() == 'Trainer'}">[[${encounterData.trainerUsername}]]</h1>
+        <p class="subtitle">[[${enemyPkmn.pkmn.displayName}]]</p>
         <div class="field is-grouped is-grouped-multiline">
           <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${enemyPkmn.level}]]</span></div>
+            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${enemyPkmn.pkmn.level}]]</span></div>
           </div>
           <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${enemyPkmn.curHp}]]/[[${enemyPkmn.maxHp}]]</span></div>
+            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${enemyPkmn.pkmn.curHp}]]/[[${enemyPkmn.pkmn.maxHp}]]</span></div>
           </div>
         </div>
       </div>
@@ -78,10 +82,10 @@
   (function redirectToEncounterPath() {
     let notifMsg = /*[[${notifMsg}]]*/ null;
     console.log(notifMsg);
-    if(notifMsg.success == true) {
+    if(notifMsg !== null && notifMsg.success == true) {
       setTimeout(function() {
         window.location.href = "/encounterPath";
-      }, 5000);
+      }, 3000);
     }
   })();
 
@@ -91,10 +95,10 @@
 
     let moveIdx = event.target.dataset.moveidx;
     let moveInfo;
-    if(moveIdx == 1) moveInfo = /*[[${activePkmn.allMoves.moves[0]}]]*/ null;
-    else if(moveIdx == 2) moveInfo = /*[[${activePkmn.allMoves.moves[1]}]]*/ null;
-    else if(moveIdx == 3) moveInfo = /*[[${activePkmn.allMoves.moves[2]}]]*/ null;
-    else if(moveIdx == 4) moveInfo = /*[[${activePkmn.allMoves.moves[3]}]]*/ null;
+    if(moveIdx == 1) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[0]}]]*/ null;
+    else if(moveIdx == 2) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[1]}]]*/ null;
+    else if(moveIdx == 3) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[2]}]]*/ null;
+    else if(moveIdx == 4) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[3]}]]*/ null;
 
     let res = await fetch(
       "/encounter/executeTurn",

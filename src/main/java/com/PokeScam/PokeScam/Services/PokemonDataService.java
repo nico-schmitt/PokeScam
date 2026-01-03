@@ -56,6 +56,17 @@ public class PokemonDataService {
         return teamPkmnDTO;
     }
 
+    public List<PokemonDTO> getPkmnTeamInfoOfUser(User user) {
+        List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
+        if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
+            for(int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
+                teamPkmnDTO.add(PokemonDTO.getEmpty());
+            }
+        }
+        return teamPkmnDTO;
+    }
+
     public Page<Pokemon> getPkmnInBoxPage(int boxId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true , boxService.getBox(boxId), pageable);

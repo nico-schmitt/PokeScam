@@ -13,6 +13,8 @@ import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_MoveInfo;
 import com.PokeScam.PokeScam.Services.EncounterService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
+import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
+import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,6 +47,7 @@ public class EncounterController {
     @PostMapping("/encounterPath/start")
     public String encounterPathStart() {
         sessionData.setSavedEncounterList(encounterService.getRandomEncounters());
+        sessionData.setEncounterProgress(0);
         return "redirect:/encounterPath";
     }
 
@@ -56,9 +59,11 @@ public class EncounterController {
     
     @GetMapping("/encounterPath/{encounterIdx}")
     public String encounterPathBattle(Model m, @PathVariable int encounterIdx) {
-        List<PokemonDTO> pkmnTeamInfo = pokemonDataService.getPkmnTeamInfo();
-        List<PokemonDTO> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
-        PokemonDTO enemyActivePkmn = encounterService.getEnemyActivePkmnAtIdx(encounterIdx);
+        EncounterData encounterData = encounterService.getEncounterDataAtIdx(encounterIdx);
+        List<EncounterDataSinglePkmn> pkmnTeamInfo = encounterService.getPkmnTeamInfo();;
+        List<EncounterDataSinglePkmn> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
+        EncounterDataSinglePkmn enemyActivePkmn = encounterService.getEnemyActivePkmnAtIdx(encounterIdx);
+        m.addAttribute("encounterData", encounterData);
         m.addAttribute("pkmnTeam", pkmnTeamInfo);
         m.addAttribute("encounterList", encounterList);
         m.addAttribute("activePkmnIdx", sessionData.getActivePkmnIdx());

@@ -1,7 +1,7 @@
 <div th:fragment="pkmnPreview">
   <div class="is-flex is-flex-direction-column is-align-items-center is-gap-1">
     <div th:class="${enableModal} ? 'modal-trigger' : ''" th:data-target="${pkmnInfo.id}">
-      <figure class="box image" style="width: 200px;" th:classappend="${isActivePkmn} ? ' has-background-info' : ''">
+      <figure class="box image" style="width: 200px;" th:classappend="${isActivePkmn} ? ' has-background-info' : (${isDefeated} ? ' has-background-dark')">
         <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.displayName}" />
       </figure>
     </div>

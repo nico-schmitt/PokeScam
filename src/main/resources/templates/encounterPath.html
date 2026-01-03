@@ -17,7 +17,7 @@
         <div th:each="encounter : ${encounterList}">
           <a th:href="@{/encounterPath/{encounterOrder}(encounterOrder=${encounter.order})}" style="color: inherit;" th:classappend="${encounter.order <= encounterProgress} ? '' : ' not-clickable'">
             <span class="icon" th:classappend="${encounter.order <= encounterProgress} ? ' has-background-warning' : ' has-background-dark'" style="padding: 4rem; border-radius: 1rem;">
-              <i class="fas fa-5x" th:classappend="${encounter.isPokemon} ? ' fa-dog' : ' fa-user'"></i>
+              <i class="fas fa-5x" th:classappend="${encounter.encounterType.toString() == 'WildPokemon'} ? ' fa-dog' : ' fa-user'"></i>
             </span>
           </a>
         </div>

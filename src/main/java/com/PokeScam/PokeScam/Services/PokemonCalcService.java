@@ -67,6 +67,9 @@ public class PokemonCalcService {
         } else if(moveInfo.damageClass().equals( "special")) {
             atk = attacker.allStats().spa().statValue();
             def = defender.allStats().spd().statValue();
+        } else if(moveInfo.damageClass().equals( "status")) {
+            atk = 0;
+            def = 0;
         }
 
         return (int)
