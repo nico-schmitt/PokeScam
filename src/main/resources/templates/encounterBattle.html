@@ -7,43 +7,84 @@
   </a>
 
   <div class="is-flex is-justify-content-center is-align-items-center mt-3" style="gap: 200px;">
-    <div class="fixed-grid" style="width: 400px;">
-      <div class="grid">
-        <div th:each="moveInfo, iter : ${activePkmn.allMoves.moves}">
-          <div class="is-flex is-flex-direction-column is-align-items-center">
-            <button class="button" onclick=damage(event) th:data-moveidx="${iter.count}">[[${moveInfo.displayName}]]</button>
-            <div class="box field is-grouped is-grouped-multiline">
-              <div class="control">
-                <div class="tags has-addons"><span class="tag is-danger">Power</span><span class="tag">[[${moveInfo.power}]]</span></div>
-              </div>
-              <div class="control">
-                <div class="tags has-addons"><span class="tag is-warning">PP</span><span class="tag">[[${moveInfo.pp}]]</span></div>
-              </div>
-              <div class="control">
-                <div class="tags has-addons"><span class="tag is-info">Accuracy</span><span class="tag">[[${moveInfo.accuracy}]]</span></div>
-              </div>
-              <div class="control">
-                <div class="tags has-addons"><span class="tag is-primary">Damage Class</span><span class="tag">[[${moveInfo.damageClass}]]</span></div>
+    <div class="is-flex is-flex-direction-column is-align-items-center">
+      <div class="box">
+        <p class="subtitle">[[${activePkmn.displayName}]]</p>
+        <div class="field is-grouped is-grouped-multiline">
+          <div class="control">
+            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${activePkmn.level}]]</span></div>
+          </div>
+          <div class="control">
+            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${activePkmn.curHp}]]/[[${activePkmn.maxHp}]]</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="fixed-grid" style="width: 400px;">
+        <div class="grid">
+          <div th:each="moveInfo, iter : ${activePkmn.allMoves.moves}">
+            <div class="is-flex is-flex-direction-column is-align-items-center">
+              <form th:action="@{/encounter/executeTurn(moveIdx=${iter.count})}" method="post" class="mt-5">
+                <div class="field">
+                  <button class="button">[[${moveInfo.displayName}]]</button>
+                </div>
+              </form>
+              <div class="box field is-grouped is-grouped-multiline">
+                <div class="control">
+                  <div class="tags has-addons"><span class="tag is-danger">Power</span><span class="tag">[[${moveInfo.power}]]</span></div>
+                </div>
+                <div class="control">
+                  <div class="tags has-addons"><span class="tag is-warning">PP</span><span class="tag">[[${moveInfo.pp}]]</span></div>
+                </div>
+                <div class="control">
+                  <div class="tags has-addons"><span class="tag is-info">Accuracy</span><span class="tag">[[${moveInfo.accuracy}]]</span></div>
+                </div>
+                <div class="control">
+                  <div class="tags has-addons"><span class="tag is-primary">Damage Class</span><span class="tag">[[${moveInfo.damageClass}]]</span></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
         <div th:each="pkmn, iter : ${pkmnTeam}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmn}, showHp=true, isActivePkmn=${activePkmnIdx==iter.index})}"></div>
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmn}, showHp=true, showLvl=true, isActivePkmn=${activePkmnIdx==iter.index})}"></div>
         </div>
       </div>
     </div>
     <div th:each="pkmnToFight : ${encounterList}">
-      <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight}, showHp=true, giveIdOfEnemyHp=true)}"></div>
+      <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight}, showHp=true, showLvl=true, giveIdOfEnemyHp=true)}"></div>
+    </div>
+    <div class="is-flex is-flex-direction-column is-align-items-center">
+      <div class="box">
+        <p class="subtitle">[[${enemyPkmn.displayName}]]</p>
+        <div class="field is-grouped is-grouped-multiline">
+          <div class="control">
+            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${enemyPkmn.level}]]</span></div>
+          </div>
+          <div class="control">
+            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${enemyPkmn.curHp}]]/[[${enemyPkmn.maxHp}]]</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script th:inline="javascript">
+  (function redirectToEncounterPath() {
+    let notifMsg = /*[[${notifMsg}]]*/ null;
+    console.log(notifMsg);
+    if(notifMsg.success == true) {
+      setTimeout(function() {
+        window.location.href = "/encounterPath";
+      }, 5000);
+    }
+  })();
+
   async function damage(event) {
     const token = document.querySelector('meta[name="_csrf"]').content;
     const header = document.querySelector('meta[name="_csrf_header"]').content;
@@ -55,8 +96,8 @@
     else if(moveIdx == 3) moveInfo = /*[[${activePkmn.allMoves.moves[2]}]]*/ null;
     else if(moveIdx == 4) moveInfo = /*[[${activePkmn.allMoves.moves[3]}]]*/ null;
 
-    let battleTurnInfo = await fetch(
-      "/encounter/dealDamage",
+    let res = await fetch(
+      "/encounter/executeTurn",
       {
         method: "POST",
         headers: {
@@ -66,8 +107,8 @@
         body: JSON.stringify(moveInfo)
       }
     );
-    let data = await battleTurnInfo.json();
-    document.getElementById("enemyHp").innerHTML = data.damage
-    console.log(data);
+    if(res.redirected) {
+      window.location.href = res.url;
+    }
   }
 </script>

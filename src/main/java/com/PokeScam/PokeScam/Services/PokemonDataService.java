@@ -90,26 +90,7 @@ public class PokemonDataService {
             }
         }
 
-        p.setLevel(pkmnToSave.level());
-        p.setExp(pkmnToSave.exp());
-        p.setMaxHp(pkmnToSave.maxHp());
-        p.setCurHp(pkmnToSave.curHp());
-
-        p.setAtk(pkmnToSave.allStats().atk().statValue());
-        p.setDef(pkmnToSave.allStats().def().statValue());
-        p.setSpa(pkmnToSave.allStats().spa().statValue());
-        p.setSpd(pkmnToSave.allStats().spd().statValue());
-        p.setSpe(pkmnToSave.allStats().spe().statValue());
-        p.setHpBaseStat(pkmnToSave.allStats().hp().baseStat());
-        p.setAtkBaseStat(pkmnToSave.allStats().atk().baseStat());
-        p.setDefBaseStat(pkmnToSave.allStats().def().baseStat());
-        p.setSpaBaseStat(pkmnToSave.allStats().spa().baseStat());
-        p.setSpdBaseStat(pkmnToSave.allStats().spd().baseStat());
-        p.setSpeBaseStat(pkmnToSave.allStats().spe().baseStat());
-        p.setMove1(pkmnToSave.allMoves().moves().get(0).apiName());
-        p.setMove2(pkmnToSave.allMoves().moves().get(1).apiName());
-        p.setMove3(pkmnToSave.allMoves().moves().get(2).apiName());
-        p.setMove4(pkmnToSave.allMoves().moves().get(3).apiName());
+        populatePkmnWithPkmnDTOValues(p, pkmnToSave);
 
         if(!errOccuredWhileAdding) {
             pokemonRepo.save(p);
@@ -169,6 +150,29 @@ public class PokemonDataService {
         pokemonRepo.findById(id).ifPresent(pkmn->{
             adjustPkmnHealth(pkmn, adjustment);
         });
+    }
+
+    public void populatePkmnWithPkmnDTOValues(Pokemon p, PokemonDTO pkmnDTO) {
+        p.setLevel(pkmnDTO.level());
+        p.setExp(pkmnDTO.exp());
+        p.setMaxHp(pkmnDTO.maxHp());
+        p.setCurHp(pkmnDTO.curHp());
+
+        p.setAtk(pkmnDTO.allStats().atk().statValue());
+        p.setDef(pkmnDTO.allStats().def().statValue());
+        p.setSpa(pkmnDTO.allStats().spa().statValue());
+        p.setSpd(pkmnDTO.allStats().spd().statValue());
+        p.setSpe(pkmnDTO.allStats().spe().statValue());
+        p.setHpBaseStat(pkmnDTO.allStats().hp().baseStat());
+        p.setAtkBaseStat(pkmnDTO.allStats().atk().baseStat());
+        p.setDefBaseStat(pkmnDTO.allStats().def().baseStat());
+        p.setSpaBaseStat(pkmnDTO.allStats().spa().baseStat());
+        p.setSpdBaseStat(pkmnDTO.allStats().spd().baseStat());
+        p.setSpeBaseStat(pkmnDTO.allStats().spe().baseStat());
+        p.setMove1(pkmnDTO.allMoves().moves().get(0).apiName());
+        p.setMove2(pkmnDTO.allMoves().moves().get(1).apiName());
+        p.setMove3(pkmnDTO.allMoves().moves().get(2).apiName());
+        p.setMove4(pkmnDTO.allMoves().moves().get(3).apiName());
     }
 
     public NotificationMsg healPkmnForCost(int id, int cost, int healAmount) {

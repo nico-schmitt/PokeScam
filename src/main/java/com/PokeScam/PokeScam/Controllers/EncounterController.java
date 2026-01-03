@@ -6,9 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.SessionData;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_MoveInfo;
@@ -17,6 +16,9 @@ import com.PokeScam.PokeScam.Services.PokemonDataService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 
@@ -55,20 +57,21 @@ public class EncounterController {
     @GetMapping("/encounterPath/{encounterIdx}")
     public String encounterPathBattle(Model m, @PathVariable int encounterIdx) {
         List<PokemonDTO> pkmnTeamInfo = pokemonDataService.getPkmnTeamInfo();
+        List<PokemonDTO> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
+        PokemonDTO enemyActivePkmn = encounterService.getEnemyActivePkmnAtIdx(encounterIdx);
         m.addAttribute("pkmnTeam", pkmnTeamInfo);
-        m.addAttribute("encounterList", encounterService.getEncounterAtIdx(encounterIdx));
+        m.addAttribute("encounterList", encounterList);
         m.addAttribute("activePkmnIdx", sessionData.getActivePkmnIdx());
         m.addAttribute("activePkmn", pkmnTeamInfo.get(sessionData.getActivePkmnIdx()));
-        System.out.println(pkmnTeamInfo.get(sessionData.getActivePkmnIdx()) + "\n\n\n\n\n");
+        m.addAttribute("enemyPkmn", enemyActivePkmn);
         return "encounterBattle";
     }
 
-    @PostMapping("/encounter/dealDamage")
-    @ResponseBody
-    public BattleInfo dealDamage(@RequestBody PokemonDTO_MoveInfo moveInfo) {
-        // return String.valueOf(moveInfo.power());
-        return new BattleInfo(moveInfo.power());
+    @PostMapping("/encounter/executeTurn")
+    public String executeTurn(@RequestParam int moveIdx, @RequestHeader(name="Referer", defaultValue = "/") String referer, RedirectAttributes redirectAttributes) {
+        NotificationMsg notifMsg = encounterService.executeTurn(moveIdx);
+        redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
+        System.out.println(notifMsg+"\n\n\n\n\n\n");
+        return "redirect:" + referer;
     }
-
-    private record BattleInfo(int damage) {}
 }

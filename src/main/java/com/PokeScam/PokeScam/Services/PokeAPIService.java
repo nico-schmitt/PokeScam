@@ -70,13 +70,14 @@ public class PokeAPIService {
 
     public PokemonDTO populateRandomPokemonDTO(String pkmnToUse) {
         PokemonAPIDTOHelper apiData = getPokeAPIData(pkmnToUse, null);
+        int rndLevel = pokemonCalcService.calcRndPkmnLevel();
         PokemonDTO_AllStats allStats = new PokemonDTO_AllStats(
-            new PokemonDTO_StatInfo(apiData.allStats.hp.baseStat, pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat), "HP"),
-            new PokemonDTO_StatInfo(apiData.allStats.atk.baseStat, pokemonCalcService.calcPkmnAtk(apiData.allStats.atk.baseStat), "ATK"),
-            new PokemonDTO_StatInfo(apiData.allStats.def.baseStat, pokemonCalcService.calcPkmnDef(apiData.allStats.def.baseStat), "DEF"),
-            new PokemonDTO_StatInfo(apiData.allStats.spa.baseStat, pokemonCalcService.calcPkmnSpa(apiData.allStats.spa.baseStat), "SPA"),
-            new PokemonDTO_StatInfo(apiData.allStats.spd.baseStat, pokemonCalcService.calcPkmnSpd(apiData.allStats.spd.baseStat), "SPD"),
-            new PokemonDTO_StatInfo(apiData.allStats.spe.baseStat, pokemonCalcService.calcPkmnSpe(apiData.allStats.spe.baseStat), "SPE")
+            new PokemonDTO_StatInfo(apiData.allStats.hp.baseStat, pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel), "HP"),
+            new PokemonDTO_StatInfo(apiData.allStats.atk.baseStat, pokemonCalcService.calcPkmnAtk(apiData.allStats.atk.baseStat, rndLevel), "ATK"),
+            new PokemonDTO_StatInfo(apiData.allStats.def.baseStat, pokemonCalcService.calcPkmnDef(apiData.allStats.def.baseStat, rndLevel), "DEF"),
+            new PokemonDTO_StatInfo(apiData.allStats.spa.baseStat, pokemonCalcService.calcPkmnSpa(apiData.allStats.spa.baseStat, rndLevel), "SPA"),
+            new PokemonDTO_StatInfo(apiData.allStats.spd.baseStat, pokemonCalcService.calcPkmnSpd(apiData.allStats.spd.baseStat, rndLevel), "SPD"),
+            new PokemonDTO_StatInfo(apiData.allStats.spe.baseStat, pokemonCalcService.calcPkmnSpe(apiData.allStats.spe.baseStat, rndLevel), "SPE")
         );
         PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(
             List.of(
@@ -94,10 +95,10 @@ public class PokeAPIService {
             apiData.displayName,
             apiData.spriteURL,
             apiData.flavorText,
-            pokemonCalcService.calcRndPkmnLevel(),
+            rndLevel,
             0,
-            pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat),
-            pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat),
+            pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel),
+            pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel),
             allStats,
             allMoves
         );
@@ -194,8 +195,6 @@ public class PokeAPIService {
     private List<MoveInfo> getMovesInfo(PokeAPIDTO_PokemonData pokemonData, List<String> moveNames) {
         final int moveAmount = 4;
         List<MoveInfo> movesInfo;
-        System.out.println(moveNames + "aaa\n\n\naaa");
-        System.out.println(pokemonData.moves + "bbb\n\n\nbbb");
         // get random moves if no names given
         if(moveNames == null) {
             movesInfo = new ArrayList<>(pokemonData.moves.stream().map(move->move.move).toList());
@@ -204,7 +203,6 @@ public class PokeAPIService {
         else {
             movesInfo = new ArrayList<>(pokemonData.moves.stream().filter(move->moveNames.contains(move.move.name)).map(move->move.move).toList());
         }
-        System.out.println(movesInfo+"\n\n\n\n\n\n");
         return movesInfo.stream().limit(moveAmount).toList();
     }
 

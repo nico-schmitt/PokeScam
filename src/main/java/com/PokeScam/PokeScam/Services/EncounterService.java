@@ -3,13 +3,15 @@ package com.PokeScam.PokeScam.Services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.SessionData;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_MoveInfo;
+import com.PokeScam.PokeScam.Model.Pokemon;
 
 
 @Service
@@ -20,7 +22,11 @@ public class EncounterService {
     private final PokemonDataService pokemonDataService;
     private final PokemonCalcService pokemonCalcService;
 
-    public record EncounterData(int order, boolean isPokemon, List<PokemonDTO> pokemonToFightList, int activePkmnToFightIdx) {}
+    public record EncounterData(int order, boolean isPokemon, List<PokemonDTO> pokemonToFightList, int activePkmnToFightIdx, boolean encounterWon) {
+        public EncounterData withWon(boolean won) {
+            return new EncounterData(this.order, this.isPokemon, this.pokemonToFightList, this.activePkmnToFightIdx, won);
+        }
+    }
 
     private Random rnd;
     
@@ -43,22 +49,49 @@ public class EncounterService {
             } else {
                 // populate list with pokemon of trainer
             }
-            randomEncounterList.add(new EncounterData(i, encounterIsPokemon, pokemonToFight, 0));
+            randomEncounterList.add(new EncounterData(i, encounterIsPokemon, pokemonToFight, 0, false));
         }
         return randomEncounterList;
     }
 
-    public List<PokemonDTO> getEncounterAtIdx(int encounterIdx) {
-        return sessionData.getSavedEncounterList().get(encounterIdx).pokemonToFightList;
+    public EncounterData getEncounterDataAtIdx(int encounterIdx) {
+        return sessionData.getSavedEncounterList().get(encounterIdx);
     }
 
-    public BattleInfo executeTurn(PokemonDTO_MoveInfo moveInfo) {
+    public List<PokemonDTO> getPokemonToFightListAtIdx(int encounterIdx) {
+        return getEncounterDataAtIdx(encounterIdx).pokemonToFightList;
+    }
+
+    public PokemonDTO getEnemyActivePkmnAtIdx(int encounterIdx) {
+        EncounterData encounterData = getEncounterDataAtIdx(encounterIdx);
+        return encounterData.pokemonToFightList.get(encounterData.activePkmnToFightIdx);
+    }
+
+    public NotificationMsg executeTurn(int moveIdx) {
         EncounterData encounterData = sessionData.getSavedEncounterList().get(sessionData.getEncounterProgress());
-        PokemonDTO myActivePkmn = pokemonDataService.getPkmnTeamInfo().get(sessionData.getActivePkmnIdx());
-        PokemonDTO enemyActivePkmn = encounterData.pokemonToFightList.get(encounterData.activePkmnToFightIdx);
-        int dmgEnemyTakes = pokemonCalcService.calcMoveDamage(myActivePkmn, enemyActivePkmn, moveInfo);
-        return new BattleInfo(dmgEnemyTakes, dmgEnemyTakes);
-    }
+        PokemonDTO myActivePkmnDTO = pokemonDataService.getPkmnTeamInfo().get(sessionData.getActivePkmnIdx());
+        PokemonDTO_MoveInfo moveInfo = myActivePkmnDTO.allMoves().moves().get(moveIdx);
+        PokemonDTO enemyActivePkmnDTO = encounterData.pokemonToFightList.get(encounterData.activePkmnToFightIdx);
+        int dmgEnemyTakes = pokemonCalcService.calcMoveDamage(myActivePkmnDTO, enemyActivePkmnDTO, moveInfo);
+        Pokemon myPkmn = new Pokemon();
+        Pokemon enemyPkmn = new Pokemon();
+        pokemonDataService.populatePkmnWithPkmnDTOValues(myPkmn, myActivePkmnDTO);
+        pokemonDataService.populatePkmnWithPkmnDTOValues(enemyPkmn, enemyActivePkmnDTO);
+        int actualDmg = pokemonDataService.adjustPkmnHealth(enemyPkmn, -dmgEnemyTakes);
 
-    public record BattleInfo(int enemyNewHp, int activePkmnNewHp) {}
+        PokemonDTO updatedEnemy = encounterData.pokemonToFightList.get(encounterData.activePkmnToFightIdx).withNewHealth(enemyPkmn.getCurHp());
+        encounterData.pokemonToFightList.set(encounterData.activePkmnToFightIdx, updatedEnemy);
+
+        NotificationMsg msg;
+        int totalHpOfEnemyPkmn = getPokemonToFightListAtIdx(sessionData.getEncounterProgress()).stream().mapToInt(p->p.curHp()).sum();
+        if(totalHpOfEnemyPkmn == 0) {
+            EncounterData newEncounterData = sessionData.getSavedEncounterList().get(sessionData.getEncounterProgress()).withWon(true);
+            sessionData.getSavedEncounterList().set(sessionData.getEncounterProgress(), newEncounterData);
+            msg = new NotificationMsg("You won!", true);
+        } else {
+            msg = new NotificationMsg(String.format("%s took %d damage!", enemyActivePkmnDTO.displayName(), Math.abs(actualDmg)), false);
+        }
+
+        return msg;
+    }
 }

@@ -29,6 +29,23 @@ public record PokemonDTO(
         );
     }
 
+    public PokemonDTO withNewHealth(int newHealth) {
+        return new PokemonDTO(
+            this.id,
+            this.isInBox,
+            this.apiName,
+            this.displayName,
+            this.imageURL,
+            this.flavorText,
+            this.level,
+            this.exp,
+            this.maxHp,
+            newHealth,
+            this.allStats,
+            this.allMoves
+        );
+    }
+
     public record PokemonDTO_AllStats(PokemonDTO_StatInfo hp, PokemonDTO_StatInfo atk, PokemonDTO_StatInfo def, PokemonDTO_StatInfo spa, PokemonDTO_StatInfo spd, PokemonDTO_StatInfo spe) {}
     public record PokemonDTO_StatInfo(int baseStat, int statValue, String name) {}
     public record PokemonDTO_AllMoves(List<PokemonDTO_MoveInfo> moves) {}
