@@ -63,10 +63,11 @@ public class EncounterController {
         List<EncounterDataSinglePkmn> pkmnTeamInfo = encounterService.getPkmnTeamInfo();;
         List<EncounterDataSinglePkmn> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
         EncounterDataSinglePkmn enemyActivePkmn = encounterService.getEnemyActivePkmnAtIdx(encounterIdx);
+        EncounterDataSinglePkmn activePkmn = encounterService.wrapPkmnInEncounterData(pokemonDataService.getActivePkmnDTO());
         m.addAttribute("encounterData", encounterData);
         m.addAttribute("pkmnTeam", pkmnTeamInfo);
         m.addAttribute("encounterList", encounterList);
-        m.addAttribute("activePkmn", pokemonDataService.getActivePkmnDTO());
+        m.addAttribute("activePkmn", activePkmn);
         m.addAttribute("enemyPkmn", enemyActivePkmn);
         return "encounterBattle";
     }

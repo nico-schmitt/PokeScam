@@ -50,14 +50,14 @@
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
         <div th:each="myPkmn : ${pkmnTeam}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${myPkmn.pkmn}, showHp=true, showLvl=true, isDefeated=${myPkmn.isDefeated})}"></div>
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${myPkmn.pkmn}, showHp=${!#strings.isEmpty(myPkmn.pkmn.apiName)}, showLvl=true, isDefeated=${myPkmn.isDefeated}, isActivePkmn=${myPkmn.pkmn.isActivePkmn})}"></div>
         </div>
       </div>
     </div>
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
-        <div th:each="pkmnToFight : ${encounterList}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight.pkmn}, showHp=true, showLvl=true, giveIdOfEnemyHp=true, isDefeated=${pkmnToFight.isDefeated})}"></div>
+        <div th:each="pkmnToFight, iter : ${encounterList}">
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight.pkmn}, showHp=${!#strings.isEmpty(pkmnToFight.pkmn.apiName)}, showLvl=true, giveIdOfEnemyHp=true, isDefeated=${pkmnToFight.isDefeated}, isActivePkmn=${encounterData.activePkmnToFightIdx == iter.index})}"></div>
         </div>
       </div>
     </div>

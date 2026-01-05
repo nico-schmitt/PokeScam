@@ -39,6 +39,9 @@ public class EncounterService {
         public EncounterData withWon(boolean won) {
             return new EncounterData(this.order, this.encounterType, this.pokemonToFightList, this.activePkmnToFightIdx, won, this.trainerUsername);
         }
+        public EncounterData withNewActiveIdx(int activePkmnToFightIdx) {
+            return new EncounterData(this.order, this.encounterType, this.pokemonToFightList, activePkmnToFightIdx, this.encounterWon, this.trainerUsername);
+        }
     }
 
     private Random rnd;
@@ -68,13 +71,13 @@ public class EncounterService {
                 pokemonToFight.add(new EncounterDataSinglePkmn(pokeAPIService.getRandomPokemon(), false));
             } else {
                 User trainerToFight = userRepository.findRandomUser(userDetails.getThisUser().getId());
-                List<PokemonDTO> teamToFightWithEmpties = pokemonDataService.getPkmnTeamInfoOfUser(trainerToFight);
                 List<Pokemon> teamToFight = pokemonRepository.findByOwnerIdAndInBoxFalse(trainerToFight);
                 while(teamToFight.isEmpty()) {
                     trainerToFight = userRepository.findRandomUser(userDetails.getThisUser().getId());
-                    teamToFightWithEmpties = pokemonDataService.getPkmnTeamInfoOfUser(trainerToFight);
+                    teamToFight = pokemonRepository.findByOwnerIdAndInBoxFalse(trainerToFight);
                 }
-                List<EncounterDataSinglePkmn> encounterData = teamToFightWithEmpties.stream().map(p->new EncounterDataSinglePkmn(p, false)).toList();
+                List<PokemonDTO> teamToFightWithEmpties = pokemonDataService.getPkmnTeamInfoOfUser(trainerToFight);
+                List<EncounterDataSinglePkmn> encounterData = teamToFightWithEmpties.stream().map(p->new EncounterDataSinglePkmn(p, p.curHp()<=0)).toList();
                 pokemonToFight.addAll(encounterData);
                 trainerUsername = trainerToFight.getUsername();
             }
@@ -108,13 +111,19 @@ public class EncounterService {
         int dmgEnemyTakes = pokemonCalcService.calcMoveDamage(myActivePkmnDTO, enemyActivePkmnDTO, moveInfo);
         int actualDmgEnemyTakes = pokemonDataService.adjustPkmnHealth(enemyPkmn, -dmgEnemyTakes);
         boolean defeatedEnemy = enemyPkmn.getCurHp() <= 0 ? true : false;
-        PokemonDTO updatedEnemy = enemyActivePkmnDTO.withNewHealth(enemyPkmn.getCurHp());
+        PokemonDTO updatedEnemy = enemyActivePkmnDTO.withNewHealth(enemyPkmn    .getCurHp());
         encounterData.pokemonToFightList.set(encounterData.activePkmnToFightIdx, new EncounterDataSinglePkmn(updatedEnemy, defeatedEnemy));
+        if(updatedEnemy.curHp()<=0) {
+            if(encounterData.pokemonToFightList().size()-1 > encounterData.activePkmnToFightIdx) {
+                EncounterData updatedNewIdx = sessionData.getSavedEncounterList().get(sessionData.getEncounterProgress()).withNewActiveIdx(encounterData.activePkmnToFightIdx+1);
+                sessionData.getSavedEncounterList().set(sessionData.getEncounterProgress(), updatedNewIdx);
+            }
+        }
 
         PokemonDTO_MoveInfo enemyMoveInfo = getRandomMoveInfo(enemyActivePkmnDTO);
         int dmgSelfTakes = pokemonCalcService.calcMoveDamage(enemyActivePkmnDTO, myActivePkmnDTO, enemyMoveInfo);
         int actualDmgSelfTakes = pokemonDataService.adjustPkmnHealth(myActivePkmn, -dmgSelfTakes);
-        boolean defeatedSelf = myActivePkmn.getCurHp() <= 0 ? true : false;
+        // boolean defeatedSelf = myActivePkmn.getCurHp() <= 0 ? true : false;
         pokemonRepository.save(myActivePkmn);
 
         NotificationMsg msg;
@@ -150,5 +159,9 @@ public class EncounterService {
             boolean isDefeated = p.curHp() <= 0 ? true : false;
             return new EncounterDataSinglePkmn(p, isDefeated);
         }).toList();
+    }
+
+    public EncounterDataSinglePkmn wrapPkmnInEncounterData(PokemonDTO pkmn) {
+        return new EncounterDataSinglePkmn(pkmn, pkmn.curHp() <= 0);
     }
 }
