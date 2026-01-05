@@ -20,7 +20,7 @@ public class MainController {
     @GetMapping("/")
     public String home(Model m) {
         m.addAttribute("pokemon", new Pokemon());
-        m.addAttribute("pkmnTeam", pkmnDataService.getPkmnTeamInfo());
+        m.addAttribute("pkmnTeam", pkmnDataService.getPkmnTeamInfoDTO());
         return "home";
     }
 }

@@ -23,7 +23,7 @@
         <div class="grid">
           <div th:each="moveInfo, iter : ${activePkmn.pkmn.allMoves.moves}">
             <div class="is-flex is-flex-direction-column is-align-items-center">
-              <form th:action="@{/encounter/executeTurn(moveIdx=${iter.count})}" method="post" class="mt-5">
+              <form th:action="@{/encounter/executeTurn(moveIdx=${iter.index})}" method="post" class="mt-5">
                 <div class="field">
                   <button class="button">[[${moveInfo.displayName}]]</button>
                 </div>

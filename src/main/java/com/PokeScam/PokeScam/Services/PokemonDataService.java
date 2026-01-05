@@ -45,7 +45,7 @@ public class PokemonDataService {
         this.userRepo = userRepo;
     }
 
-    public List<PokemonDTO> getPkmnTeamInfo() {
+    public List<PokemonDTO> getPkmnTeamInfoDTO() {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
         List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
         if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
@@ -54,6 +54,16 @@ public class PokemonDataService {
             }
         }
         return teamPkmnDTO;
+    }
+
+    public List<Pokemon> getPkmnTeamInfo() {
+        List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
+        if(teamPkmn.size() < POKEMON_TEAM_SIZE) {
+            for(int i = teamPkmn.size(); i < POKEMON_TEAM_SIZE; i++) {
+                teamPkmn.add(null);
+            }
+        }
+        return teamPkmn;
     }
 
     public List<PokemonDTO> getPkmnTeamInfoOfUser(User user) {

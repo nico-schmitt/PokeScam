@@ -71,7 +71,8 @@ public class PokemonCalcService {
             atk = 0;
             def = 0;
         }
-
+        if(atk == 0 || def == 0) return 0;
+        else
         return (int)
         Math.floor(
             Math.floor(

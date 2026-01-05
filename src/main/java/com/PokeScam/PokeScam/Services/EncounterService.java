@@ -6,7 +6,9 @@ import java.util.Random;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.NotificationMsg;
+import com.PokeScam.PokeScam.Repos.PokemonRepository;
 import com.PokeScam.PokeScam.Repos.UserRepository;
+import com.PokeScam.PokeScam.Services.PokeAPIService.MoveInfo;
 import com.PokeScam.PokeScam.SessionData;
 
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import com.PokeScam.PokeScam.Model.User;
 public class EncounterService {
 
     private final UserRepository userRepository;
+    private final PokemonRepository pokemonRepository;
 
     private final SessionData sessionData;
     private final PokeAPIService pokeAPIService;
@@ -40,7 +43,7 @@ public class EncounterService {
 
     private Random rnd;
     
-    public EncounterService(PokemonDataService pokemonDataService, PokeAPIService pokeAPIService, PokemonCalcService pokemonCalcService, SessionData sessionData, UserRepository userRepository, CustomUserDetails userDetails) {
+    public EncounterService(PokemonDataService pokemonDataService, PokeAPIService pokeAPIService, PokemonCalcService pokemonCalcService, SessionData sessionData, UserRepository userRepository, CustomUserDetails userDetails, PokemonRepository pokemonRepository) {
         rnd = new Random();
         this.pokemonDataService = pokemonDataService;
         this.pokeAPIService = pokeAPIService;
@@ -48,6 +51,7 @@ public class EncounterService {
         this.sessionData = sessionData;
         this.userRepository = userRepository;
         this.userDetails = userDetails;
+        this.pokemonRepository = pokemonRepository;
     }
 
     public List<EncounterData> getRandomEncounters() {
@@ -64,8 +68,13 @@ public class EncounterService {
                 pokemonToFight.add(new EncounterDataSinglePkmn(pokeAPIService.getRandomPokemon(), false));
             } else {
                 User trainerToFight = userRepository.findRandomUser(userDetails.getThisUser().getId());
-                List<PokemonDTO> teamToFight = pokemonDataService.getPkmnTeamInfoOfUser(trainerToFight);
-                List<EncounterDataSinglePkmn> encounterData = teamToFight.stream().map(p->new EncounterDataSinglePkmn(p, false)).toList();
+                List<PokemonDTO> teamToFightWithEmpties = pokemonDataService.getPkmnTeamInfoOfUser(trainerToFight);
+                List<Pokemon> teamToFight = pokemonRepository.findByOwnerIdAndInBoxFalse(trainerToFight);
+                while(teamToFight.isEmpty()) {
+                    trainerToFight = userRepository.findRandomUser(userDetails.getThisUser().getId());
+                    teamToFightWithEmpties = pokemonDataService.getPkmnTeamInfoOfUser(trainerToFight);
+                }
+                List<EncounterDataSinglePkmn> encounterData = teamToFightWithEmpties.stream().map(p->new EncounterDataSinglePkmn(p, false)).toList();
                 pokemonToFight.addAll(encounterData);
                 trainerUsername = trainerToFight.getUsername();
             }
@@ -89,19 +98,24 @@ public class EncounterService {
 
     public NotificationMsg executeTurn(int moveIdx) {
         EncounterData encounterData = sessionData.getSavedEncounterList().get(sessionData.getEncounterProgress());
-        PokemonDTO myActivePkmnDTO = pokemonDataService.getPkmnTeamInfo().get(sessionData.getActivePkmnIdx());
+        PokemonDTO myActivePkmnDTO = pokemonDataService.getPkmnTeamInfoDTO().get(sessionData.getActivePkmnIdx());
+        Pokemon myActivePkmn = pokemonDataService.getPkmnTeamInfo().get(sessionData.getActivePkmnIdx());
         PokemonDTO_MoveInfo moveInfo = myActivePkmnDTO.allMoves().moves().get(moveIdx);
         PokemonDTO enemyActivePkmnDTO = encounterData.pokemonToFightList.get(encounterData.activePkmnToFightIdx).pkmn;
-        int dmgEnemyTakes = pokemonCalcService.calcMoveDamage(myActivePkmnDTO, enemyActivePkmnDTO, moveInfo);
-        Pokemon myPkmn = new Pokemon();
         Pokemon enemyPkmn = new Pokemon();
-        pokemonDataService.populatePkmnWithPkmnDTOValues(myPkmn, myActivePkmnDTO);
         pokemonDataService.populatePkmnWithPkmnDTOValues(enemyPkmn, enemyActivePkmnDTO);
-        int actualDmg = pokemonDataService.adjustPkmnHealth(enemyPkmn, -dmgEnemyTakes);
-        boolean defeatedEnemy = enemyPkmn.getCurHp() <= 0 ? true : false;
 
+        int dmgEnemyTakes = pokemonCalcService.calcMoveDamage(myActivePkmnDTO, enemyActivePkmnDTO, moveInfo);
+        int actualDmgEnemyTakes = pokemonDataService.adjustPkmnHealth(enemyPkmn, -dmgEnemyTakes);
+        boolean defeatedEnemy = enemyPkmn.getCurHp() <= 0 ? true : false;
         PokemonDTO updatedEnemy = enemyActivePkmnDTO.withNewHealth(enemyPkmn.getCurHp());
         encounterData.pokemonToFightList.set(encounterData.activePkmnToFightIdx, new EncounterDataSinglePkmn(updatedEnemy, defeatedEnemy));
+
+        PokemonDTO_MoveInfo enemyMoveInfo = getRandomMoveInfo(enemyActivePkmnDTO);
+        int dmgSelfTakes = pokemonCalcService.calcMoveDamage(enemyActivePkmnDTO, myActivePkmnDTO, enemyMoveInfo);
+        int actualDmgSelfTakes = pokemonDataService.adjustPkmnHealth(myActivePkmn, -dmgSelfTakes);
+        boolean defeatedSelf = myActivePkmn.getCurHp() <= 0 ? true : false;
+        pokemonRepository.save(myActivePkmn);
 
         NotificationMsg msg;
         int totalHpOfEnemyPkmn = getPokemonToFightListAtIdx(sessionData.getEncounterProgress()).stream().mapToInt(p->p.pkmn.curHp()).sum();
@@ -111,14 +125,27 @@ public class EncounterService {
             sessionData.setEncounterProgress(sessionData.getEncounterProgress()+1);
             msg = new NotificationMsg("You won! Redirecting to path in 3 seconds.", true);
         } else {
-            msg = new NotificationMsg(String.format("%s took %d damage!", enemyActivePkmnDTO.displayName(), Math.abs(actualDmg)), false);
+            String msgMsg = String.format(
+                """
+                %s used %s! %s took %d damage!\n
+                %s used %s! You (%s) took %d damage!\n
+                """,
+                myActivePkmnDTO.displayName(), moveInfo.displayName(), enemyActivePkmnDTO.displayName(), Math.abs(actualDmgEnemyTakes),
+                enemyActivePkmnDTO.displayName(), enemyMoveInfo.displayName(), myActivePkmnDTO.displayName(), Math.abs(actualDmgSelfTakes)
+            );
+            msg = new NotificationMsg(msgMsg, false);
         }
 
         return msg;
     }
 
+    private PokemonDTO_MoveInfo getRandomMoveInfo(PokemonDTO enemyActivePkmnDTO) {
+        int rndMoveInfoIdx = rnd.nextInt(enemyActivePkmnDTO.allMoves().moves().size());
+        return enemyActivePkmnDTO.allMoves().moves().get(rndMoveInfoIdx);
+    }
+
     public List<EncounterDataSinglePkmn> getPkmnTeamInfo() {
-        List<PokemonDTO> pkmnTeamInfo = pokemonDataService.getPkmnTeamInfo();
+        List<PokemonDTO> pkmnTeamInfo = pokemonDataService.getPkmnTeamInfoDTO();
         return pkmnTeamInfo.stream().map(p->{
             boolean isDefeated = p.curHp() <= 0 ? true : false;
             return new EncounterDataSinglePkmn(p, isDefeated);

@@ -55,7 +55,7 @@ public class PokemonController {
     @PostMapping("/swap/{swapId}")
     public String swapSite(Model m, @PathVariable int swapId) {
         m.addAttribute("swapPkmn", pkmnDataService.getPkmnInfo(swapId));
-        m.addAttribute("pkmnTeam", pkmnDataService.getPkmnTeamInfo());
+        m.addAttribute("pkmnTeam", pkmnDataService.getPkmnTeamInfoDTO());
         return "swapPkmn";
     }
 
