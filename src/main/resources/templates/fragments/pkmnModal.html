@@ -67,6 +67,9 @@
             <span class="icon"><i class="fa-solid fa-heart"></i>[[${healPkmnForCurrencyHealAmount}]]</span>
           </button>
         </form>
+        <form th:action="@{/pokemon/setAsActivePkmn(newActivePkmnId=${pkmnInfo.id})}" method="post" th:if="${!pkmnInfo.isInBox}">
+          <button class="button is-warning">Set as active</button>
+        </form>
       </footer>
     </div>
   </div>

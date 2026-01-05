@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -19,6 +22,8 @@ import com.PokeScam.PokeScam.Services.PokeAPIService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
 
 import lombok.Data;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 @Controller
@@ -69,6 +74,17 @@ public class PokemonController {
     public String healPkmnById(@PathVariable int id, @RequestHeader(name="Referer", defaultValue = "/") String referer, RedirectAttributes redirectAttributes) {
         NotificationMsg notifMsg = pkmnDataService.healPkmnForCost(id, healCost, healAmount);
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
+        return "redirect:" + referer;
+    }
+    
+    @PostMapping("/setAsActivePkmn")
+    public String setAsActivePkmn(@RequestParam int newActivePkmnId, @RequestHeader(name="Referer", defaultValue = "/") String referer, RedirectAttributes redirectAttributes) {
+        Pokemon curActivePkmn = pkmnDataService.getActivePkmn();
+        Optional<Pokemon> newActivePkmn = pkmnDataService.getPkmnById(newActivePkmnId);
+        if(newActivePkmn.isPresent()) {
+            NotificationMsg notifMsg = pkmnDataService.setNewActivePkmn(newActivePkmn.get(), curActivePkmn);
+            redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
+        }
         return "redirect:" + referer;
     }
     

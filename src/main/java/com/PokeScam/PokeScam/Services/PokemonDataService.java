@@ -125,6 +125,10 @@ public class PokemonDataService {
         return addMsg;
     }
 
+    public Optional<Pokemon> getPkmnById(int id) {
+        return pokemonRepo.findById(id);
+    }
+
     private List<Pokemon> getAllPkmn() {
         return pokemonRepo.findByOwnerId(userDetails.getThisUser());
     }
@@ -174,6 +178,7 @@ public class PokemonDataService {
     }
 
     public void populatePkmnWithPkmnDTOValues(Pokemon p, PokemonDTO pkmnDTO) {
+        p.setActivePkmn(pkmnDTO.isActivePkmn());
         p.setLevel(pkmnDTO.level());
         p.setExp(pkmnDTO.exp());
         p.setMaxHp(pkmnDTO.maxHp());
@@ -218,5 +223,24 @@ public class PokemonDataService {
         }
 
         return msg;
+    }
+
+    public Pokemon getActivePkmn() {
+        return pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser());
+    }
+
+    public PokemonDTO getActivePkmnDTO() {
+        return pokeAPIService.populatePokemonDTO(
+            pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser())
+        );
+    }
+
+    public NotificationMsg setNewActivePkmn(Pokemon newActivePkmn, Pokemon curActivePkmn) {
+        NotificationMsg msg;
+        curActivePkmn.setActivePkmn(false);
+        pokemonRepo.save(curActivePkmn);
+        newActivePkmn.setActivePkmn(true);
+        pokemonRepo.save(newActivePkmn);
+        return new NotificationMsg(String.format("Set %s as new active Pokemon!", newActivePkmn.getName()), true);
     }
 }

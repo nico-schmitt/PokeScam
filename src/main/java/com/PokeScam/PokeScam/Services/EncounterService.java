@@ -55,7 +55,7 @@ public class EncounterService {
     }
 
     public List<EncounterData> getRandomEncounters() {
-        int encounterCount = rnd.nextInt(3, 7);
+        int encounterCount = rnd.nextInt(2, 4);
         List<EncounterData> randomEncounterList = new ArrayList<>();
         for (int i = 0; i < encounterCount; i++) {
             EncounterType encounterType;
@@ -98,8 +98,8 @@ public class EncounterService {
 
     public NotificationMsg executeTurn(int moveIdx) {
         EncounterData encounterData = sessionData.getSavedEncounterList().get(sessionData.getEncounterProgress());
-        PokemonDTO myActivePkmnDTO = pokemonDataService.getPkmnTeamInfoDTO().get(sessionData.getActivePkmnIdx());
-        Pokemon myActivePkmn = pokemonDataService.getPkmnTeamInfo().get(sessionData.getActivePkmnIdx());
+        PokemonDTO myActivePkmnDTO = pokemonDataService.getPkmnTeamInfoDTO().stream().filter(p->p.isActivePkmn()).findFirst().get();
+        Pokemon myActivePkmn = pokemonDataService.getPkmnTeamInfo().stream().filter(p->p.isActivePkmn()).findFirst().get();
         PokemonDTO_MoveInfo moveInfo = myActivePkmnDTO.allMoves().moves().get(moveIdx);
         PokemonDTO enemyActivePkmnDTO = encounterData.pokemonToFightList.get(encounterData.activePkmnToFightIdx).pkmn;
         Pokemon enemyPkmn = new Pokemon();

@@ -22,4 +22,5 @@ public interface PokemonRepository extends JpaRepository<Pokemon, Integer>{
     void deleteByIdAndOwnerId(int id, User thisUser);
     List<Pokemon> findByOwnerIdAndInBox(User thisUser, boolean inBox);
     List<Pokemon> findByOwnerIdAndInBoxFalse(User ownerId);
+    Pokemon findByOwnerIdAndIsActivePkmnTrue(User thisUser);
 }

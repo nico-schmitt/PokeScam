@@ -66,8 +66,7 @@ public class EncounterController {
         m.addAttribute("encounterData", encounterData);
         m.addAttribute("pkmnTeam", pkmnTeamInfo);
         m.addAttribute("encounterList", encounterList);
-        m.addAttribute("activePkmnIdx", sessionData.getActivePkmnIdx());
-        m.addAttribute("activePkmn", pkmnTeamInfo.get(sessionData.getActivePkmnIdx()));
+        m.addAttribute("activePkmn", pokemonDataService.getActivePkmnDTO());
         m.addAttribute("enemyPkmn", enemyActivePkmn);
         return "encounterBattle";
     }

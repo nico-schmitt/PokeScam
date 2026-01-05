@@ -12,7 +12,8 @@ public record PokemonDTO(
     int level, int exp,
     int maxHp, int curHp,
     PokemonDTO_AllStats allStats,
-    PokemonDTO_AllMoves allMoves
+    PokemonDTO_AllMoves allMoves,
+    boolean isActivePkmn
 ) {
     public static PokemonDTO getEmpty() {
         return new PokemonDTO(
@@ -25,7 +26,8 @@ public record PokemonDTO(
             0, 0,
             0, 0,
             null,
-            null
+            null,
+            false
         );
     }
 
@@ -42,7 +44,8 @@ public record PokemonDTO(
             this.maxHp,
             newHealth,
             this.allStats,
-            this.allMoves
+            this.allMoves,
+            this.isActivePkmn
         );
     }
 

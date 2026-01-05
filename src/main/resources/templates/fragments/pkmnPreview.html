@@ -1,14 +1,14 @@
 <div th:fragment="pkmnPreview">
   <div class="is-flex is-flex-direction-column is-align-items-center is-gap-1">
     <div th:class="${enableModal} ? 'modal-trigger' : ''" th:data-target="${pkmnInfo.id}">
-      <figure class="box image" style="width: 200px;" th:classappend="${isActivePkmn} ? ' has-background-info' : (${isDefeated} ? ' has-background-dark')">
+      <figure class="box image" style="width: 200px;" th:classappend="${pkmnInfo.isActivePkmn} ? ' has-background-info' : (${isDefeated} ? ' has-background-dark')">
         <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.displayName}" />
       </figure>
     </div>
     <div th:if="${showHp}" class="tags are-medium has-addons">
       <span class="tag is-success">Hp</span>
       <span class="tag" >
-        <span th:id="${isActivePkmn} ? 'activePkmnHp' : (${giveIdOfEnemyHp} ? 'enemyHp')">[[${pkmnInfo.curHp}]]</span>
+        <span th:id="${pkmnInfo.isActivePkmn} ? 'activePkmnHp' : (${giveIdOfEnemyHp} ? 'enemyHp')">[[${pkmnInfo.curHp}]]</span>
         /
         [[${pkmnInfo.maxHp}]]
       </span>

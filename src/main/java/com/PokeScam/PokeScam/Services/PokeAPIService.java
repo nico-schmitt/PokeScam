@@ -64,7 +64,8 @@ public class PokeAPIService {
             pkmnToUse.getLevel(), pkmnToUse.getExp(),
             pkmnToUse.getMaxHp(), pkmnToUse.getCurHp(),
             allStats,
-            allMoves
+            allMoves,
+            pkmnToUse.isActivePkmn()
         );
     }
 
@@ -100,7 +101,8 @@ public class PokeAPIService {
             pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel),
             pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel),
             allStats,
-            allMoves
+            allMoves,
+            false
         );
     }
 

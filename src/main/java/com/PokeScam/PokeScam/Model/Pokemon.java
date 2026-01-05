@@ -29,6 +29,8 @@ public class Pokemon {
     @ManyToOne
     @JoinColumn(name="box_id")
     private Box boxId;
+    @Column(name="is_active_pkmn")
+    private boolean isActivePkmn;
     @Column(name="level")
     private int level;
     @Column(name="exp")

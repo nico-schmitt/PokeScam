@@ -49,8 +49,8 @@
     </div>
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
-        <div th:each="myPkmn, iter : ${pkmnTeam}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${myPkmn.pkmn}, showHp=true, showLvl=true, isActivePkmn=${activePkmnIdx==iter.index}, isDefeated=${myPkmn.isDefeated})}"></div>
+        <div th:each="myPkmn : ${pkmnTeam}">
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${myPkmn.pkmn}, showHp=true, showLvl=true, isDefeated=${myPkmn.isDefeated})}"></div>
         </div>
       </div>
     </div>
