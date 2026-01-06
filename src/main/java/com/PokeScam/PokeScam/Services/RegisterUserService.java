@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.Services;
 
+import com.PokeScam.PokeScam.Model.Inventory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class RegisterUserService {
         user.setUsername(username);
         user.setEmail(passwordEncoder.encode(email));
         user.setPassword(passwordEncoder.encode(pw));
+        user.setInventory(new Inventory());
         user.setRoles("USER");
         user.setVerified(false);
         User savedUser = userRepo.save(user);

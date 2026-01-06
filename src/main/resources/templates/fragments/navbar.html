@@ -21,6 +21,14 @@
                     <span>Box</span>
                   </a>
                 </li>
+                <li th:classappend="${currentPath.startsWith('/inventory')} ? 'is-active' : ''">
+                  <a href="/inventory">
+                    <span class="icon is-small"
+                    ><i class="fas fa-box"></i
+                    ></span>
+                    <span>Inventory</span>
+                  </a>
+                </li>
                 <li th:classappend="${currentPath.startsWith('/catch')} ? 'is-active' : ''">
                   <a href="/catch">
                     <span class="icon is-small"

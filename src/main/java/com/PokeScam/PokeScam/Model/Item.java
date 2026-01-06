@@ -1,6 +1,7 @@
 package com.PokeScam.PokeScam.Model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -16,14 +17,21 @@ public abstract class Item {
 
     @ManyToOne
     @JoinColumn(name = "inventory_id")
+    @NotNull
     private Inventory inventory;
 
     @Column(name = "name")
+    @NotNull
     private String name;
+    @Column(name = "description")
+    private String description;
     @Column(name = "amount")
+    @NotNull
     private int amount;
     @Column(name = "max_stack_size")
+    @NotNull
     private int maxStackSize;
     @Column(name = "consumable")
+    @NotNull
     private boolean consumable;
 }

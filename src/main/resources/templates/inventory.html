@@ -1,0 +1,30 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+    <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <div th:each="item : ${items}">
+            <tr class="modal-trigger" >
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.amount}"></td>
+            </tr>
+
+            <div th:replace="~{fragments/itemModal :: itemModal (item=${item})}"></div>
+        </div>
+        </tbody>
+    </table>
+
+    <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+        <a th:href="${pageInfo.isFirst} ? '' : @{/inventory (page=${pageInfo.number-1}, size=${pageSize})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>
+        <a th:href="${pageInfo.isLast} ? '' : @{/inventory (page=${pageInfo.number+1}, size=${pageSize})}" class="pagination-next" th:classappend="${pageInfo.isLast} ? ' is-disabled' : ''">Next</a>
+        <ul th:if="${pageInfo.totalElements <= 4 and pageInfo.totalElements > 0}" class="pagination-list">
+            <li th:each="i : ${#numbers.sequence(0, pageInfo.totalPages-1)}">
+                <a th:href="@{/inventory (page=${i}, size=${pageSize})}" class="pagination-link" th:classappend="${pageInfo.number == i} ? ' is-current' : ''">[[${i+1}]]</a>
+            </li>
+        </ul>
+    </nav>
+</div>

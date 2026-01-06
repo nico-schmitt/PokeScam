@@ -1,0 +1,17 @@
+<div th:fragment="itemModal">
+    <div class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title is-capitalized" th:text="${item.name}"></p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <p class="subtitle is-3" th:text="${item.description}"></p>
+            </section>
+            <footer class="modal-card-foot">
+                <p>wip</p>
+            </footer>
+        </div>
+    </div>
+</div>
