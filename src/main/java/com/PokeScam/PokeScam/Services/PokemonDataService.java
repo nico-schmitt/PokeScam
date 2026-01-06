@@ -237,8 +237,10 @@ public class PokemonDataService {
 
     public NotificationMsg setNewActivePkmn(Pokemon newActivePkmn, Pokemon curActivePkmn) {
         NotificationMsg msg;
-        curActivePkmn.setActivePkmn(false);
-        pokemonRepo.save(curActivePkmn);
+        if (curActivePkmn != null) {
+            curActivePkmn.setActivePkmn(false);
+            pokemonRepo.save(curActivePkmn);
+        }
         newActivePkmn.setActivePkmn(true);
         pokemonRepo.save(newActivePkmn);
         return new NotificationMsg(String.format("Set %s as new active Pokemon!", newActivePkmn.getName()), true);
