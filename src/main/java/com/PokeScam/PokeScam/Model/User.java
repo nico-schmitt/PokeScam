@@ -1,12 +1,7 @@
 package com.PokeScam.PokeScam.Model;
 import java.time.Instant;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -35,4 +30,6 @@ public class User {
     private Instant lastLogin;
     @Column(name="last_logout")
     private Instant lastLogout;
+    @OneToOne(cascade = CascadeType.ALL)
+    private Inventory inventory;
 }

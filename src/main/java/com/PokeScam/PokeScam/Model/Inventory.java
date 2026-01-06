@@ -12,7 +12,7 @@ public class Inventory {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(mappedBy = "inventory")
     @JoinColumn(name = "owner_id")
     private User owner;
 }
