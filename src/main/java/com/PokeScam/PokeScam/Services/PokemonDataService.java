@@ -246,4 +246,98 @@ public class PokemonDataService {
         pokemonRepo.save(newActivePkmn);
         return new NotificationMsg(String.format("Set %s as new active Pokemon!", newActivePkmn.getName()), true);
     }
+
+    public record PokemonWithMovesDTO(
+            Pokemon pokemon,
+            PokemonDTO dto,
+            List<String> moves) {
+
+        public int id() {
+            return dto.id();
+        }
+
+        public boolean isInBox() {
+            return dto.isInBox();
+        }
+
+        public String apiName() {
+            return dto.apiName();
+        }
+
+        public String displayName() {
+            return dto.displayName();
+        }
+
+        public String imageURL() {
+            return dto.imageURL();
+        }
+
+        public String flavorText() {
+            return dto.flavorText();
+        }
+
+        public int level() {
+            return dto.level();
+        }
+
+        public int exp() {
+            return dto.exp();
+        }
+
+        public int maxHp() {
+            return dto.maxHp();
+        }
+
+        public int curHp() {
+            return dto.curHp();
+        }
+
+        public PokemonDTO_AllStats allStats() {
+            return dto.allStats();
+        }
+
+        public PokemonDTO.PokemonDTO_AllMoves allMoves() {
+            return dto.allMoves();
+        }
+
+        public boolean isActivePkmn() {
+            return dto.isActivePkmn();
+        }
+    }
+
+    public PokemonWithMovesDTO getPokemonWithMovesDTO(Pokemon pkmn) {
+        if (pkmn == null)
+            return null;
+
+        PokemonDTO dto = pokeAPIService.populatePokemonDTO(pkmn);
+        List<String> moves = List.of(
+                pkmn.getMove1(),
+                pkmn.getMove2(),
+                pkmn.getMove3(),
+                pkmn.getMove4());
+
+        return new PokemonWithMovesDTO(pkmn, dto, moves);
+    }
+
+    public PokemonDTO convertToPokemonDTO(PokemonWithMovesDTO dto) {
+        // Create a PokemonDTO from PokemonWithMovesDTO fields
+        return new PokemonDTO(
+                dto.id(),
+                dto.isInBox(),
+                dto.apiName(),
+                dto.displayName(),
+                dto.imageURL(),
+                dto.flavorText(),
+                dto.level(),
+                dto.exp(),
+                dto.maxHp(),
+                dto.curHp(),
+                dto.allStats(),
+                dto.allMoves(),
+                dto.isActivePkmn(),
+                false, // seen
+                false // caught
+        );
+    }
+
 }

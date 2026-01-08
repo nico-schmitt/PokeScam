@@ -53,6 +53,13 @@
                     <span>Admin</span>
                   </a>
                 </li>
+                <li th:classappend="${currentPath.startsWith('/gyms')} ? ' is-active' : ''">
+                    <a href="/gyms">
+                        <span class="icon is-small"><i class="fas fa-chess-rook"></i></span>
+                        <span>Gyms</span>
+                    </a>
+                </li>
+
                 <li th:classappend="${currentPath.startsWith('/pokedex')} ? 'is-active' : ''">
                     <a href="/pokedex">
                         <span class="icon is-small">

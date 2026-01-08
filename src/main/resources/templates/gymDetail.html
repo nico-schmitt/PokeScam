@@ -1,0 +1,29 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center is-gap-5">
+
+    <h1 class="title" th:text="${gym.name}">Gym Name</h1>
+
+    <div class="columns is-multiline" th:each="trainerMap : ${trainers}">
+      <div class="column is-half">
+        <div class="box">
+          <h2 class="subtitle" th:text="${trainerMap.trainer.name}">Trainer Name</h2>
+          <div class="columns is-multiline">
+            <div class="column is-one-quarter" th:each="pkmn : ${trainerMap.pokemons}">
+              <div th:replace="~{fragments/pkmnPreview :: pkmnPreview(
+                                pkmnInfo=${pkmn},
+                                showHp=${!#strings.isEmpty(pkmn.displayName)},
+                                showLvl=true,
+                                isDefeated=false,
+                                isActivePkmn=false)}"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a href="/gyms">
+      <button class="button is-info">Return to Gyms</button>
+    </a>
+
+  </div>
+</div>

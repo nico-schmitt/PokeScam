@@ -38,9 +38,21 @@ public class EncounterService {
     public record EncounterDataSinglePkmn(PokemonDTO pkmn, boolean isDefeated) {
     }
 
-    public record EncounterData(int order, EncounterType encounterType,
-            List<EncounterDataSinglePkmn> pokemonToFightList, int activePkmnToFightIdx, boolean encounterWon,
+    public record EncounterData(
+            int order,
+            EncounterType encounterType,
+            List<EncounterDataSinglePkmn> pokemonToFightList,
+            int activePkmnToFightIdx,
+            boolean encounterWon,
             String trainerUsername) {
+
+        // Custom constructor for GymService
+        public EncounterData(String trainerUsername, List<EncounterDataSinglePkmn> pokemonToFightList,
+                String trainerSprite) {
+            this(0, EncounterType.Trainer, pokemonToFightList, 0, false, trainerUsername);
+            // ignore trainerSprite for now or store it in a new field if needed
+        }
+
         public EncounterData withWon(boolean won) {
             return new EncounterData(this.order, this.encounterType, this.pokemonToFightList, this.activePkmnToFightIdx,
                     won, this.trainerUsername);
