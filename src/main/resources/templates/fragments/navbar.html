@@ -53,6 +53,14 @@
                     <span>Admin</span>
                   </a>
                 </li>
+                <li th:classappend="${currentPath.startsWith('/pokedex')} ? 'is-active' : ''">
+                    <a href="/pokedex">
+                        <span class="icon is-small">
+                        <i class="fas fa-book"></i>
+                        </span>
+                        <span>Pokédex</span>
+                    </a>
+                </li>
               </ul>
             </div>
           </div>

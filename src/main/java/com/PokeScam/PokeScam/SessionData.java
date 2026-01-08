@@ -13,6 +13,6 @@ import lombok.Data;
 @SessionScope
 @Data
 public class SessionData {
- private int encounterProgress;
- private List<EncounterData> savedEncounterList;
+    private int encounterProgress;
+    private List<EncounterData> savedEncounterList;
 }

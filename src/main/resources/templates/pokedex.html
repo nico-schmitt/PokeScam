@@ -1,0 +1,61 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+
+  <div class="is-flex is-flex-direction-column is-align-items-center is-gap-3">
+
+    <div class="columns is-multiline">
+      <div class="column is-one-quarter" th:each="pkmn : ${pokemonPage.content}">
+        <div class="card"
+             th:classappend="${pkmn.caught} ? ' caught' : (pkmn.seen ? ' seen' : ' unseen')">
+          <div class="card-image">
+            <figure class="image is-128x128">
+              <img th:src="${pkmn.imageURL}" th:alt="${pkmn.displayName}" />
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-6" th:text="${pkmn.displayName}">Pokémon Name</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+      <a th:href="@{/pokedex(page=${pokemonPage.number - 1})}" class="pagination-previous"
+         th:classappend="${pokemonPage.first} ? ' is-disabled' : ''">Previous</a>
+      <a th:href="@{/pokedex(page=${pokemonPage.number + 1})}" class="pagination-next"
+         th:classappend="${pokemonPage.last} ? ' is-disabled' : ''">Next</a>
+      <ul class="pagination-list">
+        <li th:each="i : ${#numbers.sequence(0, pokemonPage.totalPages - 1)}">
+          <a th:href="@{/pokedex(page=${i})}" class="pagination-link"
+             th:classappend="${pokemonPage.number == i} ? ' is-current' : ''"
+             th:text="${i + 1}">1</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+
+  <style>
+    /* Seen-only Pokémon appear dimmed */
+    .card.seen img {
+      filter: brightness(60%);
+    }
+
+    /* Caught Pokémon are bright and have a gold border */
+    .card.caught img {
+      filter: none;
+      border: 3px solid gold;
+      border-radius: 0.5rem;
+    }
+
+    /* Unseen Pokémon are grayscale or can be a silhouette */
+    .card.unseen img {
+      filter: grayscale(100%) blur(2px);
+    }
+
+    .card {
+      transition: filter 0.3s, border 0.3s;
+    }
+  </style>
+
+</div>

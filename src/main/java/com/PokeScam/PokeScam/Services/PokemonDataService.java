@@ -37,7 +37,8 @@ public class PokemonDataService {
     private final PokeAPIService pokeAPIService;
     private final CustomUserDetails userDetails;
 
-    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService, CustomUserDetails userDetails, UserRepository userRepo) {
+    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService,
+            CustomUserDetails userDetails, UserRepository userRepo) {
         this.pokemonRepo = pokemonRepo;
         this.boxService = boxService;
         this.pokeAPIService = pokeAPIService;
@@ -47,9 +48,10 @@ public class PokemonDataService {
 
     public List<PokemonDTO> getPkmnTeamInfoDTO() {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
-        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
-        if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p -> pokeAPIService.populatePokemonDTO(p))
+                .collect(Collectors.toList());
+        if (teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
+            for (int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
                 teamPkmnDTO.add(PokemonDTO.getEmpty());
             }
         }
@@ -58,8 +60,8 @@ public class PokemonDataService {
 
     public List<Pokemon> getPkmnTeamInfo() {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
-        if(teamPkmn.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamPkmn.size(); i < POKEMON_TEAM_SIZE; i++) {
+        if (teamPkmn.size() < POKEMON_TEAM_SIZE) {
+            for (int i = teamPkmn.size(); i < POKEMON_TEAM_SIZE; i++) {
                 teamPkmn.add(null);
             }
         }
@@ -68,9 +70,10 @@ public class PokemonDataService {
 
     public List<PokemonDTO> getPkmnTeamInfoOfUser(User user) {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
-        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
-        if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p -> pokeAPIService.populatePokemonDTO(p))
+                .collect(Collectors.toList());
+        if (teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
+            for (int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
                 teamPkmnDTO.add(PokemonDTO.getEmpty());
             }
         }
@@ -79,7 +82,8 @@ public class PokemonDataService {
 
     public Page<Pokemon> getPkmnInBoxPage(int boxId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true , boxService.getBox(boxId), pageable);
+        return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true, boxService.getBox(boxId),
+                pageable);
     }
 
     public String addPokemon(PokemonDTO pkmnToSave) {
@@ -88,7 +92,7 @@ public class PokemonDataService {
         String addMsg;
         boolean errOccuredWhileAdding = false;
         boolean pokemonExists = pokeAPIService.pokemonExists(pkmnToSave.apiName());
-        if(!pokemonExists) {
+        if (!pokemonExists) {
             addMsg = "Pokemon does not exist";
             return addMsg;
         }
@@ -96,13 +100,13 @@ public class PokemonDataService {
         p.setName(pkmnToSave.apiName());
         p.setOwnerId(user);
 
-        if(getTeamPkmn().size() < POKEMON_TEAM_SIZE) {
+        if (getTeamPkmn().size() < POKEMON_TEAM_SIZE) {
             p.setInBox(false);
             addMsg = "Added to team";
         } else {
             p.setInBox(true);
             Optional<Box> nextFreeBox = boxService.getNextFreeBox();
-            if(nextFreeBox.isPresent()) {
+            if (nextFreeBox.isPresent()) {
                 p.setBoxId(nextFreeBox.get());
                 addMsg = "Added to box " + nextFreeBox.get().getUserBoxId();
             } else {
@@ -113,7 +117,7 @@ public class PokemonDataService {
 
         populatePkmnWithPkmnDTOValues(p, pkmnToSave);
 
-        if(!errOccuredWhileAdding) {
+        if (!errOccuredWhileAdding) {
             pokemonRepo.save(p);
         }
         return addMsg;
@@ -153,18 +157,18 @@ public class PokemonDataService {
     }
 
     public void healPkmnByLastLogout(Instant lastLogout) {
-        if(lastLogout == null)
+        if (lastLogout == null)
             return;
         long secondsSinceLastLogout = Duration.between(lastLogout, Instant.now()).getSeconds();
         List<Pokemon> allPkmnInBox = pokemonRepo.findByOwnerIdAndInBox(userDetails.getThisUser(), true);
-        int amountToHealBy = (int)secondsSinceLastLogout;
-        allPkmnInBox.forEach(pkmn->adjustPkmnHealth(pkmn, amountToHealBy));
+        int amountToHealBy = (int) secondsSinceLastLogout;
+        allPkmnInBox.forEach(pkmn -> adjustPkmnHealth(pkmn, amountToHealBy));
         pokemonRepo.saveAll(allPkmnInBox);
     }
 
     public int adjustPkmnHealth(Pokemon pkmnToAdjust, int adjustment) {
         int curHpBefore = pkmnToAdjust.getCurHp();
-        int newHealth = Math.clamp(pkmnToAdjust.getCurHp()+adjustment, 0, pkmnToAdjust.getMaxHp());
+        int newHealth = Math.clamp(pkmnToAdjust.getCurHp() + adjustment, 0, pkmnToAdjust.getMaxHp());
         pkmnToAdjust.setCurHp(newHealth);
         int curHpAfter = pkmnToAdjust.getCurHp();
         int actualHealAmount = curHpAfter - curHpBefore;
@@ -172,7 +176,7 @@ public class PokemonDataService {
     }
 
     public void adjustPkmnHealth(int id, int adjustment) {
-        pokemonRepo.findById(id).ifPresent(pkmn->{
+        pokemonRepo.findById(id).ifPresent(pkmn -> {
             adjustPkmnHealth(pkmn, adjustment);
         });
     }
@@ -206,20 +210,18 @@ public class PokemonDataService {
         Pokemon pkmnToHeal = pokemonRepo.findByIdAndOwnerId(id, user);
         NotificationMsg msg;
 
-        if(pkmnToHeal != null && user.getCurrency() >= cost) {
-            user.setCurrency(user.getCurrency()-cost);
+        if (pkmnToHeal != null && user.getCurrency() >= cost) {
+            user.setCurrency(user.getCurrency() - cost);
             userRepo.save(user);
             int actualHealAmount = adjustPkmnHealth(pkmnToHeal, healAmount);
             pokemonRepo.save(pkmnToHeal);
             msg = new NotificationMsg(
-                String.format("Healed %s for %d", pkmnToHeal.getName(), actualHealAmount),
-                true
-            );
+                    String.format("Healed %s for %d", pkmnToHeal.getName(), actualHealAmount),
+                    true);
         } else {
             msg = new NotificationMsg(
-            "Not enough currency",
-            false
-            );
+                    "Not enough currency",
+                    false);
         }
 
         return msg;
@@ -231,8 +233,7 @@ public class PokemonDataService {
 
     public PokemonDTO getActivePkmnDTO() {
         return pokeAPIService.populatePokemonDTO(
-            pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser())
-        );
+                pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser()));
     }
 
     public NotificationMsg setNewActivePkmn(Pokemon newActivePkmn, Pokemon curActivePkmn) {

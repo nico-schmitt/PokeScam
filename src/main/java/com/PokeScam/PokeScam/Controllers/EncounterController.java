@@ -6,35 +6,41 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-
-import com.PokeScam.PokeScam.NotificationMsg;
-import com.PokeScam.PokeScam.SessionData;
-import com.PokeScam.PokeScam.DTOs.PokemonDTO;
-import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_MoveInfo;
-import com.PokeScam.PokeScam.Services.EncounterService;
-import com.PokeScam.PokeScam.Services.PokemonDataService;
-import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
-import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
-
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
+import com.PokeScam.PokeScam.CustomUserDetails;
+import com.PokeScam.PokeScam.NotificationMsg;
+import com.PokeScam.PokeScam.SessionData;
+import com.PokeScam.PokeScam.Model.User;
+import com.PokeScam.PokeScam.Services.EncounterService;
+import com.PokeScam.PokeScam.Services.PokemonDataService;
+import com.PokeScam.PokeScam.Services.PokedexService;
+import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
+import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
 
 @Controller
 public class EncounterController {
-    private final SessionData sessionData;
 
+    private final SessionData sessionData;
     private final EncounterService encounterService;
     private final PokemonDataService pokemonDataService;
+    private final PokedexService pokedexService;
+    private final CustomUserDetails customUserDetails;
 
-    public EncounterController(SessionData sessionData, EncounterService encounterService, PokemonDataService pokemonDataService) {
+    public EncounterController(
+            SessionData sessionData,
+            EncounterService encounterService,
+            PokemonDataService pokemonDataService,
+            PokedexService pokedexService,
+            CustomUserDetails customUserDetails) {
         this.sessionData = sessionData;
         this.encounterService = encounterService;
         this.pokemonDataService = pokemonDataService;
+        this.pokedexService = pokedexService;
+        this.customUserDetails = customUserDetails;
     }
 
     @GetMapping("/encounterPath")
@@ -56,27 +62,41 @@ public class EncounterController {
         sessionData.setSavedEncounterList(null);
         return "redirect:/encounterPath";
     }
-    
+
     @GetMapping("/encounterPath/{encounterIdx}")
     public String encounterPathBattle(Model m, @PathVariable int encounterIdx) {
+
         EncounterData encounterData = encounterService.getEncounterDataAtIdx(encounterIdx);
-        List<EncounterDataSinglePkmn> pkmnTeamInfo = encounterService.getPkmnTeamInfo();;
+
+        List<EncounterDataSinglePkmn> pkmnTeamInfo = encounterService.getPkmnTeamInfo();
+
         List<EncounterDataSinglePkmn> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
+
         EncounterDataSinglePkmn enemyActivePkmn = encounterService.getEnemyActivePkmnAtIdx(encounterIdx);
-        EncounterDataSinglePkmn activePkmn = encounterService.wrapPkmnInEncounterData(pokemonDataService.getActivePkmnDTO());
+
+        EncounterDataSinglePkmn activePkmn = encounterService.wrapPkmnInEncounterData(
+                pokemonDataService.getActivePkmnDTO());
+
+        // 🔹 MARK ENEMY POKÉMON AS SEEN
+        User user = customUserDetails.getThisUser();
+        pokedexService.markSeen(user, enemyActivePkmn.pkmn().apiName());
+
         m.addAttribute("encounterData", encounterData);
         m.addAttribute("pkmnTeam", pkmnTeamInfo);
         m.addAttribute("encounterList", encounterList);
         m.addAttribute("activePkmn", activePkmn);
         m.addAttribute("enemyPkmn", enemyActivePkmn);
+
         return "encounterBattle";
     }
 
     @PostMapping("/encounter/executeTurn")
-    public String executeTurn(@RequestParam int moveIdx, @RequestHeader(name="Referer", defaultValue = "/") String referer, RedirectAttributes redirectAttributes) {
+    public String executeTurn(
+            @RequestParam int moveIdx,
+            @RequestHeader(name = "Referer", defaultValue = "/") String referer,
+            RedirectAttributes redirectAttributes) {
         NotificationMsg notifMsg = encounterService.executeTurn(moveIdx);
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
-        System.out.println(notifMsg+"\n\n\n\n\n\n");
         return "redirect:" + referer;
     }
 }
