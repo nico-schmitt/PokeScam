@@ -18,6 +18,7 @@ import com.PokeScam.PokeScam.Services.PokedexService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
+import com.PokeScam.PokeScam.Services.GymProgressService;
 
 @Controller
 @RequestMapping("/gymBattle")
@@ -29,6 +30,7 @@ public class GymBattleController {
     private final PokemonDataService pokemonDataService;
     private final PokedexService pokedexService;
     private final CustomUserDetails customUserDetails;
+    private final GymProgressService gymProgressService;
 
     public GymBattleController(
             SessionData sessionData,
@@ -36,21 +38,24 @@ public class GymBattleController {
             EncounterService encounterService,
             PokemonDataService pokemonDataService,
             PokedexService pokedexService,
-            CustomUserDetails customUserDetails) {
+            CustomUserDetails customUserDetails,
+            GymProgressService gymProgressService) {
         this.sessionData = sessionData;
         this.gymService = gymService;
         this.encounterService = encounterService;
         this.pokemonDataService = pokemonDataService;
         this.pokedexService = pokedexService;
         this.customUserDetails = customUserDetails;
+        this.gymProgressService = gymProgressService;
     }
 
     /** Gym selection page (start battle) */
-    @GetMapping("/start/{gymId}")
+    @PostMapping("/start/{gymId}")
     public String startGymBattle(@PathVariable Long gymId) {
         List<EncounterData> gymEncounters = gymService.getGymEncounters(gymId);
         sessionData.setSavedEncounterList(gymEncounters);
         sessionData.setEncounterProgress(0);
+        sessionData.setCurrentGymId(gymId); // new field in SessionData
         return "redirect:/gymBattle/battle/0";
     }
 
@@ -74,7 +79,16 @@ public class GymBattleController {
         m.addAttribute("activePkmn", activePkmn);
         m.addAttribute("enemyPkmn", enemyActivePkmn);
 
-        return "encounterBattle"; // same battle template
+        // Check if last encounter of gym
+        if (encounterIdx == sessionData.getSavedEncounterList().size() - 1
+                && encounterData.encounterWon()) {
+            Gym gym = gymService.getGymById(sessionData.getCurrentGymId())
+                    .orElseThrow(() -> new IllegalArgumentException("Gym not found"));
+            gymProgressService.markGymCompleted(user, gym);
+            m.addAttribute("gymCompleted", true);
+        }
+
+        return "encounterBattle";
     }
 
     /** Execute a turn in gym battle */

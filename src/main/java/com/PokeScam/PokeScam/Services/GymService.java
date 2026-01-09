@@ -11,129 +11,100 @@ import org.springframework.stereotype.Service;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.Model.Gym;
 import com.PokeScam.PokeScam.Model.GymTrainer;
-import com.PokeScam.PokeScam.Model.GymTrainerPokemon;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Repos.GymRepository;
-import com.PokeScam.PokeScam.Repos.GymTrainerPokemonRepository;
 import com.PokeScam.PokeScam.Repos.GymTrainerRepository;
+import com.PokeScam.PokeScam.Repos.PokemonRepository;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
-import com.PokeScam.PokeScam.Services.PokemonDataService;
-import com.PokeScam.PokeScam.Services.PokemonDataService.PokemonWithMovesDTO;
 
 @Service
 public class GymService {
 
     private final GymRepository gymRepo;
     private final GymTrainerRepository trainerRepo;
-    private final GymTrainerPokemonRepository trainerPkmnRepo;
+    private final PokemonRepository pokemonRepo;
     private final PokemonDataService pokemonDataService;
 
     public GymService(
             GymRepository gymRepo,
             GymTrainerRepository trainerRepo,
-            GymTrainerPokemonRepository trainerPkmnRepo,
+            PokemonRepository pokemonRepo,
             PokemonDataService pokemonDataService) {
+
         this.gymRepo = gymRepo;
         this.trainerRepo = trainerRepo;
-        this.trainerPkmnRepo = trainerPkmnRepo;
+        this.pokemonRepo = pokemonRepo;
         this.pokemonDataService = pokemonDataService;
     }
 
-    /** Return all NPC gyms */
+    /** All NPC gyms */
     public List<Gym> getAllNpcGyms() {
         return gymRepo.findByNpcGymTrue();
     }
 
-    /** Return a single gym by ID */
     public Optional<Gym> getGymById(Long gymId) {
         return gymRepo.findById(gymId);
     }
 
+    /**
+     * Build encounter chain for a gym
+     */
     public List<EncounterData> getGymEncounters(Long gymId) {
-        List<EncounterData> encounters = new ArrayList<>();
-
         Gym gym = gymRepo.findById(gymId)
                 .orElseThrow(() -> new IllegalArgumentException("Gym not found"));
 
         List<GymTrainer> trainers = trainerRepo.findByGymOrderBySequenceNumberAsc(gym);
 
+        List<EncounterData> encounters = new ArrayList<>();
+
         for (GymTrainer trainer : trainers) {
-            List<GymTrainerPokemon> trainerPkmnList = trainerPkmnRepo.findByTrainerOrderByIdAsc(trainer);
-            List<EncounterDataSinglePkmn> encounterPkmn = new ArrayList<>();
+            List<Pokemon> trainerPokemon = pokemonRepo.findByTrainerOrderByIdAsc(trainer);
 
-            for (GymTrainerPokemon gtp : trainerPkmnList) {
-                // Build a minimal PokemonDTO for the battle
-                PokemonDTO pkmnDto = new PokemonDTO(
-                        gtp.getSpeciesId(), // id
-                        false, // isInBox
-                        gtp.getSpeciesName().toLowerCase().replace(" ", "-"), // apiName
-                        gtp.getSpeciesName(), // displayName
-                        "", // imageURL
-                        "", // flavorText
-                        gtp.getLevel(), // level
-                        0, // exp
-                        100, // maxHp (example, adjust as needed)
-                        100, // curHp
-                        null, // allStats
-                        null, // allMoves
-                        false, // isActivePkmn
-                        false, // seen
-                        false // caught
-                );
+            List<EncounterDataSinglePkmn> encounterPkmn = trainerPokemon.stream()
+                    .map(pkmn -> {
+                        PokemonDTO dto = pokemonDataService
+                                .convertToPokemonDTO(
+                                        pokemonDataService.getPokemonWithMovesDTO(pkmn));
 
-                encounterPkmn.add(new EncounterDataSinglePkmn(pkmnDto, true));
-            }
+                        return new EncounterDataSinglePkmn(dto, false);
+                    })
+                    .toList();
 
-            EncounterData encounter = new EncounterData(
+            encounters.add(new EncounterData(
                     trainer.getName(),
                     encounterPkmn,
-                    null);
-
-            encounters.add(encounter);
+                    null));
         }
 
         return encounters;
     }
 
-    /** Get trainers and their Pokémon for a gym */
+    /**
+     * Used for gym overview / UI
+     */
     public List<Map<String, Object>> getGymTrainersWithPokemon(Long gymId) {
         Gym gym = gymRepo.findById(gymId)
                 .orElseThrow(() -> new IllegalArgumentException("Gym not found"));
+
         List<GymTrainer> trainers = trainerRepo.findByGymOrderBySequenceNumberAsc(gym);
 
-        List<Map<String, Object>> trainerList = new ArrayList<>();
-        for (GymTrainer trainer : trainers) {
-            Map<String, Object> tMap = new HashMap<>();
-            tMap.put("trainer", trainer);
+        List<Map<String, Object>> result = new ArrayList<>();
 
-            // Convert each GymTrainerPokemon to a minimal PokemonDTO
-            List<PokemonDTO> pokemons = trainerPkmnRepo.findByTrainerOrderByIdAsc(trainer)
+        for (GymTrainer trainer : trainers) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("trainer", trainer);
+
+            List<PokemonDTO> pokemonDtos = pokemonRepo.findByTrainerOrderByIdAsc(trainer)
                     .stream()
-                    .map(gtp -> new PokemonDTO(
-                            gtp.getSpeciesId(), // id
-                            false, // isInBox
-                            gtp.getSpeciesName().toLowerCase().replace(" ", "-"), // apiName
-                            gtp.getSpeciesName(), // displayName
-                            "", // imageURL
-                            "", // flavorText
-                            gtp.getLevel(), // level
-                            0, // exp
-                            100, // maxHp (example)
-                            100, // curHp (example)
-                            null, // allStats
-                            null, // allMoves
-                            false, // isActivePkmn
-                            false, // seen
-                            false // caught
-                    ))
+                    .map(pkmn -> pokemonDataService.convertToPokemonDTO(
+                            pokemonDataService.getPokemonWithMovesDTO(pkmn)))
                     .toList();
 
-            tMap.put("pokemons", pokemons);
-            trainerList.add(tMap);
+            entry.put("pokemons", pokemonDtos);
+            result.add(entry);
         }
 
-        return trainerList;
+        return result;
     }
-
 }

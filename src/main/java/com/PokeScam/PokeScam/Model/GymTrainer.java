@@ -22,7 +22,7 @@ public class GymTrainer {
     private Gym gym;
 
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GymTrainerPokemon> team;
+    private List<Pokemon> team;
 
     // Getters & setters
     public Long getId() {
@@ -57,11 +57,11 @@ public class GymTrainer {
         this.gym = gym;
     }
 
-    public List<GymTrainerPokemon> getTeam() {
+    public List<Pokemon> getTeam() {
         return team;
     }
 
-    public void setTeam(List<GymTrainerPokemon> team) {
+    public void setTeam(List<Pokemon> team) {
         this.team = team;
     }
 }

@@ -3,9 +3,11 @@ package com.PokeScam.PokeScam.Services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -53,12 +55,11 @@ public class PokeAPIService {
                 new PokemonDTO_StatInfo(pkmnToUse.getSpdBaseStat(), pkmnToUse.getSpd(), "SPD"),
                 new PokemonDTO_StatInfo(pkmnToUse.getSpeBaseStat(), pkmnToUse.getSpe(), "SPE"));
 
-        PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(
-                List.of(
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(0)),
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(1)),
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(2)),
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(3))));
+        List<PokemonDTO_MoveInfo> moveDTOs = apiData.allMoves.moves.stream()
+                .map(this::populatePokemonDTOAllMovesInfo)
+                .toList();
+
+        PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(moveDTOs);
 
         return new PokemonDTO(
                 pkmnToUse.getId(),
@@ -96,12 +97,11 @@ public class PokeAPIService {
                 new PokemonDTO_StatInfo(apiData.allStats.spe.baseStat,
                         pokemonCalcService.calcPkmnSpe(apiData.allStats.spe.baseStat, rndLevel), "SPE"));
 
-        PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(
-                List.of(
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(0)),
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(1)),
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(2)),
-                        populatePokemonDTOAllMovesInfo(apiData.allMoves.moves.get(3))));
+        List<PokemonDTO_MoveInfo> moveDTOs = apiData.allMoves.moves.stream()
+                .map(this::populatePokemonDTOAllMovesInfo)
+                .toList();
+
+        PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(moveDTOs);
 
         return new PokemonDTO(
                 -1,
@@ -187,34 +187,45 @@ public class PokeAPIService {
 
         String sprite = pokemonData.sprites.front_default;
         AllStats allStats = getAllStats(pokemonData);
+
         AllMoves allMoves = getAllMoves(pokemonData, languageToUse, apiMovesLookup);
 
         return new PokemonAPIDTOHelper(displayName, sprite, description, allStats, allMoves);
     }
 
-    private AllMoves getAllMoves(PokeAPIDTO_PokemonData pokemonData, String languageToUse,
+    private AllMoves getAllMoves(
+            PokeAPIDTO_PokemonData pokemonData,
+            String languageToUse,
             APIMovesLookup apiMovesLookup) {
-        List<MoveInfo> moves = apiMovesLookup == null
-                ? getMovesInfo(pokemonData, null)
-                : getMovesInfo(pokemonData, List.of(apiMovesLookup.move1, apiMovesLookup.move2, apiMovesLookup.move3,
-                        apiMovesLookup.move4));
 
-        Mono<PokeAPIDTO_PokemonMoveData> m1 = normalWebClient.get().uri(moves.get(0).url).retrieve()
-                .bodyToMono(PokeAPIDTO_PokemonMoveData.class);
-        Mono<PokeAPIDTO_PokemonMoveData> m2 = normalWebClient.get().uri(moves.get(1).url).retrieve()
-                .bodyToMono(PokeAPIDTO_PokemonMoveData.class);
-        Mono<PokeAPIDTO_PokemonMoveData> m3 = normalWebClient.get().uri(moves.get(2).url).retrieve()
-                .bodyToMono(PokeAPIDTO_PokemonMoveData.class);
-        Mono<PokeAPIDTO_PokemonMoveData> m4 = normalWebClient.get().uri(moves.get(3).url).retrieve()
-                .bodyToMono(PokeAPIDTO_PokemonMoveData.class);
+        if (apiMovesLookup == null) {
+            return new AllMoves(Collections.emptyList());
+        }
 
-        List<AllMoveInfo> allMoveInfo = Mono.zip(m1, m2, m3, m4)
-                .map(t -> List.of(
-                        getMoveData(t.getT1(), languageToUse),
-                        getMoveData(t.getT2(), languageToUse),
-                        getMoveData(t.getT3(), languageToUse),
-                        getMoveData(t.getT4(), languageToUse)))
-                .block();
+        // 1️⃣ Collect DB move names
+        List<String> moveNames = Stream.of(
+                apiMovesLookup.move1(),
+                apiMovesLookup.move2(),
+                apiMovesLookup.move3(),
+                apiMovesLookup.move4())
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (moveNames.isEmpty()) {
+            throw new IllegalStateException("No moves defined for Pokémon " + pokemonData.species.name);
+        }
+
+        // 2️⃣ Call the PokeAPI for each move
+        List<AllMoveInfo> allMoveInfo = moveNames.stream()
+                .map(moveName -> normalWebClient.get()
+                        .uri("/move/" + moveName.toLowerCase()) // lowercase API requirement
+                        .retrieve()
+                        .bodyToMono(PokeAPIDTO_PokemonMoveData.class)
+                        .map(md -> getMoveData(md, languageToUse))
+                        .block() // block because we want the list immediately
+                )
+                .filter(Objects::nonNull)
+                .toList();
 
         return new AllMoves(allMoveInfo);
     }

@@ -11,8 +11,10 @@ import com.PokeScam.PokeScam.Model.Gym;
 import com.PokeScam.PokeScam.Services.EncounterService;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
+import com.PokeScam.PokeScam.Services.GymProgressService;
 import com.PokeScam.PokeScam.Services.GymService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
+import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.SessionData;
 
 @Controller
@@ -23,15 +25,21 @@ public class GymController {
     private final SessionData sessionData;
     private final EncounterService encounterService;
     private final PokemonDataService pokemonDataService;
+    private final GymProgressService gymProgressService;
+    private final CustomUserDetails customUserDetails;
 
     public GymController(GymService gymService,
             SessionData sessionData,
             EncounterService encounterService,
-            PokemonDataService pokemonDataService) {
+            CustomUserDetails customUserDetails,
+            PokemonDataService pokemonDataService,
+            GymProgressService gymProgressService) {
         this.gymService = gymService;
         this.sessionData = sessionData;
         this.encounterService = encounterService;
         this.pokemonDataService = pokemonDataService;
+        this.customUserDetails = customUserDetails;
+        this.gymProgressService = gymProgressService;
     }
 
     /** List all NPC gyms */
@@ -39,6 +47,11 @@ public class GymController {
     public String listGyms(Model model) {
         List<Gym> gyms = gymService.getAllNpcGyms();
         model.addAttribute("gyms", gyms);
+
+        // Add completed gyms
+        List<Long> completedGymIds = gymProgressService.getCompletedGymIdsForUser(customUserDetails.getThisUser());
+        model.addAttribute("completedGymIds", completedGymIds);
+
         return "gyms";
     }
 
