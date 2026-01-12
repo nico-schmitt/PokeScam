@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.Controllers;
 
+import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +11,6 @@ import com.PokeScam.PokeScam.Services.BoxService;
 import com.PokeScam.PokeScam.Services.PokeAPIService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
 import com.PokeScam.PokeScam.Services.ShopService;
-import com.PokeScam.PokeScam.Services.ShopService.ShopItemType;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -36,9 +36,9 @@ public class ShopController {
         return "shop";
     }
 
-    @PostMapping("/buy/{itemType}")
-    public String buyEnergy(@PathVariable ShopItemType itemType, RedirectAttributes redirectAttributes) {
-        NotificationMsg notifMsg = shopService.buy(itemType);
+    @PostMapping("/buy/{itemId}")
+    public String buyEnergy(@PathVariable int itemId, RedirectAttributes redirectAttributes) {
+        NotificationMsg notifMsg = shopService.buy(itemId);
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
         return "redirect:/shop";
     }

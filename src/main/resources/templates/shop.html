@@ -6,12 +6,12 @@
           <i class="fa-solid fa-bolt-lightning fa-4x"></i>
         </span>
       </div>
-      <form th:action="@{/buy/{itemType}(itemType=${item.itemType})}" method="post">
+      <form th:action="@{/buy/{itemId}(itemId=${item.id})}" method="post">
         <button class="button is-info">
-          <span class="icon"><i class="fa-solid fa-dollar-sign"></i>[[${item.cost}]]</span>
+          <span class="icon"><i class="fa-solid fa-dollar-sign"></i>[[${item.price}]]</span>
           <span></span>
           <span class="mx-1">Buy Energy</span>
-          <span class="icon"><i class="fa-solid fa-bolt-lightning"></i>[[${item.amount}]]</span>
+          <span class="icon"><i class="fa-solid fa-bolt-lightning"></i>1</span>
         </button>
       </form>
       </div>
