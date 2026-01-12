@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.Model;
 
+import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -34,4 +35,6 @@ public abstract class Item {
     @Column(name = "consumable")
     @NotNull
     private boolean consumable;
+
+    public abstract boolean isSameItem(ItemDTO other);
 }

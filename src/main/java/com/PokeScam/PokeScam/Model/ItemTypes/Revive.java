@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.Model.ItemTypes;
 
+import com.PokeScam.PokeScam.DTOs.ItemDTO;
+import com.PokeScam.PokeScam.DTOs.ReviveDTO;
 import com.PokeScam.PokeScam.Model.Inventory;
 import com.PokeScam.PokeScam.Model.Item;
 import jakarta.persistence.Column;
@@ -23,5 +25,12 @@ public class Revive extends Item {
         setMaxStackSize(maxStackSize);
         setConsumable(consumable);
         this.healPercentageRevive = healPercentageRevive;
+    }
+
+    @Override
+    public boolean isSameItem(ItemDTO other) {
+        return other instanceof ReviveDTO &&
+                other.name().equalsIgnoreCase(this.getName()) &&
+                other.description().equalsIgnoreCase(this.getDescription());
     }
 }

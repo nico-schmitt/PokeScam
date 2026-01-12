@@ -13,6 +13,7 @@ import com.PokeScam.PokeScam.Services.PokemonDataService;
 import com.PokeScam.PokeScam.Services.ShopService;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
@@ -37,8 +38,10 @@ public class ShopController {
     }
 
     @PostMapping("/buy/{itemId}")
-    public String buyEnergy(@PathVariable int itemId, RedirectAttributes redirectAttributes) {
-        NotificationMsg notifMsg = shopService.buy(itemId);
+    public String buyEnergy(@PathVariable int itemId,
+                            @RequestParam(defaultValue = "1") int amount,
+                            RedirectAttributes redirectAttributes) {
+        NotificationMsg notifMsg = shopService.buy(itemId, amount);
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
         return "redirect:/shop";
     }

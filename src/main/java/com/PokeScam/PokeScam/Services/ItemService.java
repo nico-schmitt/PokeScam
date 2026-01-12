@@ -1,12 +1,16 @@
 package com.PokeScam.PokeScam.Services;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
+import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import com.PokeScam.PokeScam.Model.Item;
+import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.ItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Service
 public class ItemService {
@@ -21,5 +25,15 @@ public class ItemService {
     public Page<Item> getItemsInPage(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return itemRepo.findByInventoryId(userDetails.getThisUser().getInventory().getId(), pageable);
+    }
+
+    public Item getUserItem(ItemDTO item, User user) {
+        ArrayList<Item> items = new ArrayList<>(itemRepo.findByInventoryId(userDetails.getThisUser().getInventory().getId()));
+
+        for (Item i : items) {
+            if (i.isSameItem(item))
+                return i;
+        }
+        return null;
     }
 }

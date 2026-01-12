@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.Model.ItemTypes;
 
+import com.PokeScam.PokeScam.DTOs.BallDTO;
+import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import com.PokeScam.PokeScam.Model.Inventory;
 import com.PokeScam.PokeScam.Model.Item;
 import jakarta.persistence.*;
@@ -22,5 +24,12 @@ public class Ball extends Item {
         setMaxStackSize(maxStackSize);
         setConsumable(consumable);
         this.baseCaptureChance = baseCaptureChance;
+    }
+
+    @Override
+    public boolean isSameItem(ItemDTO other) {
+        return other instanceof BallDTO &&
+                other.name().equalsIgnoreCase(this.getName()) &&
+                other.description().equalsIgnoreCase(this.getDescription());
     }
 }

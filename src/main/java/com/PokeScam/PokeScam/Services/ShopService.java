@@ -57,34 +57,41 @@ public class ShopService {
             0, 25, true, 1));
     }
 
-    public NotificationMsg buy(int itemId) {
+    public NotificationMsg buy(int itemId, int amount) {
         NotificationMsg transactionMsg;
         User user = userDetails.getThisUser();
 
         for (ItemDTO item : shopItems) {
             if (item.id() == itemId) {
-                if(user.getCurrency() >= item.price()) {
-                    // TODO: handle buying multiple items
-                    // TODO: check maximum stack size before completing purchase
-                    user.setCurrency(user.getCurrency()-item.price());
-                    transactionMsg = new NotificationMsg("Successfully bought "+item.name(), true);
-                    HandleItemPurchase(user, item, 1);
-                } else {
-                    transactionMsg =  new NotificationMsg("Not enough currency", false);
-                }
+                if(user.getCurrency() >= (item.price() * amount)) {
+                    Item userItem = itemService.getUserItem(item, user);
 
-                return transactionMsg;
+                    if (userItem == null) {
+                        // add item to user inventory
+                        user.setCurrency(user.getCurrency() - (item.price()*amount));
+                        HandleNewItemPurchase(user, item, amount);
+                        return new NotificationMsg("Successfully bought "+item.name()+"x"+String.valueOf(amount), true);
+                    } else {
+                        // add amount to item in inventory if possible
+                        if (userItem.getAmount() + amount > userItem.getMaxStackSize())
+                            return new NotificationMsg("The maximum amount of "+item.name()+" you can own is "+String.valueOf(userItem.getMaxStackSize()), false);
+                        userItem.setAmount(userItem.getAmount() + amount);
+                        itemRepo.save(userItem);
+                        return new NotificationMsg("Successfully bought "+item.name()+"x"+String.valueOf(amount), true);
+                    }
+                } else {
+                    return new NotificationMsg("Not enough currency", false);
+                }
             }
         }
         return new NotificationMsg("Error: unknown item", false);
     }
 
-    private void HandleItemPurchase(User user, ItemDTO item, int amount) {
+    private void HandleNewItemPurchase(User user, ItemDTO item, int amount) {
         if (item instanceof EnergyDTO) {
             user.setEnergy(user.getEnergy()+((EnergyDTO) item).energyAmount());
             userRepo.save(user);
         } else {
-            // TODO: check if item is already in inventory (name and description matches) -> increase amount or create new item like below
             Item purchasedItem;
 
             if (item instanceof BallDTO) {
