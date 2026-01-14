@@ -1,0 +1,26 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center mt-3">
+    <h1 class="title">Gyms</h1>
+
+    <div class="columns is-multiline mt-4">
+      <div class="column is-one-quarter" th:each="gym : ${gyms}">
+        <div class="card">
+          <div class="card-image">
+          </div>
+          <div class="card-content has-text-centered">
+            <p class="title is-6" th:text="${gym.name}">Gym Name</p>
+            <div th:if="${completedGymIds != null and completedGymIds.contains(gym.id)}">
+                Completed!
+            </div>
+
+            <a th:href="@{/gyms/{id}(id=${gym.id})}" class="button is-info mt-2">View Gym</a>
+            <form th:action="@{/gyms/start/{id}(id=${gym.id})}" method="post" class="mt-2">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit" class="button is-success">Challenge Gym</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -3,15 +3,15 @@ package com.PokeScam.PokeScam.Services;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.NotificationMsg;
@@ -23,7 +23,6 @@ import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.PokemonRepository;
 import com.PokeScam.PokeScam.Repos.UserRepository;
 
-import groovyjarjarantlr4.v4.parse.ANTLRParser.elementOptions_return;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -36,50 +35,159 @@ public class PokemonDataService {
     private final BoxService boxService;
     private final PokeAPIService pokeAPIService;
     private final CustomUserDetails userDetails;
+    private final PokemonCalcService pokemonCalcService;
 
-    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService, CustomUserDetails userDetails, UserRepository userRepo) {
+    public PokemonDataService(PokemonRepository pokemonRepo, BoxService boxService, PokeAPIService pokeAPIService,
+            CustomUserDetails userDetails, UserRepository userRepo, PokemonCalcService pokemonCalcService) {
         this.pokemonRepo = pokemonRepo;
         this.boxService = boxService;
         this.pokeAPIService = pokeAPIService;
         this.userDetails = userDetails;
         this.userRepo = userRepo;
+        this.pokemonCalcService = pokemonCalcService;
     }
+
+    // ==================== TEAM DTOs ====================
 
     public List<PokemonDTO> getPkmnTeamInfoDTO() {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
-        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
-        if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
-                teamPkmnDTO.add(PokemonDTO.getEmpty());
-            }
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p -> pokeAPIService.populatePokemonDTO(p))
+                .collect(Collectors.toList());
+        while (teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
+            teamPkmnDTO.add(PokemonDTO.getEmpty());
         }
         return teamPkmnDTO;
     }
 
     public List<Pokemon> getPkmnTeamInfo() {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
-        if(teamPkmn.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamPkmn.size(); i < POKEMON_TEAM_SIZE; i++) {
-                teamPkmn.add(null);
-            }
+        while (teamPkmn.size() < POKEMON_TEAM_SIZE) {
+            teamPkmn.add(null);
         }
         return teamPkmn;
     }
 
+    // ==================== HEALTH / HEAL ====================
+
+    public int adjustPkmnHealth(Pokemon pkmnToAdjust, int adjustment) {
+        int curHpBefore = pkmnToAdjust.getCurHp();
+        int newHealth = Math.max(0, Math.min(pkmnToAdjust.getCurHp() + adjustment, pkmnToAdjust.getMaxHp()));
+        pkmnToAdjust.setCurHp(newHealth);
+        return newHealth - curHpBefore;
+    }
+
+    public void adjustPkmnHealth(int id, int adjustment) {
+        pokemonRepo.findById(id).ifPresent(pkmn -> adjustPkmnHealth(pkmn, adjustment));
+    }
+
+    // ==================== LEVEL-UP / EXP ====================
+
+    public void gainExp(Pokemon pokemon, int expToGain) {
+        pokemon.setExp(pokemon.getExp() + expToGain);
+        checkLevelUp(pokemon);
+        pokemonRepo.save(pokemon);
+    }
+
+    public boolean checkLevelUp(Pokemon pokemon) {
+        boolean leveledUp = false;
+        int nextLevelExp = getExpForNextLevel(pokemon.getLevel());
+        while (pokemon.getExp() >= nextLevelExp && pokemon.getLevel() < 100) {
+            pokemon.setLevel(pokemon.getLevel() + 1);
+            pokemon.setExp(pokemon.getExp() - nextLevelExp);
+            recalcStats(pokemon);
+            checkEvolution(pokemon); // optional evolution
+            nextLevelExp = getExpForNextLevel(pokemon.getLevel());
+            leveledUp = true;
+        }
+        return leveledUp;
+    }
+
+    private int getExpForNextLevel(int level) {
+        // Example quadratic formula for leveling
+        return (int) Math.floor(Math.pow(level + 1, 3));
+    }
+
+    private void recalcStats(Pokemon p) {
+        p.setMaxHp(pokemonCalcService.calcPkmnMaxHp(p.getHpBaseStat(), p.getLevel()));
+        p.setAtk(pokemonCalcService.calcPkmnAtk(p.getAtkBaseStat(), p.getLevel()));
+        p.setDef(pokemonCalcService.calcPkmnDef(p.getDefBaseStat(), p.getLevel()));
+        p.setSpa(pokemonCalcService.calcPkmnSpa(p.getSpaBaseStat(), p.getLevel()));
+        p.setSpd(pokemonCalcService.calcPkmnSpd(p.getSpdBaseStat(), p.getLevel()));
+        p.setSpe(pokemonCalcService.calcPkmnSpe(p.getSpeBaseStat(), p.getLevel()));
+        if (p.getCurHp() > p.getMaxHp()) {
+            p.setCurHp(p.getMaxHp());
+        }
+    }
+
+    private void checkEvolution(Pokemon p) {
+        // Placeholder for evolution logic
+        // e.g., if level >= evolutionLevel -> evolve
+    }
+
+    // ==================== ACTIVE POKÉMON ====================
+
+    public Pokemon getActivePkmn() {
+        return pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser());
+    }
+
+    public PokemonDTO getActivePkmnDTO() {
+        return pokeAPIService.populatePokemonDTO(getActivePkmn());
+    }
+
+    public NotificationMsg setNewActivePkmn(Pokemon newActivePkmn, Pokemon curActivePkmn) {
+        if (curActivePkmn != null) {
+            curActivePkmn.setActivePkmn(false);
+            pokemonRepo.save(curActivePkmn);
+        }
+        newActivePkmn.setActivePkmn(true);
+        pokemonRepo.save(newActivePkmn);
+        return new NotificationMsg(
+                String.format("Set %s as new active Pokemon!", newActivePkmn.getName()), true);
+    }
+
+    // ---------------- USER TEAM ----------------
     public List<PokemonDTO> getPkmnTeamInfoOfUser(User user) {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
-        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p->pokeAPIService.populatePokemonDTO(p)).collect(Collectors.toList());
-        if(teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
-            for(int i = teamPkmnDTO.size(); i < POKEMON_TEAM_SIZE; i++) {
-                teamPkmnDTO.add(PokemonDTO.getEmpty());
-            }
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream()
+                .map(p -> pokeAPIService.populatePokemonDTO(p))
+                .collect(Collectors.toList());
+        while (teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
+            teamPkmnDTO.add(PokemonDTO.getEmpty());
         }
         return teamPkmnDTO;
     }
 
+    // ---------------- POPULATE POKEMON FROM DTO ----------------
+    public void populatePkmnWithPkmnDTOValues(Pokemon p, PokemonDTO pkmnDTO) {
+        p.setActivePkmn(pkmnDTO.isActivePkmn());
+        p.setLevel(pkmnDTO.level());
+        p.setExp(pkmnDTO.exp());
+        p.setMaxHp(pkmnDTO.maxHp());
+        p.setCurHp(pkmnDTO.curHp());
+
+        p.setAtk(pkmnDTO.allStats().atk().statValue());
+        p.setDef(pkmnDTO.allStats().def().statValue());
+        p.setSpa(pkmnDTO.allStats().spa().statValue());
+        p.setSpd(pkmnDTO.allStats().spd().statValue());
+        p.setSpe(pkmnDTO.allStats().spe().statValue());
+
+        p.setHpBaseStat(pkmnDTO.allStats().hp().baseStat());
+        p.setAtkBaseStat(pkmnDTO.allStats().atk().baseStat());
+        p.setDefBaseStat(pkmnDTO.allStats().def().baseStat());
+        p.setSpaBaseStat(pkmnDTO.allStats().spa().baseStat());
+        p.setSpdBaseStat(pkmnDTO.allStats().spd().baseStat());
+        p.setSpeBaseStat(pkmnDTO.allStats().spe().baseStat());
+
+        p.setMove1(pkmnDTO.allMoves().moves().get(0).apiName());
+        p.setMove2(pkmnDTO.allMoves().moves().get(1).apiName());
+        p.setMove3(pkmnDTO.allMoves().moves().get(2).apiName());
+        p.setMove4(pkmnDTO.allMoves().moves().get(3).apiName());
+    }
+
     public Page<Pokemon> getPkmnInBoxPage(int boxId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true , boxService.getBox(boxId), pageable);
+        return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true, boxService.getBox(boxId),
+                pageable);
     }
 
     public String addPokemon(PokemonDTO pkmnToSave) {
@@ -88,7 +196,7 @@ public class PokemonDataService {
         String addMsg;
         boolean errOccuredWhileAdding = false;
         boolean pokemonExists = pokeAPIService.pokemonExists(pkmnToSave.apiName());
-        if(!pokemonExists) {
+        if (!pokemonExists) {
             addMsg = "Pokemon does not exist";
             return addMsg;
         }
@@ -96,13 +204,13 @@ public class PokemonDataService {
         p.setName(pkmnToSave.apiName());
         p.setOwnerId(user);
 
-        if(getTeamPkmn().size() < POKEMON_TEAM_SIZE) {
+        if (getTeamPkmn().size() < POKEMON_TEAM_SIZE) {
             p.setInBox(false);
             addMsg = "Added to team";
         } else {
             p.setInBox(true);
             Optional<Box> nextFreeBox = boxService.getNextFreeBox();
-            if(nextFreeBox.isPresent()) {
+            if (nextFreeBox.isPresent()) {
                 p.setBoxId(nextFreeBox.get());
                 addMsg = "Added to box " + nextFreeBox.get().getUserBoxId();
             } else {
@@ -113,7 +221,7 @@ public class PokemonDataService {
 
         populatePkmnWithPkmnDTOValues(p, pkmnToSave);
 
-        if(!errOccuredWhileAdding) {
+        if (!errOccuredWhileAdding) {
             pokemonRepo.save(p);
         }
         return addMsg;
@@ -153,52 +261,13 @@ public class PokemonDataService {
     }
 
     public void healPkmnByLastLogout(Instant lastLogout) {
-        if(lastLogout == null)
+        if (lastLogout == null)
             return;
         long secondsSinceLastLogout = Duration.between(lastLogout, Instant.now()).getSeconds();
         List<Pokemon> allPkmnInBox = pokemonRepo.findByOwnerIdAndInBox(userDetails.getThisUser(), true);
-        int amountToHealBy = (int)secondsSinceLastLogout;
-        allPkmnInBox.forEach(pkmn->adjustPkmnHealth(pkmn, amountToHealBy));
+        int amountToHealBy = (int) secondsSinceLastLogout;
+        allPkmnInBox.forEach(pkmn -> adjustPkmnHealth(pkmn, amountToHealBy));
         pokemonRepo.saveAll(allPkmnInBox);
-    }
-
-    public int adjustPkmnHealth(Pokemon pkmnToAdjust, int adjustment) {
-        int curHpBefore = pkmnToAdjust.getCurHp();
-        int newHealth = Math.clamp(pkmnToAdjust.getCurHp()+adjustment, 0, pkmnToAdjust.getMaxHp());
-        pkmnToAdjust.setCurHp(newHealth);
-        int curHpAfter = pkmnToAdjust.getCurHp();
-        int actualHealAmount = curHpAfter - curHpBefore;
-        return actualHealAmount;
-    }
-
-    public void adjustPkmnHealth(int id, int adjustment) {
-        pokemonRepo.findById(id).ifPresent(pkmn->{
-            adjustPkmnHealth(pkmn, adjustment);
-        });
-    }
-
-    public void populatePkmnWithPkmnDTOValues(Pokemon p, PokemonDTO pkmnDTO) {
-        p.setActivePkmn(pkmnDTO.isActivePkmn());
-        p.setLevel(pkmnDTO.level());
-        p.setExp(pkmnDTO.exp());
-        p.setMaxHp(pkmnDTO.maxHp());
-        p.setCurHp(pkmnDTO.curHp());
-
-        p.setAtk(pkmnDTO.allStats().atk().statValue());
-        p.setDef(pkmnDTO.allStats().def().statValue());
-        p.setSpa(pkmnDTO.allStats().spa().statValue());
-        p.setSpd(pkmnDTO.allStats().spd().statValue());
-        p.setSpe(pkmnDTO.allStats().spe().statValue());
-        p.setHpBaseStat(pkmnDTO.allStats().hp().baseStat());
-        p.setAtkBaseStat(pkmnDTO.allStats().atk().baseStat());
-        p.setDefBaseStat(pkmnDTO.allStats().def().baseStat());
-        p.setSpaBaseStat(pkmnDTO.allStats().spa().baseStat());
-        p.setSpdBaseStat(pkmnDTO.allStats().spd().baseStat());
-        p.setSpeBaseStat(pkmnDTO.allStats().spe().baseStat());
-        p.setMove1(pkmnDTO.allMoves().moves().get(0).apiName());
-        p.setMove2(pkmnDTO.allMoves().moves().get(1).apiName());
-        p.setMove3(pkmnDTO.allMoves().moves().get(2).apiName());
-        p.setMove4(pkmnDTO.allMoves().moves().get(3).apiName());
     }
 
     public NotificationMsg healPkmnForCost(int id, int cost, int healAmount) {
@@ -206,41 +275,113 @@ public class PokemonDataService {
         Pokemon pkmnToHeal = pokemonRepo.findByIdAndOwnerId(id, user);
         NotificationMsg msg;
 
-        if(pkmnToHeal != null && user.getCurrency() >= cost) {
-            user.setCurrency(user.getCurrency()-cost);
+        if (pkmnToHeal != null && user.getCurrency() >= cost) {
+            user.setCurrency(user.getCurrency() - cost);
             userRepo.save(user);
             int actualHealAmount = adjustPkmnHealth(pkmnToHeal, healAmount);
             pokemonRepo.save(pkmnToHeal);
             msg = new NotificationMsg(
-                String.format("Healed %s for %d", pkmnToHeal.getName(), actualHealAmount),
-                true
-            );
+                    String.format("Healed %s for %d", pkmnToHeal.getName(), actualHealAmount),
+                    true);
         } else {
             msg = new NotificationMsg(
-            "Not enough currency",
-            false
-            );
+                    "Not enough currency",
+                    false);
         }
 
         return msg;
     }
 
-    public Pokemon getActivePkmn() {
-        return pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser());
+    public record PokemonWithMovesDTO(
+            Pokemon pokemon,
+            PokemonDTO dto,
+            List<String> moves) {
+
+        public int id() {
+            return dto.id();
+        }
+
+        public boolean isInBox() {
+            return dto.isInBox();
+        }
+
+        public String apiName() {
+            return dto.apiName();
+        }
+
+        public String displayName() {
+            return dto.displayName();
+        }
+
+        public String imageURL() {
+            return dto.imageURL();
+        }
+
+        public String flavorText() {
+            return dto.flavorText();
+        }
+
+        public int level() {
+            return dto.level();
+        }
+
+        public int exp() {
+            return dto.exp();
+        }
+
+        public int maxHp() {
+            return dto.maxHp();
+        }
+
+        public int curHp() {
+            return dto.curHp();
+        }
+
+        public PokemonDTO_AllStats allStats() {
+            return dto.allStats();
+        }
+
+        public PokemonDTO.PokemonDTO_AllMoves allMoves() {
+            return dto.allMoves();
+        }
+
+        public boolean isActivePkmn() {
+            return dto.isActivePkmn();
+        }
     }
 
-    public PokemonDTO getActivePkmnDTO() {
-        return pokeAPIService.populatePokemonDTO(
-            pokemonRepo.findByOwnerIdAndIsActivePkmnTrue(userDetails.getThisUser())
+    public PokemonWithMovesDTO getPokemonWithMovesDTO(Pokemon pkmn) {
+        if (pkmn == null)
+            return null;
+
+        PokemonDTO dto = pokeAPIService.populatePokemonDTO(pkmn);
+        List<String> moves = Stream.of(pkmn.getMove1(), pkmn.getMove2(),
+                pkmn.getMove3(), pkmn.getMove4())
+                .filter(Objects::nonNull) // remove nulls
+                .toList();
+
+        return new PokemonWithMovesDTO(pkmn, dto, moves);
+    }
+
+    public PokemonDTO convertToPokemonDTO(PokemonWithMovesDTO dto) {
+        // Create a PokemonDTO from PokemonWithMovesDTO fields
+        return new PokemonDTO(
+                dto.id(),
+                dto.isInBox(),
+                dto.apiName(),
+                dto.displayName(),
+                dto.imageURL(),
+                dto.flavorText(),
+                dto.level(),
+                dto.exp(),
+                dto.maxHp(),
+                dto.curHp(),
+                dto.allStats(),
+                dto.allMoves(),
+                dto.isActivePkmn(),
+                false, // seen
+                false // caught
         );
     }
 
-    public NotificationMsg setNewActivePkmn(Pokemon newActivePkmn, Pokemon curActivePkmn) {
-        NotificationMsg msg;
-        curActivePkmn.setActivePkmn(false);
-        pokemonRepo.save(curActivePkmn);
-        newActivePkmn.setActivePkmn(true);
-        pokemonRepo.save(newActivePkmn);
-        return new NotificationMsg(String.format("Set %s as new active Pokemon!", newActivePkmn.getName()), true);
-    }
 }
