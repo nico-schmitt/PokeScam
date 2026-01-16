@@ -1,5 +1,8 @@
 package com.PokeScam.PokeScam.Controllers;
 
+import com.PokeScam.PokeScam.CustomUserDetails;
+import com.PokeScam.PokeScam.Model.User;
+import com.PokeScam.PokeScam.Services.PokemonCalcService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,12 +39,16 @@ public class PokemonController {
 
     private final BoxService boxService;
     private final PokemonDataService pkmnDataService;
+    private final PokemonCalcService pkmnCalcService;
     private final PokeAPIService pokeAPIService;
+    private final CustomUserDetails customUserDetails;
 
-    public PokemonController(PokemonDataService pkmnData, PokeAPIService pokeAPIService, BoxService boxService) {
+    public PokemonController(PokemonDataService pkmnData, PokemonCalcService pkmnCalc, PokeAPIService pokeAPIService, BoxService boxService, CustomUserDetails customUserDetails) {
         this.pkmnDataService = pkmnData;
+        this.pkmnCalcService = pkmnCalc;
         this.pokeAPIService = pokeAPIService;
         this.boxService = boxService;
+        this.customUserDetails = customUserDetails;
     }
 
     @PostMapping("/addPokemon")
@@ -54,6 +61,18 @@ public class PokemonController {
     @DeleteMapping("/{id}")
     public String releasePokemon(@PathVariable int id, @RequestHeader(name="Referer", defaultValue = "/") String referer) {
         pkmnDataService.deletePkmn(id);
+        return "redirect:" + referer;
+    }
+
+    @DeleteMapping("/sell/{id}")
+    public String sellPokemon(@PathVariable int id, @RequestHeader(name="Referer", defaultValue = "/") String referer) {
+        Pokemon pkmn = pkmnDataService.getPkmnById(id).get();
+        int value = pkmnCalcService.getPokemonValue(pkmn);
+        pkmnDataService.deletePkmn(id);
+
+        User user = customUserDetails.getThisUser();
+        user.setCurrency(user.getCurrency() + value);
+
         return "redirect:" + referer;
     }
 

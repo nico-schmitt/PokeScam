@@ -115,4 +115,12 @@ public class PokemonCalcService {
         // Placeholder for future evolution logic
         // Example: if level >= threshold, evolve
     }
+
+    // ==================== MISC ====================
+
+    public int getPokemonValue(Pokemon pkmn) {
+        int statSum = pkmn.getMaxHp() + pkmn.getAtk() + pkmn.getDef() +
+                    pkmn.getSpa() + pkmn.getSpd() + pkmn.getSpe();
+        return pkmn.getLevel() + (statSum / 100);
+    }
 }

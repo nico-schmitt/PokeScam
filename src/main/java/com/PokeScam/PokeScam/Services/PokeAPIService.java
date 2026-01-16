@@ -76,7 +76,8 @@ public class PokeAPIService {
                 allMoves,
                 pkmnToUse.isActivePkmn(),
                 false,
-                false);
+                false,
+                pokemonCalcService.getPokemonValue(pkmnToUse));
     }
 
     public PokemonDTO populateRandomPokemonDTO(String speciesName) {
@@ -118,7 +119,8 @@ public class PokeAPIService {
                 allMoves,
                 false,
                 false,
-                false);
+                false,
+                0);
     }
 
     public PokemonDTO getRandomPokemon() {

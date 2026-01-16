@@ -15,7 +15,8 @@ public record PokemonDTO(
         PokemonDTO_AllMoves allMoves,
         boolean isActivePkmn,
         boolean seen,
-        boolean caught) {
+        boolean caught,
+        int value) {
     public static PokemonDTO getEmpty() {
         return new PokemonDTO(
                 -1,
@@ -30,7 +31,8 @@ public record PokemonDTO(
                 null,
                 false,
                 false, // seen
-                false // caught
+                false, // caught
+                0
         );
     }
 
@@ -50,7 +52,8 @@ public record PokemonDTO(
                 this.allMoves,
                 this.isActivePkmn,
                 this.seen,
-                this.caught);
+                this.caught,
+                this.value);
     }
 
     public PokemonDTO withSeenCaught(boolean seen, boolean caught) {
@@ -69,7 +72,8 @@ public record PokemonDTO(
                 this.allMoves,
                 this.isActivePkmn,
                 seen,
-                caught);
+                caught,
+                this.value);
     }
 
     public record PokemonDTO_AllStats(PokemonDTO_StatInfo hp, PokemonDTO_StatInfo atk, PokemonDTO_StatInfo def,

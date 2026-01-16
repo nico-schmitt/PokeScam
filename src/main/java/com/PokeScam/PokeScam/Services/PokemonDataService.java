@@ -380,7 +380,8 @@ public class PokemonDataService {
                 dto.allMoves(),
                 dto.isActivePkmn(),
                 false, // seen
-                false // caught
+                false, // caught
+                0
         );
     }
 

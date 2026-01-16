@@ -53,8 +53,9 @@
         <p class="subtitle is-3" th:text="${pkmnInfo.flavorText}"></p>
       </section>
       <footer class="modal-card-foot">
-        <form th:action="@{/pokemon/{id}(id=${pkmnInfo.id})}" th:method="delete" th:if="${pkmnInfo.id != -1}">
-          <button class="button is-danger">Release</button>
+        <form th:action="@{/pokemon/sell/{id}(id=${pkmnInfo.id})}" th:method="delete" th:if="${pkmnInfo.id != -1}">
+          <button class="button is-danger">Sell for <span class="icon"><i class="fa-solid fa-dollar-sign"></i></span> [[${pkmnInfo.value}]]
+          </button>
         </form>
         <form th:action="@{/pokemon/swap/{swapId}(swapId=${pkmnInfo.id})}" method="post" th:if="${pkmnInfo.isInBox}">
           <button class="button is-primary">Swap</button>
