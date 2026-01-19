@@ -44,16 +44,16 @@ public class ShopService {
 
     private void SetupShopItems() {
         shopItems.add(new PotionDTO(1, "Potion",
-            "Basic Potion that restores 20HP",
+            "Basic Potion that restores 20HP", 0,
             100, 50, true, 20));
         shopItems.add(new BallDTO(2, "Pokeball",
-            "Can be used to catch wild pokemon",
+            "Can be used to catch wild pokemon", 0,
             100, 25, true, 0.5f));
         shopItems.add(new ReviveDTO(3, "Revive",
-            "Can instantly revive fainted pokemon",
+            "Can instantly revive fainted pokemon", 0,
             100, 200, true, 0.25f));
         shopItems.add(new EnergyDTO(4, "Energy",
-            "Restores energy",
+            "Restores energy", 0,
             0, 25, true, 1));
     }
 

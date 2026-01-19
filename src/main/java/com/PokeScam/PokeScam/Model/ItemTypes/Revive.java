@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.Model.ItemTypes;
 
+import com.PokeScam.PokeScam.DTOs.BallDTO;
 import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import com.PokeScam.PokeScam.DTOs.ReviveDTO;
 import com.PokeScam.PokeScam.Model.Inventory;
@@ -7,7 +8,9 @@ import com.PokeScam.PokeScam.Model.Item;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import lombok.Getter;
 
+@Getter
 @Entity
 @DiscriminatorValue("REVIVE")
 public class Revive extends Item {
@@ -32,5 +35,11 @@ public class Revive extends Item {
         return other instanceof ReviveDTO &&
                 other.name().equalsIgnoreCase(this.getName()) &&
                 other.description().equalsIgnoreCase(this.getDescription());
+    }
+
+    @Override
+    public ReviveDTO toDTO() {
+        return new ReviveDTO(getId(), getName(), getDescription(), getAmount(),
+                getMaxStackSize(), getPrice(), isConsumable(), getHealPercentageRevive());
     }
 }

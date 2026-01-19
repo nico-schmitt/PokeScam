@@ -1,12 +1,15 @@
 package com.PokeScam.PokeScam.Model.ItemTypes;
 
+import com.PokeScam.PokeScam.DTOs.BallDTO;
 import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import com.PokeScam.PokeScam.DTOs.PotionDTO;
 import com.PokeScam.PokeScam.Model.Inventory;
 import com.PokeScam.PokeScam.Model.Item;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 
+@Getter
 @Entity
 @DiscriminatorValue("POTION")
 public class Potion extends Item {
@@ -31,5 +34,11 @@ public class Potion extends Item {
         return other instanceof PotionDTO &&
                 other.name().equalsIgnoreCase(this.getName()) &&
                 other.description().equalsIgnoreCase(this.getDescription());
+    }
+
+    @Override
+    public PotionDTO toDTO() {
+        return new PotionDTO(getId(), getName(), getDescription(), getAmount(),
+                getMaxStackSize(), getPrice(), isConsumable(), getHealAmountPotion());
     }
 }

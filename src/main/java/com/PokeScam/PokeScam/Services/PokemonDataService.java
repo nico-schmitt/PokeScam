@@ -2,6 +2,7 @@ package com.PokeScam.PokeScam.Services;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -385,4 +386,15 @@ public class PokemonDataService {
         );
     }
 
+
+    // ---------------- POPULATE ITEM PAGES WITH POKEMONS ----------------
+    public Page<Pokemon> getDamagedPokemonsInPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return pokemonRepo.findDamagedPokemons(userDetails.getThisUser(), pageable);
+    }
+
+    public Page<Pokemon> getFaintedPokemonsInPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return pokemonRepo.findFaintedPokemons(userDetails.getThisUser(), pageable);
+    }
 }

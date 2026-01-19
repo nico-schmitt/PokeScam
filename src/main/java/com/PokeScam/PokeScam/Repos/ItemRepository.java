@@ -13,4 +13,5 @@ import java.util.Collection;
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     Page<Item> findByInventoryId(Long inventoryId, Pageable pageable);
     Collection<Item> findByInventoryId(Long inventoryId);
+    void removeItemById(Long id);
 }

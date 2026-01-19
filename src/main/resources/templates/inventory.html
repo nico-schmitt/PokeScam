@@ -7,16 +7,16 @@
         </tr>
         </thead>
         <tbody>
-        <div th:each="item : ${items}">
-            <tr class="modal-trigger" >
+            <tr th:each="item : ${items}" class="modal-trigger" th:data-target="${item.id}">
                 <td th:text="${item.name}"></td>
                 <td th:text="${item.amount}"></td>
             </tr>
-
-            <div th:replace="~{fragments/itemModal :: itemModal (item=${item})}"></div>
-        </div>
         </tbody>
     </table>
+
+    <div th:each="item : ${items}">
+        <div th:replace="~{fragments/itemModal :: itemModal (${item})}"></div>
+    </div>
 
     <nav class="pagination is-centered" role="navigation" aria-label="pagination">
         <a th:href="${pageInfo.isFirst} ? '' : @{/inventory (page=${pageInfo.number-1}, size=${pageSize})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>

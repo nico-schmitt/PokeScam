@@ -14,7 +14,7 @@ public abstract class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "inventory_id")
@@ -32,9 +32,12 @@ public abstract class Item {
     @Column(name = "max_stack_size")
     @NotNull
     private int maxStackSize;
+    @Column(name = "price")
+    private int price;
     @Column(name = "consumable")
     @NotNull
     private boolean consumable;
 
     public abstract boolean isSameItem(ItemDTO other);
+    public abstract ItemDTO toDTO();
 }

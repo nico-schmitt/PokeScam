@@ -1,5 +1,5 @@
-<div th:fragment="itemModal">
-    <div class="modal">
+<div th:fragment="itemModal (item)">
+    <div th:id="${item.id}" class="modal">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
@@ -10,7 +10,13 @@
                 <p class="subtitle is-3" th:text="${item.description}"></p>
             </section>
             <footer class="modal-card-foot">
-                <p>wip</p>
+                <div th:if="${item instanceof T(com.PokeScam.PokeScam.DTOs.PotionDTO) or
+                            item instanceof T(com.PokeScam.PokeScam.DTOs.ReviveDTO)}">
+                    <form th:action="@{/inventory/item/{id}/use(id=${item.id})}" th:method="get">
+                        <button class="button is-primary">Use</button>
+                    </form>
+                </div>
+
             </footer>
         </div>
     </div>

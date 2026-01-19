@@ -5,10 +5,12 @@ import com.PokeScam.PokeScam.DTOs.ItemDTO;
 import com.PokeScam.PokeScam.Model.Inventory;
 import com.PokeScam.PokeScam.Model.Item;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 
 @Entity
 @DiscriminatorValue("BALL")
+@Getter
 public class Ball extends Item {
     @Column(name = "base_capture_chance")
     private float baseCaptureChance;
@@ -31,5 +33,11 @@ public class Ball extends Item {
         return other instanceof BallDTO &&
                 other.name().equalsIgnoreCase(this.getName()) &&
                 other.description().equalsIgnoreCase(this.getDescription());
+    }
+
+    @Override
+    public ItemDTO toDTO() {
+        return new BallDTO(getId(), getName(), getDescription(), getAmount(),
+                getMaxStackSize(), getPrice(), isConsumable(), getBaseCaptureChance());
     }
 }

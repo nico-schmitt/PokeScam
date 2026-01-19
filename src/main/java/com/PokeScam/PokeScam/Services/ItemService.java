@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ItemService {
@@ -35,5 +36,18 @@ public class ItemService {
                 return i;
         }
         return null;
+    }
+
+    public Item findItemById(int id) {
+        return itemRepo.findById(id).get();
+    }
+
+    public void decrementItem(Item item) {
+        item.setAmount(item.getAmount() - 1);
+        if (item.getAmount() == 0) {
+            itemRepo.delete(item);
+        } else {
+            itemRepo.save(item);
+        }
     }
 }
