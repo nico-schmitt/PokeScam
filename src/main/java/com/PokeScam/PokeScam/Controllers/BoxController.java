@@ -18,10 +18,9 @@ import com.PokeScam.PokeScam.Services.PokemonDataService;
 
 import jakarta.validation.constraints.Min;
 
-
 @Controller
 public class BoxController {
-    private final BoxService boxService ;
+    private final BoxService boxService;
     private final PokemonDataService pkmnDataService;
     private final PokeAPIService pokeAPIService;
 
@@ -45,7 +44,7 @@ public class BoxController {
             @RequestParam(defaultValue = "10") int size) {
 
         Page<Pokemon> pkmnPage = pkmnDataService.getPkmnInBoxPage(boxId, page, size);
-        List<PokemonDTO> pDTOs = pkmnPage.map(p->pokeAPIService.populatePokemonDTO(p)).toList();
+        List<PokemonDTO> pDTOs = pkmnPage.map(p -> pokeAPIService.fetchPokemonDTO(p)).toList();
         m.addAttribute("pkmnInBox", pDTOs);
         m.addAttribute("pageInfo", pkmnPage);
         m.addAttribute("pageSize", size);

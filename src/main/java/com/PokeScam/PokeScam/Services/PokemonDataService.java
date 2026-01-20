@@ -52,7 +52,7 @@ public class PokemonDataService {
 
     public List<PokemonDTO> getPkmnTeamInfoDTO() {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
-        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p -> pokeAPIService.populatePokemonDTO(p))
+        List<PokemonDTO> teamPkmnDTO = teamPkmn.stream().map(p -> pokeAPIService.fetchPokemonDTO(p))
                 .collect(Collectors.toList());
         while (teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
             teamPkmnDTO.add(PokemonDTO.getEmpty());
@@ -132,7 +132,7 @@ public class PokemonDataService {
     }
 
     public PokemonDTO getActivePkmnDTO() {
-        return pokeAPIService.populatePokemonDTO(getActivePkmn());
+        return pokeAPIService.fetchPokemonDTO(getActivePkmn());
     }
 
     public NotificationMsg setNewActivePkmn(Pokemon newActivePkmn, Pokemon curActivePkmn) {
@@ -150,7 +150,7 @@ public class PokemonDataService {
     public List<PokemonDTO> getPkmnTeamInfoOfUser(User user) {
         List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
         List<PokemonDTO> teamPkmnDTO = teamPkmn.stream()
-                .map(p -> pokeAPIService.populatePokemonDTO(p))
+                .map(p -> pokeAPIService.fetchPokemonDTO(p))
                 .collect(Collectors.toList());
         while (teamPkmnDTO.size() < POKEMON_TEAM_SIZE) {
             teamPkmnDTO.add(PokemonDTO.getEmpty());
@@ -229,7 +229,7 @@ public class PokemonDataService {
     }
 
     public String addPokemonFromName(String pkmnName) {
-        PokemonDTO pkmn = pokeAPIService.populateRandomPokemonDTO(pkmnName);
+        PokemonDTO pkmn = pokeAPIService.fetchPokemonDTO(pkmnName);
         String addMsg = addPokemon(pkmn);
         return addMsg;
     }
@@ -253,7 +253,7 @@ public class PokemonDataService {
 
     public PokemonDTO getPkmnInfo(int id) {
         Pokemon pkmn = pokemonRepo.findByIdAndOwnerId(id, userDetails.getThisUser());
-        return pokeAPIService.populatePokemonDTO(pkmn);
+        return pokeAPIService.fetchPokemonDTO(pkmn);
     }
 
     public boolean isTeamFull(User user) {
@@ -355,7 +355,7 @@ public class PokemonDataService {
         if (pkmn == null)
             return null;
 
-        PokemonDTO dto = pokeAPIService.populatePokemonDTO(pkmn);
+        PokemonDTO dto = pokeAPIService.fetchPokemonDTO(pkmn);
         List<String> moves = Stream.of(pkmn.getMove1(), pkmn.getMove2(),
                 pkmn.getMove3(), pkmn.getMove4())
                 .filter(Objects::nonNull) // remove nulls
@@ -382,10 +382,8 @@ public class PokemonDataService {
                 dto.isActivePkmn(),
                 false, // seen
                 false, // caught
-                0
-        );
+                0);
     }
-
 
     // ---------------- POPULATE ITEM PAGES WITH POKEMONS ----------------
     public Page<Pokemon> getDamagedPokemonsInPage(int page, int size) {

@@ -38,93 +38,100 @@ public class PokeAPIService {
 
     // ====================== PUBLIC METHODS ======================
 
-    public PokemonDTO populatePokemonDTO(Pokemon pkmnToUse) {
-        APIMovesLookup apiMovesLookup = new APIMovesLookup(
-                pkmnToUse.getMove1(),
-                pkmnToUse.getMove2(),
-                pkmnToUse.getMove3(),
-                pkmnToUse.getMove4());
-
-        PokemonAPIDTOHelper apiData = getPokeAPIData(pkmnToUse.getName(), apiMovesLookup);
-
-        PokemonDTO_AllStats allStats = new PokemonDTO_AllStats(
-                new PokemonDTO_StatInfo(pkmnToUse.getHpBaseStat(), pkmnToUse.getMaxHp(), "HP"),
-                new PokemonDTO_StatInfo(pkmnToUse.getAtkBaseStat(), pkmnToUse.getAtk(), "ATK"),
-                new PokemonDTO_StatInfo(pkmnToUse.getDefBaseStat(), pkmnToUse.getDef(), "DEF"),
-                new PokemonDTO_StatInfo(pkmnToUse.getSpaBaseStat(), pkmnToUse.getSpa(), "SPA"),
-                new PokemonDTO_StatInfo(pkmnToUse.getSpdBaseStat(), pkmnToUse.getSpd(), "SPD"),
-                new PokemonDTO_StatInfo(pkmnToUse.getSpeBaseStat(), pkmnToUse.getSpe(), "SPE"));
-
-        List<PokemonDTO_MoveInfo> moveDTOs = apiData.allMoves.moves.stream()
-                .map(this::populatePokemonDTOAllMovesInfo)
-                .toList();
-
-        PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(moveDTOs);
-
-        return new PokemonDTO(
-                pkmnToUse.getId(),
-                pkmnToUse.isInBox(),
-                pkmnToUse.getName(),
-                apiData.displayName,
-                apiData.spriteURL,
-                apiData.flavorText,
-                pkmnToUse.getLevel(),
-                pkmnToUse.getExp(),
-                pkmnToUse.getMaxHp(),
-                pkmnToUse.getCurHp(),
-                allStats,
-                allMoves,
-                pkmnToUse.isActivePkmn(),
-                false,
-                false,
-                pokemonCalcService.getPokemonValue(pkmnToUse));
+    // DB Pokémon
+    public PokemonDTO fetchPokemonDTO(Pokemon pkmn) {
+        return fetchPokemonDTO(pkmn.getName(), pkmn.getLevel(), pkmn);
     }
 
-    public PokemonDTO populateRandomPokemonDTO(String speciesName) {
-        PokemonAPIDTOHelper apiData = getPokeAPIData(speciesName, null);
-        int rndLevel = pokemonCalcService.calcRndPkmnLevel();
+    // Random wild Pokémon (catch / encounter)
+    public PokemonDTO fetchPokemonDTO(String speciesName) {
+        return fetchPokemonDTO(speciesName, null, null);
+    }
 
-        PokemonDTO_AllStats allStats = new PokemonDTO_AllStats(
-                new PokemonDTO_StatInfo(apiData.allStats.hp.baseStat,
-                        pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel), "HP"),
-                new PokemonDTO_StatInfo(apiData.allStats.atk.baseStat,
-                        pokemonCalcService.calcPkmnAtk(apiData.allStats.atk.baseStat, rndLevel), "ATK"),
-                new PokemonDTO_StatInfo(apiData.allStats.def.baseStat,
-                        pokemonCalcService.calcPkmnDef(apiData.allStats.def.baseStat, rndLevel), "DEF"),
-                new PokemonDTO_StatInfo(apiData.allStats.spa.baseStat,
-                        pokemonCalcService.calcPkmnSpa(apiData.allStats.spa.baseStat, rndLevel), "SPA"),
-                new PokemonDTO_StatInfo(apiData.allStats.spd.baseStat,
-                        pokemonCalcService.calcPkmnSpd(apiData.allStats.spd.baseStat, rndLevel), "SPD"),
-                new PokemonDTO_StatInfo(apiData.allStats.spe.baseStat,
-                        pokemonCalcService.calcPkmnSpe(apiData.allStats.spe.baseStat, rndLevel), "SPE"));
+    // Explicit level (scripted encounters, gyms, etc.)
+    public PokemonDTO fetchPokemonDTO(String speciesName, int level) {
+        return fetchPokemonDTO(speciesName, level, null);
+    }
 
-        List<PokemonDTO_MoveInfo> moveDTOs = apiData.allMoves.moves.stream()
-                .map(this::populatePokemonDTOAllMovesInfo)
-                .toList();
+    public PokemonDTO fetchPokemonDTO(
+            String speciesName,
+            Integer forcedLevel,
+            Pokemon existingPokemon) {
+        boolean fromDb = existingPokemon != null;
 
-        PokemonDTO_AllMoves allMoves = new PokemonDTO_AllMoves(moveDTOs);
+        int level = fromDb
+                ? existingPokemon.getLevel()
+                : forcedLevel != null
+                        ? forcedLevel
+                        : pokemonCalcService.calcRndPkmnLevel();
 
+        // 1️⃣ Fetch base API data (stats, sprite, flavor)
+        PokeAPIDTO_PokemonData pokemonData = pokeAPIWebClient.get()
+                .uri("/pokemon/" + speciesName)
+                .retrieve()
+                .bodyToMono(PokeAPIDTO_PokemonData.class)
+                .block();
+
+        PokeAPIDTO_PokemonSpeciesData speciesData = pokeAPIWebClient.get()
+                .uri("/pokemon-species/" + pokemonData.species.name)
+                .retrieve()
+                .bodyToMono(PokeAPIDTO_PokemonSpeciesData.class)
+                .block();
+
+        String language = LocaleContextHolder.getLocale().getLanguage();
+
+        String displayName = speciesData.names.stream()
+                .filter(n -> language.equals(n.language.name))
+                .map(n -> n.name)
+                .findFirst()
+                .orElse(speciesName);
+
+        String flavorText = speciesData.flavor_text_entries.stream()
+                .filter(f -> language.equals(f.language.name))
+                .map(f -> f.flavor_text)
+                .findFirst()
+                .orElse("");
+
+        // 2️⃣ Resolve moves
+        List<String> moveNames = fromDb
+                ? extractMovesFromEntity(existingPokemon)
+                : generateMovesFromApi(pokemonData, level);
+
+        List<AllMoveInfo> moveInfos = fetchMoveInfos(moveNames, language);
+
+        // 3️⃣ Stats
+        PokemonDTO_AllStats stats = fromDb
+                ? buildStatsFromEntity(existingPokemon)
+                : buildStatsFromApi(pokemonData, level);
+
+        int maxHp = stats.hp().statValue();
+        int curHp = fromDb ? existingPokemon.getCurHp() : maxHp;
+
+        // 4️⃣ Build DTO
         return new PokemonDTO(
-                -1,
-                false,
+                fromDb ? existingPokemon.getId() : -1,
+                fromDb && existingPokemon.isInBox(),
                 speciesName,
-                apiData.displayName,
-                apiData.spriteURL,
-                apiData.flavorText,
-                rndLevel,
-                0,
-                pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel),
-                pokemonCalcService.calcPkmnMaxHp(apiData.allStats.hp.baseStat, rndLevel),
-                allStats,
-                allMoves,
+                displayName,
+                pokemonData.sprites.front_default,
+                flavorText,
+                level,
+                fromDb ? existingPokemon.getExp() : 0,
+                maxHp,
+                curHp,
+                stats,
+                new PokemonDTO_AllMoves(
+                        moveInfos.stream()
+                                .map(this::populatePokemonDTOAllMovesInfo)
+                                .toList()),
+                fromDb && existingPokemon.isActivePkmn(),
                 false,
                 false,
-                false,
-                0);
+                fromDb ? pokemonCalcService.getPokemonValue(existingPokemon) : 0);
     }
 
     public PokemonDTO getRandomPokemon() {
-        return populateRandomPokemonDTO(getRandomPokemonName());
+        return fetchPokemonDTO(getRandomPokemonName());
     }
 
     public boolean pokemonExists(String name) {
@@ -149,6 +156,105 @@ public class PokeAPIService {
     }
 
     // ====================== PRIVATE HELPERS ======================
+
+    private List<String> extractMovesFromEntity(Pokemon p) {
+        return Stream.of(
+                p.getMove1(),
+                p.getMove2(),
+                p.getMove3(),
+                p.getMove4())
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private List<String> generateMovesFromApi(
+            PokeAPIDTO_PokemonData pokemonData,
+            int level) {
+        return pokemonData.moves.stream()
+                .map(m -> m.move.name)
+                .distinct()
+                .limit(4)
+                .toList();
+    }
+
+    private List<AllMoveInfo> fetchMoveInfos(
+            List<String> moveNames,
+            String language) {
+        return moveNames.stream()
+                .map(name -> normalWebClient.get()
+                        .uri("/move/" + name)
+                        .retrieve()
+                        .bodyToMono(PokeAPIDTO_PokemonMoveData.class)
+                        .map(md -> getMoveData(md, language))
+                        .block())
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private PokemonDTO_AllStats buildStatsFromEntity(Pokemon p) {
+        return new PokemonDTO_AllStats(
+                new PokemonDTO_StatInfo(
+                        p.getHpBaseStat(),
+                        p.getMaxHp(),
+                        "HP"),
+                new PokemonDTO_StatInfo(
+                        p.getAtkBaseStat(),
+                        p.getAtk(),
+                        "ATK"),
+                new PokemonDTO_StatInfo(
+                        p.getDefBaseStat(),
+                        p.getDef(),
+                        "DEF"),
+                new PokemonDTO_StatInfo(
+                        p.getSpaBaseStat(),
+                        p.getSpa(),
+                        "SPA"),
+                new PokemonDTO_StatInfo(
+                        p.getSpdBaseStat(),
+                        p.getSpd(),
+                        "SPD"),
+                new PokemonDTO_StatInfo(
+                        p.getSpeBaseStat(),
+                        p.getSpe(),
+                        "SPE"));
+    }
+
+    private PokemonDTO_AllStats buildStatsFromApi(
+            PokeAPIDTO_PokemonData apiData,
+            int level) {
+        int hpBase = getStat(apiData, "hp");
+        int atkBase = getStat(apiData, "attack");
+        int defBase = getStat(apiData, "defense");
+        int spaBase = getStat(apiData, "special-attack");
+        int spdBase = getStat(apiData, "special-defense");
+        int speBase = getStat(apiData, "speed");
+
+        return new PokemonDTO_AllStats(
+                new PokemonDTO_StatInfo(
+                        hpBase,
+                        pokemonCalcService.calcPkmnMaxHp(hpBase, level),
+                        "HP"),
+                new PokemonDTO_StatInfo(
+                        atkBase,
+                        pokemonCalcService.calcPkmnAtk(atkBase, level),
+                        "ATK"),
+                new PokemonDTO_StatInfo(
+                        defBase,
+                        pokemonCalcService.calcPkmnDef(defBase, level),
+                        "DEF"),
+                new PokemonDTO_StatInfo(
+                        spaBase,
+                        pokemonCalcService.calcPkmnSpa(spaBase, level),
+                        "SPA"),
+                new PokemonDTO_StatInfo(
+                        spdBase,
+                        pokemonCalcService.calcPkmnSpd(spdBase, level),
+                        "SPD"),
+                new PokemonDTO_StatInfo(
+                        speBase,
+                        pokemonCalcService.calcPkmnSpe(speBase, level),
+                        "SPE"));
+    }
 
     private PokemonDTO_MoveInfo populatePokemonDTOAllMovesInfo(AllMoveInfo allMoveInfo) {
         return new PokemonDTO_MoveInfo(

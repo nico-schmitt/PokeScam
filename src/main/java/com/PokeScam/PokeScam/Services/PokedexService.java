@@ -35,7 +35,7 @@ public class PokedexService {
 
         return entries.stream()
                 .map(entry -> {
-                    PokemonDTO dto = pokeAPIService.populateRandomPokemonDTO(entry.getSpeciesName());
+                    PokemonDTO dto = pokeAPIService.fetchPokemonDTO(entry.getSpeciesName());
                     int dexNumber = pokeAPIService.getNationalDexNumber(entry.getSpeciesName());
                     return new DexEntry(entry, dexNumber, dto);
                 })

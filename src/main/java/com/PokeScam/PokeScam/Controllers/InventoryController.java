@@ -26,7 +26,8 @@ public class InventoryController {
     private final PokeAPIService pokeAPIService;
     private final ItemRepository itemRepository;
 
-    public InventoryController(ItemService itemService, PokemonDataService pokemonDataService, PokeAPIService pokeAPIService, ItemRepository itemRepository) {
+    public InventoryController(ItemService itemService, PokemonDataService pokemonDataService,
+            PokeAPIService pokeAPIService, ItemRepository itemRepository) {
         this.itemService = itemService;
         this.pokemonDataService = pokemonDataService;
         this.pokeAPIService = pokeAPIService;
@@ -35,8 +36,8 @@ public class InventoryController {
 
     @GetMapping("/inventory")
     public String inventory(Model m,
-                            @RequestParam(defaultValue = "0") int page,
-                            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Page<Item> itemPage = itemService.getItemsInPage(page, size);
         List<ItemDTO> items = itemPage.map(Item::toDTO).toList();
         m.addAttribute("items", items);
@@ -47,9 +48,9 @@ public class InventoryController {
 
     @GetMapping("/inventory/item/{id}/use")
     public String useItem(@PathVariable int id,
-                          @RequestParam(defaultValue = "0") int page,
-                          @RequestParam(defaultValue = "10") int size,
-                          Model model) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
         Item item = itemService.findItemById(id);
         model.addAttribute("item", item);
 
@@ -63,7 +64,7 @@ public class InventoryController {
             return "inventory";
         }
 
-        List<PokemonDTO> pokemonDTOs = pokemonPage.map(pokeAPIService::populatePokemonDTO).toList();
+        List<PokemonDTO> pokemonDTOs = pokemonPage.map(pokeAPIService::fetchPokemonDTO).toList();
         model.addAttribute("pokemons", pokemonDTOs);
 
         return "itemUse";

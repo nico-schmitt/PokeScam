@@ -51,7 +51,7 @@ public class PokedexController {
 
         List<PokemonWithDex> allWithDex = new ArrayList<>();
         for (PokedexEntry entry : allEntries) {
-            PokemonDTO dto = pokeAPIService.populateRandomPokemonDTO(entry.getSpeciesName())
+            PokemonDTO dto = pokeAPIService.fetchPokemonDTO(entry.getSpeciesName())
                     .withSeenCaught(entry.isSeen(), entry.isCaught());
 
             int dexNumber = pokeAPIService.getNationalDexNumber(entry.getSpeciesName());
