@@ -21,4 +21,7 @@ public interface PokedexEntryRepository extends JpaRepository<PokedexEntry, Inte
 
     List<PokedexEntry> findAllByUser(User user);
 
+    Page<PokedexEntry> findByUserAndSeenTrueAndSpeciesNameIsNotNullOrderBySpeciesNameAsc(User user,
+            Pageable pageable);
+
 }

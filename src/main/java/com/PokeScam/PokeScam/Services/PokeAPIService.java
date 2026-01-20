@@ -127,7 +127,8 @@ public class PokeAPIService {
                 fromDb && existingPokemon.isActivePkmn(),
                 false,
                 false,
-                fromDb ? pokemonCalcService.getPokemonValue(existingPokemon) : 0);
+                fromDb ? pokemonCalcService.getPokemonValue(existingPokemon) : 0,
+                PokemonCalcService.expToNextLevel(level));
     }
 
     public PokemonDTO getRandomPokemon() {

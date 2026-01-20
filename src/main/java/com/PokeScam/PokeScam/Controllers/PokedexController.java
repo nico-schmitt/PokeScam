@@ -43,36 +43,22 @@ public class PokedexController {
             @RequestParam(defaultValue = "12") int size) {
 
         User user = customUserDetails.getThisUser();
+        Pageable pageable = PageRequest.of(page, size);
 
-        List<PokedexEntry> allEntries = pokedexRepo.findAllByUser(user)
-                .stream()
-                .filter(entry -> entry.isSeen() && entry.getSpeciesName() != null)
-                .collect(Collectors.toList());
+        // Database handles sorting and pagination
+        Page<PokedexEntry> entryPage = pokedexRepo
+                .findByUserAndSeenTrueAndSpeciesNameIsNotNullOrderBySpeciesNameAsc(user, pageable);
 
-        List<PokemonWithDex> allWithDex = new ArrayList<>();
-        for (PokedexEntry entry : allEntries) {
-            PokemonDTO dto = pokeAPIService.fetchPokemonDTO(entry.getSpeciesName())
-                    .withSeenCaught(entry.isSeen(), entry.isCaught());
+        // Convert to DTOs
+        List<PokemonDTO> dtos = entryPage.stream()
+                .map(entry -> pokeAPIService.fetchPokemonDTO(entry.getSpeciesName())
+                        .withSeenCaught(entry.isSeen(), entry.isCaught()))
+                .toList();
 
-            int dexNumber = pokeAPIService.getNationalDexNumber(entry.getSpeciesName());
-            allWithDex.add(new PokemonWithDex(dto, dexNumber));
-        }
-
-        allWithDex.sort((a, b) -> Integer.compare(a.dex(), b.dex()));
-
-        int start = page * size;
-        int end = Math.min(start + size, allWithDex.size());
-        List<PokemonDTO> pageDTOs = allWithDex.subList(start, end).stream()
-                .map(pwd -> pwd.dto())
-                .collect(Collectors.toList());
-
-        Page<PokemonDTO> pokemonPage = new PageImpl<>(pageDTOs, PageRequest.of(page, size), allWithDex.size());
+        Page<PokemonDTO> pokemonPage = new PageImpl<>(dtos, pageable, entryPage.getTotalElements());
 
         model.addAttribute("pokemonPage", pokemonPage);
-
         return "pokedex";
     }
 
-    private record PokemonWithDex(PokemonDTO dto, int dex) {
-    }
 }

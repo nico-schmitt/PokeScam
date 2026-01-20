@@ -7,13 +7,16 @@ import org.springframework.stereotype.Service;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO.PokemonDTO_MoveInfo;
 import com.PokeScam.PokeScam.Model.Pokemon;
+import com.PokeScam.PokeScam.Repos.PokemonRepository;
 
 @Service
 public class PokemonCalcService {
     private final Random rnd;
+    private final PokemonRepository pokemonRepo;
 
-    public PokemonCalcService() {
+    public PokemonCalcService(PokemonRepository pokemonRepo) {
         rnd = new Random();
+        this.pokemonRepo = pokemonRepo;
     }
 
     // ==================== LEVEL / STATS ====================
@@ -120,7 +123,66 @@ public class PokemonCalcService {
 
     public int getPokemonValue(Pokemon pkmn) {
         int statSum = pkmn.getMaxHp() + pkmn.getAtk() + pkmn.getDef() +
-                    pkmn.getSpa() + pkmn.getSpd() + pkmn.getSpe();
+                pkmn.getSpa() + pkmn.getSpd() + pkmn.getSpe();
         return pkmn.getLevel() + (statSum / 100);
+    }
+
+    /**
+     * Gain EXP for a Pokémon and check for level-up.
+     * Returns a message describing EXP gain and any level-ups.
+     */
+    public String gainExpAndCheckLevelUp(Pokemon p, int expGained) {
+        p.setExp(p.getExp() + expGained);
+
+        StringBuilder msg = new StringBuilder();
+        msg.append(p.getName()).append(" gained ").append(expGained).append(" EXP.");
+
+        while (p.getExp() >= expToNextLevel(p)) {
+            p.setExp(p.getExp() - expToNextLevel(p));
+            levelUp(p);
+            msg.append(" ").append(p.getName()).append(" leveled up to ").append(p.getLevel()).append("!");
+            checkEvolution(p);
+        }
+        pokemonRepo.save(p);
+
+        return msg.toString();
+    }
+
+    /**
+     * Level up a Pokémon: increment level and recalc stats
+     */
+    private void levelUp(Pokemon p) {
+        p.setLevel(p.getLevel() + 1);
+
+        // Example: increase stats linearly or use your formula
+        p.setHpBaseStat(p.getHpBaseStat() + 2);
+        p.setAtkBaseStat(p.getAtkBaseStat() + 1);
+        p.setDefBaseStat(p.getDefBaseStat() + 1);
+        p.setSpaBaseStat(p.getSpaBaseStat() + 1);
+        p.setSpdBaseStat(p.getSpdBaseStat() + 1);
+        p.setSpeBaseStat(p.getSpeBaseStat() + 1);
+
+        // Recalculate current HP to match new max
+        p.setMaxHp(calcMaxHp(p));
+        p.setCurHp(p.getMaxHp());
+    }
+
+    /**
+     * Calculates max HP from base stats and level (simplified)
+     */
+    public int calcMaxHp(Pokemon p) {
+        return p.getHpBaseStat() + p.getLevel() * 2; // adjust formula as needed
+    }
+
+    /**
+     * EXP needed to reach next level (cubic formula)
+     */
+    public int expToNextLevel(Pokemon p) {
+        int lvl = p.getLevel();
+        return (int) (Math.pow(lvl + 1, 3) - Math.pow(lvl, 3));
+    }
+
+    public static int expToNextLevel(int lvl) {
+        return (int) (Math.pow(lvl + 1, 3) - Math.pow(lvl, 3));
     }
 }

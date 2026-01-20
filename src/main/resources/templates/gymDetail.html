@@ -4,7 +4,7 @@
     <h1 class="title" th:text="${gym.name}">Gym Name</h1>
 
     <div class="columns is-multiline" th:each="trainerMap : ${trainers}">
-      <div class="column is-half">
+      <div class="column">
         <div class="box">
           <h2 class="subtitle" th:text="${trainerMap.trainer.name}">Trainer Name</h2>
           <div class="columns is-multiline">

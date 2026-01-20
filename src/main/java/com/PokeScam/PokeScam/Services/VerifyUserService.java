@@ -34,16 +34,16 @@ public class VerifyUserService {
     }
 
     public String createVerificationToken(String userId) {
-    Instant now = Instant.now();
-    byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+        Instant now = Instant.now();
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-    return Jwts.builder()
-        .subject(userId)
-        .issuedAt(Date.from(now))
-        .expiration(Date.from(now.plus(Duration.ofMinutes(15))))
-        .signWith(key, Jwts.SIG.HS256)
-        .compact();
+        return Jwts.builder()
+                .subject(userId)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plus(Duration.ofMinutes(15))))
+                .signWith(key, Jwts.SIG.HS256)
+                .compact();
     }
 
     public String handleVerification(String token) {
@@ -53,21 +53,21 @@ public class VerifyUserService {
             SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
             claims = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
-            System.out.println("aoeaoeaeaoeaoeaoeaoe\n\n\n\n\n\n\n\n");
+            // System.out.println("aoeaoeaeaoeaoeaoeaoe\n\n\n\n\n\n\n\n");
             throw new RuntimeException("This link has expired");
         } catch (JwtException e) {
-            System.out.println("eeeeeeeeeeeeee\n\n\n\n\n\n\n\n");
+            // System.out.println("eeeeeeeeeeeeee\n\n\n\n\n\n\n\n");
             throw new RuntimeException("Invalid token");
         }
 
         String userId = claims.getSubject();
-        System.out.println(claims);
-        System.out.println("userID: "+userId);
+        // System.out.println(claims);
+        // System.out.println("userID: "+userId);
         User user = userRepo.findById(Integer.valueOf(userId)).orElseThrow();
 
         if (user.isVerified()) {

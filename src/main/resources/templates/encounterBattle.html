@@ -2,117 +2,176 @@
   <meta name="_csrf" th:content="${_csrf.token}">
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
 
-  <a href="/encounterPath">
+  <!-- Back to path -->
+  <a th:href="@{/encounterPath}">
     <button class="button is-info">Return to path</button>
   </a>
 
-  <div class="is-flex is-justify-content-center is-align-items-center mt-3" style="gap: 200px;">
+  <div class="is-flex is-justify-content-center is-align-items-start mt-3" style="gap: 200px;">
+
+    <!-- ===== Player Pokémon Info ===== -->
     <div class="is-flex is-flex-direction-column is-align-items-center">
+
       <div class="box">
         <p class="subtitle">[[${activePkmn.pkmn.displayName}]]</p>
         <div class="field is-grouped is-grouped-multiline">
           <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${activePkmn.pkmn.level}]]</span></div>
+            <div class="tags has-addons are-medium">
+              <span class="tag is-info">Lv</span>
+              <span class="tag">[[${activePkmn.pkmn.level}]]</span>
+            </div>
           </div>
           <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${activePkmn.pkmn.curHp}]]/[[${activePkmn.pkmn.maxHp}]]</span></div>
+            <div class="tags has-addons are-medium">
+              <span class="tag is-success">Hp</span>
+              <span class="tag">[[${activePkmn.pkmn.curHp}]]/[[${activePkmn.pkmn.maxHp}]]</span>
+            </div>
           </div>
         </div>
       </div>
-      <div class="fixed-grid" style="width: 400px;">
+
+      <!-- ===== Battle Menu ===== -->
+      <div class="box">
+        <p class="subtitle">Choose an action</p>
+        <div class="buttons is-flex is-flex-wrap-wrap">
+
+          <!-- Fight button -->
+          <form th:action="@{/encounter/executeBattleAction}" method="post">
+            <input type="hidden" name="action" value="FIGHT_MENU"/>
+            <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+            <button class="button is-info" type="submit">Fight</button>
+          </form>
+
+          <!-- Flee (only for wild encounters) -->
+          <form th:if="${encounterData.encounterType.toString() == 'WildPokemon'}"
+                th:action="@{/encounter/executeBattleAction}" method="post">
+            <input type="hidden" name="action" value="FLEE"/>
+            <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+            <button class="button is-warning" type="submit">Flee</button>
+          </form>
+
+          <!-- Switch Pokémon button -->
+          <form th:action="@{/encounter/executeBattleAction}" method="post">
+            <input type="hidden" name="action" value="SWITCH_MENU"/>
+            <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+            <button class="button is-success" type="submit">Switch Pokémon</button>
+          </form>
+
+          <!-- Use Item button -->
+          <form th:action="@{/encounter/executeBattleAction}" method="post">
+            <input type="hidden" name="action" value="ITEM_MENU"/>
+            <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+            <button class="button is-primary" type="submit">Use Item</button>
+          </form>
+
+        </div>
+      </div>
+
+      <!-- ===== Fight Moves Submenu ===== -->
+      <div th:if="${showMoves}" class="fixed-grid" style="width: 400px;">
         <div class="grid">
           <div th:each="moveInfo, iter : ${activePkmn.pkmn.allMoves.moves}">
-            <div class="is-flex is-flex-direction-column is-align-items-center">
-              <form th:action="@{/encounter/executeTurn(moveIdx=${iter.index})}" method="post" class="mt-5">
-                <div class="field">
-                  <button class="button">[[${moveInfo.displayName}]]</button>
+            <form th:action="@{/encounter/executeBattleAction}" method="post">
+              <input type="hidden" name="action" value="FIGHT"/>
+              <input type="hidden" name="moveIdx" th:value="${iter.index}"/>
+              <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+              <button class="button mt-2" type="submit">[[${moveInfo.displayName}]]</button>
+            </form>
+
+            <div class="box field is-grouped is-grouped-multiline">
+              <div class="control">
+                <div class="tags has-addons">
+                  <span class="tag is-danger">Power</span>
+                  <span class="tag">[[${moveInfo.power}]]</span>
                 </div>
-              </form>
-              <div class="box field is-grouped is-grouped-multiline">
-                <div class="control">
-                  <div class="tags has-addons"><span class="tag is-danger">Power</span><span class="tag">[[${moveInfo.power}]]</span></div>
+              </div>
+              <div class="control">
+                <div class="tags has-addons">
+                  <span class="tag is-warning">PP</span>
+                  <span class="tag">[[${moveInfo.pp}]]</span>
                 </div>
-                <div class="control">
-                  <div class="tags has-addons"><span class="tag is-warning">PP</span><span class="tag">[[${moveInfo.pp}]]</span></div>
+              </div>
+              <div class="control">
+                <div class="tags has-addons">
+                  <span class="tag is-info">Accuracy</span>
+                  <span class="tag">[[${moveInfo.accuracy}]]</span>
                 </div>
-                <div class="control">
-                  <div class="tags has-addons"><span class="tag is-info">Accuracy</span><span class="tag">[[${moveInfo.accuracy}]]</span></div>
-                </div>
-                <div class="control">
-                  <div class="tags has-addons"><span class="tag is-primary">Damage Class</span><span class="tag">[[${moveInfo.damageClass}]]</span></div>
+              </div>
+              <div class="control">
+                <div class="tags has-addons">
+                  <span class="tag is-primary">Damage Class</span>
+                  <span class="tag">[[${moveInfo.damageClass}]]</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- ===== Switch Pokémon Submenu ===== -->
+      <div th:if="${showSwitch}" class="box">
+        <p class="subtitle">Select a Pokémon to switch</p>
+        <div th:each="pkmn, idxVar : ${pkmnTeam}">
+          <form th:action="@{/encounter/executeBattleAction}" method="post">
+            <input type="hidden" name="action" value="SWITCH"/>
+            <input type="hidden" name="switchIdx" th:value="${idxVar.index}"/>
+            <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+            <button class="button is-info" th:text="${pkmn.pkmn.displayName}" th:disabled="${pkmn.isDefeated}" type="submit"></button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ===== Use Item Submenu ===== -->
+    <div th:if="${showItemMenu}" class="box">
+        <p class="subtitle">Select an item</p>
+
+        <div th:each="item, idx : ${items}">
+            <form th:action="@{/encounter/executeBattleAction}" method="post">
+            <input type="hidden" name="action" value="ITEM"/>
+            <input type="hidden" name="itemIdx" th:value="${idx.index}"/>
+            <input type="hidden" name="encounterIdx" th:value="${encounterData.order}"/>
+
+            <button class="button is-primary"
+                    th:text="${item.name}"
+                    type="submit">
+            </button>
+            </form>
+        </div>
     </div>
+
+
+    </div>
+
+    <!-- ===== Player Pokémon Team Preview ===== -->
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
         <div th:each="myPkmn : ${pkmnTeam}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${myPkmn.pkmn}, showHp=${!#strings.isEmpty(myPkmn.pkmn.apiName)}, showLvl=true, isDefeated=${myPkmn.isDefeated}, isActivePkmn=${myPkmn.pkmn.isActivePkmn})}"></div>
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (
+            pkmnInfo=${myPkmn.pkmn},
+            showHp=${!#strings.isEmpty(myPkmn.pkmn.apiName)},
+            showLvl=true,
+            isDefeated=${myPkmn.isDefeated},
+            isActivePkmn=${myPkmn.pkmn.isActivePkmn})}">
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- ===== Enemy Pokémon Preview ===== -->
     <div class="fixed-grid" style="width: 400px;">
       <div class="grid">
-        <div th:each="pkmnToFight, iter : ${encounterList}">
-          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (pkmnInfo=${pkmnToFight.pkmn}, showHp=${!#strings.isEmpty(pkmnToFight.pkmn.apiName)}, showLvl=true, giveIdOfEnemyHp=true, isDefeated=${pkmnToFight.isDefeated}, isActivePkmn=${encounterData.activePkmnToFightIdx == iter.index})}"></div>
-        </div>
-      </div>
-    </div>
-    <div class="is-flex is-flex-direction-column is-align-items-center">
-      <div class="box">
-        <h1 class="title" th:if="${encounterData.encounterType.toString() == 'Trainer'}">[[${encounterData.trainerUsername}]]</h1>
-        <p class="subtitle">[[${enemyPkmn.pkmn.displayName}]]</p>
-        <div class="field is-grouped is-grouped-multiline">
-          <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-info">Lv</span><span class="tag">[[${enemyPkmn.pkmn.level}]]</span></div>
-          </div>
-          <div class="control">
-            <div class="tags has-addons are-medium"><span class="tag is-success">Hp</span><span class="tag">[[${enemyPkmn.pkmn.curHp}]]/[[${enemyPkmn.pkmn.maxHp}]]</span></div>
+        <div th:each="enemyPkmn, iter : ${encounterList}">
+          <div th:replace="~{fragments/pkmnPreview :: pkmnPreview (
+            pkmnInfo=${enemyPkmn.pkmn},
+            showHp=${!#strings.isEmpty(enemyPkmn.pkmn.apiName)},
+            showLvl=true,
+            giveIdOfEnemyHp=true,
+            isDefeated=${enemyPkmn.isDefeated},
+            isActivePkmn=${encounterData.activePkmnToFightIdx == iter.index})}">
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
-
-<script th:inline="javascript">
-  (function redirectToEncounterPath() {
-    let notifMsg = /*[[${notifMsg}]]*/ null;
-    console.log(notifMsg);
-    if(notifMsg !== null && notifMsg.success == true) {
-      setTimeout(function() {
-        window.location.href = "/encounterPath";
-      }, 3000);
-    }
-  })();
-
-  async function damage(event) {
-    const token = document.querySelector('meta[name="_csrf"]').content;
-    const header = document.querySelector('meta[name="_csrf_header"]').content;
-
-    let moveIdx = event.target.dataset.moveidx;
-    let moveInfo;
-    if(moveIdx == 1) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[0]}]]*/ null;
-    else if(moveIdx == 2) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[1]}]]*/ null;
-    else if(moveIdx == 3) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[2]}]]*/ null;
-    else if(moveIdx == 4) moveInfo = /*[[${activePkmn.pkmn.allMoves.moves[3]}]]*/ null;
-
-    let res = await fetch(
-      "/encounter/executeTurn",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          [header]: token
-        },
-        body: JSON.stringify(moveInfo)
-      }
-    );
-    if(res.redirected) {
-      window.location.href = res.url;
-    }
-  }
-</script>

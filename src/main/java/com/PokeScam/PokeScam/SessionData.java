@@ -13,8 +13,17 @@ import lombok.Data;
 @SessionScope
 @Data
 public class SessionData {
+
+    public enum BattleMenuState {
+        ACTION_SELECT,
+        MOVE_SELECT,
+        SWITCH_SELECT,
+        ITEM_SELECT
+    }
+
     private int encounterProgress;
     private List<EncounterData> savedEncounterList;
     private Long currentGymId;
 
+    private BattleMenuState battleMenuState = BattleMenuState.ACTION_SELECT;
 }

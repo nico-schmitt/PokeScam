@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.DTOs;
 
+import com.PokeScam.PokeScam.Services.PokemonCalcService;
+
 import java.util.List;
 
 public record PokemonDTO(
@@ -16,7 +18,8 @@ public record PokemonDTO(
         boolean isActivePkmn,
         boolean seen,
         boolean caught,
-        int value) {
+        int value,
+        int expToNextLevel) {
     public static PokemonDTO getEmpty() {
         return new PokemonDTO(
                 -1,
@@ -32,8 +35,8 @@ public record PokemonDTO(
                 false,
                 false, // seen
                 false, // caught
-                0
-        );
+                0,
+                999);
     }
 
     public PokemonDTO withNewHealth(int newHealth) {
@@ -53,7 +56,8 @@ public record PokemonDTO(
                 this.isActivePkmn,
                 this.seen,
                 this.caught,
-                this.value);
+                this.value,
+                PokemonCalcService.expToNextLevel(this.level));
     }
 
     public PokemonDTO withSeenCaught(boolean seen, boolean caught) {
@@ -73,7 +77,8 @@ public record PokemonDTO(
                 this.isActivePkmn,
                 seen,
                 caught,
-                this.value);
+                this.value,
+                PokemonCalcService.expToNextLevel(this.level));
     }
 
     public record PokemonDTO_AllStats(PokemonDTO_StatInfo hp, PokemonDTO_StatInfo atk, PokemonDTO_StatInfo def,

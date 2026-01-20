@@ -21,7 +21,7 @@ public class MailService {
 
     private final JavaMailSender mailSender;
     private final VerifyUserService verifyUserService;
-    
+
     public MailService(JavaMailSender mailSender, VerifyUserService verifyUserService) {
         this.mailSender = mailSender;
         this.verifyUserService = verifyUserService;
@@ -29,11 +29,11 @@ public class MailService {
 
     public void sendPlainText(User user, String to, String subject) {
         String token = verifyUserService.createVerificationToken(String.valueOf(user.getId()));
-        String verifyUrl = "http://localhost:"+port+"/verify?token=" +
-                   URLEncoder.encode(token, StandardCharsets.UTF_8);
+        String verifyUrl = "http://localhost:" + port + "/verify?token=" +
+                URLEncoder.encode(token, StandardCharsets.UTF_8);
 
         String message = "Click below to verify your email:\n" + verifyUrl;
-        System.out.println(message+"\n\n\n\n");
+        // System.out.println(message+"\n\n\n\n");
 
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(to);

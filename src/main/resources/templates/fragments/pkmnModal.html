@@ -21,10 +21,22 @@
                 <span class="tag is-info">Level</span>
                 <span class="tag">[[${pkmnInfo.level}]]</span>
               </div>
-              <div class="tags are-medium has-addons">
-                <span class="tag is-primary">Exp</span>
-                <span class="tag">[[${pkmnInfo.exp}]]</span>
-              </div>
+              <div class="is-flex is-gap-3">
+  <div class="tags are-medium has-addons">
+    <span class="tag is-primary">Exp</span>
+    <span class="tag">[[${pkmnInfo.exp}]]</span>
+  </div>
+
+  <div class="tags are-medium has-addons">
+    <span class="tag is-warning">To level</span>
+    <span class="tag">[[${pkmnInfo.expToNextLevel}]]</span>
+  </div>
+</div>
+<progress class="progress is-primary"
+          th:value="${pkmnInfo.exp}"
+          th:max="${(pkmnInfo.expToNextLevel)}">
+</progress>
+
             </div>
           </div>
         </div>

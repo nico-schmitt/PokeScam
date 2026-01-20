@@ -72,9 +72,13 @@ public class GymService {
                     .toList();
 
             encounters.add(new EncounterData(
-                    trainer.getName(),
-                    encounterPkmn,
-                    null));
+                    0, // initial order
+                    EncounterService.EncounterType.Trainer, // type
+                    encounterPkmn, // Pokémon list
+                    0, // active Pokémon index
+                    false, // not yet won
+                    trainer.getName() // trainer name
+            ));
         }
 
         return encounters;

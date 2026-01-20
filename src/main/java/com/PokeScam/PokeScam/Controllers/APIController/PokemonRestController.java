@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping("/api")
 public class PokemonRestController {
@@ -37,10 +36,14 @@ public class PokemonRestController {
     private final BoxRepository boxRepo;
     private final PokeAPIService pokeAPIService;
 
-    record PokemonCreateDTO(String name, String ownerUsername, Boolean inBox, Integer boxId) {}
-    record PokemonUpdateDTO(String name, String ownerUsername, Boolean inBox, Integer boxId) {}
+    record PokemonCreateDTO(String name, String ownerUsername, Boolean inBox, Integer boxId) {
+    }
 
-    public PokemonRestController(PokemonRepository pokemonRepo, UserRepository userRepo, BoxRepository boxRepo, PokemonDataService pokemonDataService, PokeAPIService pokeAPIService) {
+    record PokemonUpdateDTO(String name, String ownerUsername, Boolean inBox, Integer boxId) {
+    }
+
+    public PokemonRestController(PokemonRepository pokemonRepo, UserRepository userRepo, BoxRepository boxRepo,
+            PokemonDataService pokemonDataService, PokeAPIService pokeAPIService) {
         this.pokemonRepo = pokemonRepo;
         this.userRepo = userRepo;
         this.boxRepo = boxRepo;
@@ -56,7 +59,7 @@ public class PokemonRestController {
     @GetMapping("/pokemon/{id}")
     public ResponseEntity<Pokemon> getPkmnById(@PathVariable Integer id) {
         Optional<Pokemon> pkmn = pokemonRepo.findById(id);
-        if(pkmn.isEmpty()) {
+        if (pkmn.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(pkmn.get());
@@ -64,12 +67,12 @@ public class PokemonRestController {
 
     @PostMapping("/pokemon")
     public ResponseEntity<Pokemon> createPkmn(@RequestBody PokemonCreateDTO pkmnToCreate) throws URISyntaxException {
-        if(pkmnToCreate.name == null || pkmnToCreate.ownerUsername == null || pkmnToCreate.inBox == null)
+        if (pkmnToCreate.name == null || pkmnToCreate.ownerUsername == null || pkmnToCreate.inBox == null)
             return ResponseEntity.badRequest().build();
         Optional<User> userOfNewPkmn = userRepo.findByUsername(pkmnToCreate.ownerUsername);
-        if(userOfNewPkmn.isEmpty()) 
+        if (userOfNewPkmn.isEmpty())
             return ResponseEntity.notFound().build();
-        if(!pokeAPIService.pokemonExists(pkmnToCreate.name))
+        if (!pokeAPIService.pokemonExists(pkmnToCreate.name))
             return ResponseEntity.notFound().build();
 
         Pokemon newPkmn = new Pokemon();
@@ -77,40 +80,40 @@ public class PokemonRestController {
         newPkmn.setName(pkmnToCreate.name);
         newPkmn.setOwnerId(userOfNewPkmn.get());
 
-        if(pkmnToCreate.inBox == false) {
-            if(pokemonDataService.isTeamFull(userOfNewPkmn.get()))
+        if (pkmnToCreate.inBox == false) {
+            if (pokemonDataService.isTeamFull(userOfNewPkmn.get()))
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_CONTENT);
             newPkmn.setInBox(false);
             newPkmn.setBoxId(null);
         } else {
-            if(pkmnToCreate.boxId == null)
+            if (pkmnToCreate.boxId == null)
                 return ResponseEntity.badRequest().build();
             Box boxToPutIn = boxRepo.findByOwnerIdAndUserBoxId(userOfNewPkmn.get(), pkmnToCreate.boxId);
-            if(boxToPutIn == null)
+            if (boxToPutIn == null)
                 return ResponseEntity.notFound().build();
             newPkmn.setInBox(pkmnToCreate.inBox);
             newPkmn.setBoxId(boxToPutIn);
         }
 
         newPkmn = pokemonRepo.save(newPkmn);
-        URI locationURL = new URI("/api/pokemon/"+newPkmn.getId());
-        System.out.println(pkmnToCreate+"\n\n\n\n\n\n\n");
+        URI locationURL = new URI("/api/pokemon/" + newPkmn.getId());
+        // System.out.println(pkmnToCreate+"\n\n\n\n\n\n\n");
         return ResponseEntity.created(locationURL).body(newPkmn);
     }
 
     @PatchMapping("/pokemon/{id}")
     public ResponseEntity<Pokemon> updatePkmn(@PathVariable int id, @RequestBody PokemonUpdateDTO updateInfo) {
         Optional<Pokemon> pkmnOpt = pokemonRepo.findById(id);
-        if(pkmnOpt.isEmpty()) {
+        if (pkmnOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Pokemon pkmn = pkmnOpt.get();
 
         User userToUpdatePkmnOf;
-        if(updateInfo.ownerUsername != null) {
+        if (updateInfo.ownerUsername != null) {
             Optional<User> newUser = userRepo.findByUsername(updateInfo.ownerUsername);
-            if(newUser.isEmpty())
+            if (newUser.isEmpty())
                 return ResponseEntity.notFound().build();
             userToUpdatePkmnOf = newUser.get();
         } else {
@@ -118,24 +121,24 @@ public class PokemonRestController {
         }
         pkmn.setOwnerId(userToUpdatePkmnOf);
 
-        System.out.println(updateInfo+"\n\n\n\n\n");
-        if(updateInfo.name != null) {
-            if(!pokeAPIService.pokemonExists(updateInfo.name))
+        // System.out.println(updateInfo+"\n\n\n\n\n");
+        if (updateInfo.name != null) {
+            if (!pokeAPIService.pokemonExists(updateInfo.name))
                 return ResponseEntity.notFound().build();
             pkmn.setName(updateInfo.name);
         }
 
-        if(updateInfo.inBox != null) {
-            if(updateInfo.inBox == false) {
-                if(pokemonDataService.isTeamFull(userToUpdatePkmnOf))
+        if (updateInfo.inBox != null) {
+            if (updateInfo.inBox == false) {
+                if (pokemonDataService.isTeamFull(userToUpdatePkmnOf))
                     return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_CONTENT);
                 pkmn.setInBox(false);
                 pkmn.setBoxId(null);
             } else {
-                if(updateInfo.boxId == null)
+                if (updateInfo.boxId == null)
                     return ResponseEntity.badRequest().build();
                 Box boxToPutIn = boxRepo.findByOwnerIdAndUserBoxId(userToUpdatePkmnOf, updateInfo.boxId);
-                if(boxToPutIn == null)
+                if (boxToPutIn == null)
                     return ResponseEntity.notFound().build();
                 pkmn.setInBox(true);
                 pkmn.setBoxId(boxToPutIn);
@@ -150,7 +153,7 @@ public class PokemonRestController {
     @DeleteMapping("/pokemon/{id}")
     public ResponseEntity<Pokemon> deletePkmnById(@PathVariable int id) {
         Optional<Pokemon> pkmn = pokemonRepo.findById(id);
-        if(pkmn.isEmpty()) {
+        if (pkmn.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         pokemonRepo.deleteById(id);

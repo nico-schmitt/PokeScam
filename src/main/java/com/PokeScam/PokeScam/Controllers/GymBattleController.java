@@ -10,6 +10,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.SessionData;
+import com.PokeScam.PokeScam.DTOs.BattleAction;
+import com.PokeScam.PokeScam.DTOs.BattleActionDTO;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Model.Gym;
 import com.PokeScam.PokeScam.Services.EncounterService;
@@ -93,11 +95,16 @@ public class GymBattleController {
 
     /** Execute a turn in gym battle */
     @PostMapping("/executeTurn")
-    public String executeTurn(
-            @RequestParam int moveIdx,
-            @RequestHeader(name = "Referer", defaultValue = "/") String referer,
+    public String executeGymTurn(
+            @RequestParam BattleAction action,
+            @RequestParam(required = false) Integer moveIdx,
+            @RequestParam(required = false) Integer switchIdx,
+            @RequestHeader(name = "Referer", defaultValue = "/gym") String referer,
             RedirectAttributes redirectAttributes) {
-        NotificationMsg notifMsg = encounterService.executeTurn(moveIdx);
+
+        BattleActionDTO dto = new BattleActionDTO(action, moveIdx, switchIdx, null);
+
+        NotificationMsg notifMsg = encounterService.executeTurn(dto);
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
         return "redirect:" + referer;
     }

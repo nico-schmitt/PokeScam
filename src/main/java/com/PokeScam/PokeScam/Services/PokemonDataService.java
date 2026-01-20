@@ -382,7 +382,8 @@ public class PokemonDataService {
                 dto.isActivePkmn(),
                 false, // seen
                 false, // caught
-                0);
+                0,
+                PokemonCalcService.expToNextLevel(dto.level()));
     }
 
     // ---------------- POPULATE ITEM PAGES WITH POKEMONS ----------------
