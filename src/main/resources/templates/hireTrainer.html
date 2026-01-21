@@ -1,0 +1,27 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center mt-4">
+    <h1 class="title">Hire Trainer</h1>
+
+    <div class="card">
+      <div class="card-content has-text-centered">
+        <p class="title is-6" th:text="${candidate.name}">Trainer Name</p>
+        <p th:text="'Cost: ' + ${candidate.cost} + '₽'">Cost</p>
+        <p th:text="'Your Money: ' + ${money}">Money</p>
+
+        <form th:action="@{/player/gym/hire}" method="post" class="mt-3">
+          <input type="hidden" name="name" th:value="${candidate.name}" />
+          <input type="hidden" name="cost" th:value="${candidate.cost}" />
+
+          <button class="button is-success"
+                  th:disabled="${money < candidate.cost}">
+            Hire Trainer
+          </button>
+        </form>
+
+        <a href="/player/gym/edit" class="button is-light mt-2">
+          Cancel
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

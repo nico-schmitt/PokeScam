@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.Controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.PokeScam.PokeScam.Model.Gym;
+import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Services.EncounterService;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
@@ -42,14 +44,34 @@ public class GymController {
         this.gymProgressService = gymProgressService;
     }
 
-    /** List all NPC gyms */
+    /** List all gyms: NPC + player gyms */
     @GetMapping
     public String listGyms(Model model) {
-        List<Gym> gyms = gymService.getAllNpcGyms();
-        model.addAttribute("gyms", gyms);
+        User currentUser = customUserDetails.getThisUser();
+
+        // Fetch NPC gyms
+        List<Gym> npcGyms = gymService.getAllNpcGyms();
+
+        // Fetch player-owned gyms (optionally exclude the current user's gym if you
+        // want)
+        List<Gym> playerGyms = gymService.getAllPlayerGyms(); // create this method
+
+        // Optionally, you can highlight the user's own gym in the template
+        Gym userGym = playerGyms.stream()
+                .filter(g -> currentUser.equals(g.getOwner()))
+                .findFirst()
+                .orElse(null);
+
+        // Combine NPC gyms + player gyms (except user's own if you want)
+        List<Gym> allGyms = new ArrayList<>();
+        allGyms.addAll(npcGyms);
+        allGyms.addAll(playerGyms);
+
+        model.addAttribute("gyms", allGyms);
+        model.addAttribute("playerGym", userGym); // for special display like before
 
         // Add completed gyms
-        List<Long> completedGymIds = gymProgressService.getCompletedGymIdsForUser(customUserDetails.getThisUser());
+        List<Long> completedGymIds = gymProgressService.getCompletedGymIdsForUser(currentUser);
         model.addAttribute("completedGymIds", completedGymIds);
 
         return "gyms";
@@ -65,6 +87,7 @@ public class GymController {
 
         model.addAttribute("gym", gym);
         model.addAttribute("trainers", trainers);
+        model.addAttribute("isOwner", false);
 
         return "gymDetail";
     }
