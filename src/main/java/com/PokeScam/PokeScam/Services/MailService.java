@@ -27,13 +27,26 @@ public class MailService {
         this.verifyUserService = verifyUserService;
     }
 
-    public void sendPlainText(User user, String to, String subject) {
+    public void sendVerifyEmail(User user, String to, String subject) {
         String token = verifyUserService.createVerificationToken(String.valueOf(user.getId()));
         String verifyUrl = "http://localhost:" + port + "/verify?token=" +
                 URLEncoder.encode(token, StandardCharsets.UTF_8);
 
         String message = "Click below to verify your email:\n" + verifyUrl;
-        // System.out.println(message+"\n\n\n\n");
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(to);
+        mail.setSubject(subject);
+        mail.setText(message);
+        mailSender.send(mail);
+    }
+
+    public void sendUnbanEmail(User user, String to, String subject) {
+        String token = verifyUserService.createVerificationToken(String.valueOf(user.getId()));
+        String unbanUrl = "http://localhost:" + port + "/admin/unbanRequest?token=" +
+                URLEncoder.encode(token, StandardCharsets.UTF_8);
+
+        String message = "Click below to get unbanned:\n" + unbanUrl;
 
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(to);

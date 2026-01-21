@@ -38,6 +38,7 @@ public class AdminController {
     @GetMapping("/admin")
     public String admin(Model m) {
         m.addAttribute("user", new User());
+        m.addAttribute("bannedUsers", adminService.getBannedUsers());
         return "admin";
     }
 
@@ -46,5 +47,19 @@ public class AdminController {
         NotificationMsg notifMsg = adminService.banUser(userToBan.getUsername());
         redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
         return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/unban")
+    public String unbanUser(@RequestParam("unbanId") int unbanId, RedirectAttributes redirectAttributes) {
+        NotificationMsg notifMsg = adminService.sendUnbanEmail(unbanId);
+        redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/admin/unbanRequest")
+    public String verifyUser(Model m, @RequestParam String token) {
+        String unbanStatusMsg = adminService.handleUnban(token);
+        m.addAttribute("unbanStatusMsg", unbanStatusMsg);
+        return "unban";
     }
 }

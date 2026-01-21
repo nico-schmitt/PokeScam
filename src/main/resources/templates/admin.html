@@ -2,20 +2,40 @@
   <div class="panel">
     <p class="panel-heading">Admin Board</p>
 
-      <form th:action="@{/admin/ban}" method="post" th:object="${user}">
-        <div class="field">
-          <label class="label" for="username">Ban User</label>
-          <input
-            th:field="*{username}"
-            class="input"
-            type="text"
-            placeholder="Username"
-          />
-        </div>
-        <div class="field">
-          <button class="button is-link" type="submit">Submit</button>
-        </div>
-      </form>
-    </main>
+    <form th:action="@{/admin/ban}" method="post" th:object="${user}">
+      <div class="field">
+        <label class="label" for="username">Ban User</label>
+        <input
+          th:field="*{username}"
+          class="input"
+          type="text"
+          placeholder="Username"
+        />
+      </div>
+      <div class="field">
+        <button class="button is-link" type="submit">Submit</button>
+      </div>
+    </form>
   </div>
+  <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+    <thead>
+      <tr>
+        <th>Banned Users</th>
+        <th>Unban</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="user : ${bannedUsers}">
+        <td class="subtitle">[[${user.username}]]</td>
+        <td>
+          <form th:action="@{/admin/unban}" method="post">
+            <input type="hidden" name="unbanId" th:value="${user.id}" />
+            <button type="submit" class="button is-small is-success">
+              <span class="icon"><i class="fas fa-unlock"></i></span>
+            </button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>

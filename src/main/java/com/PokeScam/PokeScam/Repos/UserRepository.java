@@ -1,5 +1,6 @@
 package com.PokeScam.PokeScam.Repos;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,5 @@ public interface UserRepository extends JpaRepository<User, Integer>{
     // id >= 19 because lower ids are not compatible test users
     @Query(value = "SELECT * FROM users WHERE id >= 19 AND id != :thisUserId ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     User findRandomUser(@Param("thisUserId") int id);
+    List<User> findByRolesContaining(String role);
 }

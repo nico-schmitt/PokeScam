@@ -25,14 +25,14 @@ public class RegisterUserService {
     public void registerUser(String username, String email, String pw) {
         User user = new User();
         user.setUsername(username);
-        user.setEmail(passwordEncoder.encode(email));
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(pw));
         user.setInventory(new Inventory());
         user.setRoles("USER");
         user.setVerified(false);
         User savedUser = userRepo.save(user);
         if(email != "") {
-            mailService.sendPlainText(savedUser, email, "Verify your account thx");
+            mailService.sendVerifyEmail(savedUser, email, "Verify your account thx");
         }
     }
 }

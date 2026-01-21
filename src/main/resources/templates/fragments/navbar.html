@@ -1,142 +1,156 @@
 <div th:fragment="navbar">
-    <header>
-      <nav class="navbar" role="navigation" aria-label="main navigation">
-        <div class="navbar-menu">
-          <div class="navbar-start">
-            <div class="tabs is-large is-toggle is-toggle-rounded">
-              <ul>
-                <li th:classappend="${currentPath == '/'} ? 'is-active' : ''">
-                  <a href="/">
-                    <span class="icon is-small"
-                      ><i class="fas fa-users"></i
-                    ></span>
-                    <span>Team</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/box')} ? 'is-active' : ''">
-                  <a href="/box">
-                    <span class="icon is-small"
-                      ><i class="fas fa-box"></i
-                    ></span>
-                    <span>Box</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/inventory')} ? 'is-active' : ''">
-                  <a href="/inventory">
-                    <span class="icon is-small"
-                    ><i class="fas fa-box"></i
-                    ></span>
-                    <span>Inventory</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/catch')} ? 'is-active' : ''">
-                  <a href="/catch">
-                    <span class="icon is-small"
-                      ><i class="fas fa-bullseye"></i
-                    ></span>
-                    <span>Catch</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/shop')} ? 'is-active' : ''">
-                  <a href="/shop">
-                    <span class="icon is-small"
-                      ><i class="fas fa-shop"></i
-                    ></span>
-                    <span>Shop</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/encounterPath')} ? 'is-active' : ''">
-                  <a href="/encounterPath">
-                    <span class="icon is-small"
-                      ><i class="fas fa-crosshairs"></i
-                    ></span>
-                    <span>Encounter</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/admin')} ? 'is-active' : ''" sec:authorize="hasRole('ADMIN')">
-                  <a href="/admin">
-                    <span class="icon is-small"
-                      ><i class="fas fa-sliders"></i
-                    ></span>
-                    <span>Admin</span>
-                  </a>
-                </li>
-                <li th:classappend="${currentPath.startsWith('/gyms')} ? ' is-active' : ''">
-                    <a href="/gyms">
-                        <span class="icon is-small"><i class="fas fa-chess-rook"></i></span>
-                        <span>Gyms</span>
-                    </a>
-                </li>
+  <header>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <div class="tabs is-large is-toggle is-toggle-rounded">
+            <ul class="is-size-6">
+              <li th:classappend="${currentPath == '/'} ? 'is-active' : ''">
+                <a href="/">
+                  <span class="icon is-small"
+                    ><i class="fas fa-users"></i
+                  ></span>
+                  <span>Team</span>
+                </a>
+              </li>
+              <li
+                th:classappend="${currentPath.startsWith('/box')} ? 'is-active' : ''"
+              >
+                <a href="/box">
+                  <span class="icon is-small"><i class="fas fa-box"></i></span>
+                  <span>Box</span>
+                </a>
+              </li>
+              <li
+                th:classappend="${currentPath.startsWith('/inventory')} ? 'is-active' : ''"
+              >
+                <a href="/inventory">
+                  <span class="icon is-small"><i class="fas fa-box"></i></span>
+                  <span>Inventory</span>
+                </a>
+              </li>
+              <li
+                th:classappend="${currentPath.startsWith('/catch')} ? 'is-active' : ''"
+              >
+                <a href="/catch">
+                  <span class="icon is-small"
+                    ><i class="fas fa-bullseye"></i
+                  ></span>
+                  <span>Catch</span>
+                </a>
+              </li>
+              <li
+                th:classappend="${currentPath.startsWith('/shop')} ? 'is-active' : ''"
+              >
+                <a href="/shop">
+                  <span class="icon is-small"><i class="fas fa-shop"></i></span>
+                  <span>Shop</span>
+                </a>
+              </li>
+              <li
+                th:classappend="${currentPath.startsWith('/encounterPath')} ? 'is-active' : ''"
+              >
+                <a href="/encounterPath">
+                  <span class="icon is-small"
+                    ><i class="fas fa-crosshairs"></i
+                  ></span>
+                  <span>Encounter</span>
+                </a>
+              </li>
+              <li
+                th:classappend="${currentPath.startsWith('/gyms')} ? ' is-active' : ''"
+              >
+                <a href="/gyms">
+                  <span class="icon is-small"
+                    ><i class="fas fa-chess-rook"></i
+                  ></span>
+                  <span>Gyms</span>
+                </a>
+              </li>
 
-                <li th:classappend="${currentPath.startsWith('/pokedex')} ? 'is-active' : ''">
-                    <a href="/pokedex">
-                        <span class="icon is-small">
-                        <i class="fas fa-book"></i>
-                        </span>
-                        <span>Pokédex</span>
-                    </a>
-                </li>
+              <li
+                th:classappend="${currentPath.startsWith('/pokedex')} ? 'is-active' : ''"
+              >
+                <a href="/pokedex">
+                  <span class="icon is-small">
+                    <i class="fas fa-book"></i>
+                  </span>
+                  <span>Pokédex</span>
+                </a>
+              </li>
 
-                <li th:classappend="${currentPath.startsWith('/friends')} ? 'is-active' : ''">
-                  <a href="/friends">
-                        <span class="icon is-small">
-                        <i class="fa-solid fa-user-group"></i>
-                        </span>
-                    <span>Friends</span>
-                  </a>
-                </li>
+              <li
+                th:classappend="${currentPath.startsWith('/friends')} ? 'is-active' : ''"
+              >
+                <a href="/friends">
+                  <span class="icon is-small">
+                    <i class="fa-solid fa-user-group"></i>
+                  </span>
+                  <span>Friends</span>
+                </a>
+              </li>
 
-                <li th:classappend="${currentPath.startsWith('/inbox')} ? 'is-active' : ''">
-                  <a href="/inbox">
-                        <span class="icon is-small">
-                        <i class="fa-solid fa-envelope"></i>
-                        </span>
-                    <span>Inbox</span>
-                  </a>
-                </li>
-              </ul>
+              <li
+                th:classappend="${currentPath.startsWith('/inbox')} ? 'is-active' : ''"
+              >
+                <a href="/inbox">
+                  <span class="icon is-small">
+                    <i class="fa-solid fa-envelope"></i>
+                  </span>
+                  <span>Inbox</span>
+                </a>
+              </li>
+
+              <li
+                th:classappend="${currentPath.startsWith('/admin')} ? 'is-active' : ''"
+                sec:authorize="hasRole('ADMIN')"
+              >
+                <a href="/admin">
+                  <span class="icon is-small"
+                    ><i class="fas fa-sliders"></i
+                  ></span>
+                  <span>Admin</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <strong
+              >You have
+              <span class="icon">
+                <i class="fa-solid fa-dollar-sign"></i>
+              </span>
+              [[${userCurrency}]]
+            </strong>
+          </div>
+          <div class="navbar-item">
+            <strong
+              >You have
+              <span class="icon">
+                <i class="fa-solid fa-bolt-lightning"></i>
+              </span>
+              [[${userEnergy}]]
+            </strong>
+          </div>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link"> [[#{change_lang}]] </a>
+            <div class="navbar-dropdown">
+              <a href="?lang=en" class="navbar-item"> [[#{en_lang_switch}]] </a>
+              <a href="?lang=de" class="navbar-item"> [[#{de_lang_switch}]] </a>
             </div>
           </div>
-
-          <div class="navbar-end">
-            <div class="navbar-item">
-              <strong>You have 
-                <span class="icon">
-                  <i class="fa-solid fa-dollar-sign"></i>
-                </span>
-                [[${userCurrency}]]
-              </strong>
-            </div>
-            <div class="navbar-item">
-              <strong>You have 
-                <span class="icon">
-                  <i class="fa-solid fa-bolt-lightning"></i>
-                </span>
-                [[${userEnergy}]]
-              </strong>
-            </div>
-            <div class="navbar-item has-dropdown is-hoverable">
-              <a class="navbar-link">
-                [[#{change_lang}]]
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-danger" href="/logout">
+                <strong>Logout</strong>
               </a>
-              <div class="navbar-dropdown">
-                <a href="?lang=en" class="navbar-item">
-                  [[#{en_lang_switch}]]
-                </a>
-                <a href="?lang=de" class="navbar-item">
-                  [[#{de_lang_switch}]]
-                </a>
-              </div>
-            </div>
-            <div class="navbar-item">
-              <div class="buttons">
-                <a class="button is-danger" href="/logout">
-                  <strong>Logout</strong>
-                </a>
-              </div>
             </div>
           </div>
         </div>
-      </nav>
-    </header>
+      </div>
+    </nav>
+  </header>
 </div>

@@ -2,7 +2,6 @@
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 >
   <head>
     <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">
@@ -16,25 +15,16 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css"
-    />
-    <script th:src="@{/openCloseModal.js}"></script>
   </head>
-
   <body class="is-flex is-flex-direction-column" style="min-height: 100vh">
-    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <header></header>
     <main
       class="is-flex is-justify-content-center is-align-items-center"
-      style="flex: 1; max-width: 100vw"
+      style="flex: 1"
     >
-      <div style="max-width: 100vw" layout:fragment="content">
-        Default content
-      </div>
+      <h1 class="title">[[${unbanStatusMsg}]]</h1>
+      <a class="button is-link" href="/login">Login</a>
     </main>
     <footer></footer>
-
-    <div th:replace="~{fragments/notifications :: notifications}"></div>
   </body>
 </html>
