@@ -58,30 +58,57 @@ public class GymService {
 
         List<EncounterData> encounters = new ArrayList<>();
 
-        for (GymTrainer trainer : trainers) {
-            List<Pokemon> trainerPokemon = pokemonRepo.findByTrainerOrderByIdAsc(trainer);
-
-            List<EncounterDataSinglePkmn> encounterPkmn = trainerPokemon.stream()
-                    .map(pkmn -> {
-                        PokemonDTO dto = pokemonDataService
-                                .convertToPokemonDTO(
-                                        pokemonDataService.getPokemonWithMovesDTO(pkmn));
-
-                        return new EncounterDataSinglePkmn(dto, false);
-                    })
+        if (!gym.isNpcGym()) {
+            // Player gym: leader (sequence 0) last
+            List<GymTrainer> hiredTrainers = trainers.stream()
+                    .filter(t -> t.getSequenceNumber() != 0)
                     .toList();
 
-            encounters.add(new EncounterData(
-                    0, // initial order
-                    EncounterService.EncounterType.Trainer, // type
-                    encounterPkmn, // Pokémon list
-                    0, // active Pokémon index
-                    false, // not yet won
-                    trainer.getName() // trainer name
-            ));
+            GymTrainer leader = trainers.stream()
+                    .filter(t -> t.getSequenceNumber() == 0)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Player gym must have a leader"));
+
+            // Add hired trainers first
+            for (GymTrainer trainer : hiredTrainers) {
+                encounters.addAll(generateTrainerEncounter(trainer));
+            }
+
+            // Add the player leader last
+            encounters.addAll(generateTrainerEncounter(leader));
+
+        } else {
+            // NPC gym: just use the order as-is
+            for (GymTrainer trainer : trainers) {
+                encounters.addAll(generateTrainerEncounter(trainer));
+            }
         }
 
         return encounters;
+    }
+
+    /** Extracted helper for cleaner code */
+    private List<EncounterData> generateTrainerEncounter(GymTrainer trainer) {
+        List<Pokemon> trainerPokemon = pokemonRepo.findByTrainerOrderByIdAsc(trainer);
+
+        List<EncounterDataSinglePkmn> encounterPkmn = trainerPokemon.stream()
+                .map(pkmn -> {
+                    PokemonDTO dto = pokemonDataService
+                            .convertToPokemonDTO(
+                                    pokemonDataService.getPokemonWithMovesDTO(pkmn));
+                    return new EncounterDataSinglePkmn(dto, false);
+                })
+                .toList();
+
+        EncounterData encounter = new EncounterData(
+                0,
+                EncounterService.EncounterType.Trainer,
+                encounterPkmn,
+                0,
+                false,
+                trainer.getName());
+
+        return List.of(encounter);
     }
 
     /**
@@ -111,4 +138,9 @@ public class GymService {
 
         return result;
     }
+
+    public List<Gym> getAllPlayerGyms() {
+        return gymRepo.findByNpcGymFalse();
+    }
+
 }
