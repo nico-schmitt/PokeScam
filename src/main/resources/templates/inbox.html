@@ -2,11 +2,45 @@
     <table class="table is-bordered is-striped is-hoverable is-fullwidth">
         <thead>
         <tr>
-            <th>Name</th>
+            <th>
+                <a th:href="@{/inbox(page=0, size=${pageSize},
+                            sortBy='createdAt',
+                            dir=${sortBy=='createdAt' and dir=='asc' ? 'desc' : 'asc'})}">
+                    Requested at
+                    <div th:if="${sortBy=='createdAt' and dir=='asc'}">
+                        <span class="icon is-small">
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </span>
+                    </div>
+                    <div th:if="${sortBy=='createdAt' and dir=='desc'}">
+                        <span class="icon is-small">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </span>
+                    </div>
+                </a>
+            </th>
+            <th>
+                <a th:href="@{/inbox(page=0, size=${pageSize},
+                            sortBy='requester.username',
+                            dir=${sortBy=='requester.username' and dir=='asc' ? 'desc' : 'asc'})}">
+                    Name
+                    <div th:if="${sortBy=='requester.username' and dir=='asc'}">
+                        <span class="icon is-small">
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </span>
+                    </div>
+                    <div th:if="${sortBy=='requester.username' and dir=='desc'}">
+                        <span class="icon is-small">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </span>
+                    </div>
+                </a>
+            </th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="request : ${requests}" class="modal-trigger">
+            <td th:text="${request.createdAt}"></td>
             <td>[[${request.name}]] wants to be your friend</td>
             <td>
                 <form th:action="@{/inbox/{id}/accept(id=${request.id})}" method="post">
@@ -23,11 +57,11 @@
     </table>
 
     <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-        <a th:href="${pageInfo.isFirst} ? '' : @{/inbox (page=${pageInfo.number-1}, size=${pageSize})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>
-        <a th:href="${pageInfo.isLast} ? '' : @{/inbox (page=${pageInfo.number+1}, size=${pageSize})}" class="pagination-next" th:classappend="${pageInfo.isLast} ? ' is-disabled' : ''">Next</a>
+        <a th:href="${pageInfo.isFirst} ? '' : @{/inbox (page=${pageInfo.number-1}, size=${pageSize}, sortBy=${sortBy}, dir=${dir})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>
+        <a th:href="${pageInfo.isLast} ? '' : @{/inbox (page=${pageInfo.number+1}, size=${pageSize}, sortBy=${sortBy}, dir=${dir})}" class="pagination-next" th:classappend="${pageInfo.isLast} ? ' is-disabled' : ''">Next</a>
         <ul th:if="${pageInfo.totalElements <= 4 and pageInfo.totalElements > 0}" class="pagination-list">
             <li th:each="i : ${#numbers.sequence(0, pageInfo.totalPages-1)}">
-                <a th:href="@{/inbox (page=${i}, size=${pageSize})}" class="pagination-link" th:classappend="${pageInfo.number == i} ? ' is-current' : ''">[[${i+1}]]</a>
+                <a th:href="@{/inbox (page=${i}, size=${pageSize}, sortBy=${sortBy}, dir=${dir})}" class="pagination-link" th:classappend="${pageInfo.number == i} ? ' is-current' : ''">[[${i+1}]]</a>
             </li>
         </ul>
     </nav>

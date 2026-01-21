@@ -44,6 +44,6 @@ public class Friendship {
         } else
             otherUser = requester;
 
-        return new FriendDTO(this.id, otherUser.getUsername(), otherUser.getRecentActivity());
+        return new FriendDTO(this.id, otherUser.getUsername(), otherUser.getRecentActivity(), this.createdAt);
     }
 }

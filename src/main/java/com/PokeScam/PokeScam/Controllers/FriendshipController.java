@@ -59,14 +59,18 @@ public class FriendshipController {
     @GetMapping("/inbox")
     public String inboxPage(Model model,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String dir) {
         User user = userDetails.getThisUser();
-        Page<Friendship> requests = friendshipService.getincomingRequests(user, page, size);
+        Page<Friendship> requests = friendshipService.getincomingRequests(user, page, size, sortBy, dir);
         List<FriendDTO> requestDTOs = requests.map(r -> r.convertToDTO(user)).toList();
 
         model.addAttribute("requests", requestDTOs);
         model.addAttribute("pageInfo", requests);
         model.addAttribute("pageSize", size);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("dir", dir);
 
         return "inbox";
     }

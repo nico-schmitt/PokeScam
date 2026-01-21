@@ -7,6 +7,7 @@ import com.PokeScam.PokeScam.Repos.FriendshipRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,8 +25,14 @@ public class FriendshipService {
         return friendshipRepo.findFriends(user, pageable);
     }
 
-    public Page<Friendship> getincomingRequests(User user, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<Friendship> getincomingRequests(User user, int page, int size,
+                String sortBy, String direction) {
+        Sort sort = Sort.by(direction.equalsIgnoreCase("desc")
+                                    ? Sort.Direction.DESC
+                                    : Sort.Direction.ASC,
+                            sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
         return friendshipRepo.findByReceiverAndStatus(user, FriendshipStatus.PENDING, pageable);
     }
 
