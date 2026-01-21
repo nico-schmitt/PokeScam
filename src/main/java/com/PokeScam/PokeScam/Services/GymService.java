@@ -57,9 +57,9 @@ public class GymService {
         List<GymTrainer> trainers = trainerRepo.findByGymOrderBySequenceNumberAsc(gym);
 
         List<EncounterData> encounters = new ArrayList<>();
+        int orderCounter = 0;
 
         if (!gym.isNpcGym()) {
-            // Player gym: leader (sequence 0) last
             List<GymTrainer> hiredTrainers = trainers.stream()
                     .filter(t -> t.getSequenceNumber() != 0)
                     .toList();
@@ -69,18 +69,18 @@ public class GymService {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Player gym must have a leader"));
 
-            // Add hired trainers first
             for (GymTrainer trainer : hiredTrainers) {
-                encounters.addAll(generateTrainerEncounter(trainer));
+                List<EncounterData> trainerEncounters = generateTrainerEncounter(trainer, orderCounter++);
+                encounters.addAll(trainerEncounters);
             }
 
-            // Add the player leader last
-            encounters.addAll(generateTrainerEncounter(leader));
+            List<EncounterData> leaderEncounter = generateTrainerEncounter(leader, orderCounter++);
+            encounters.addAll(leaderEncounter);
 
         } else {
-            // NPC gym: just use the order as-is
             for (GymTrainer trainer : trainers) {
-                encounters.addAll(generateTrainerEncounter(trainer));
+                List<EncounterData> trainerEncounters = generateTrainerEncounter(trainer, orderCounter++);
+                encounters.addAll(trainerEncounters);
             }
         }
 
@@ -88,7 +88,7 @@ public class GymService {
     }
 
     /** Extracted helper for cleaner code */
-    private List<EncounterData> generateTrainerEncounter(GymTrainer trainer) {
+    private List<EncounterData> generateTrainerEncounter(GymTrainer trainer, int startingOrder) {
         List<Pokemon> trainerPokemon = pokemonRepo.findByTrainerOrderByIdAsc(trainer);
 
         List<EncounterDataSinglePkmn> encounterPkmn = trainerPokemon.stream()
@@ -101,7 +101,7 @@ public class GymService {
                 .toList();
 
         EncounterData encounter = new EncounterData(
-                0,
+                startingOrder,
                 EncounterService.EncounterType.Trainer,
                 encounterPkmn,
                 0,

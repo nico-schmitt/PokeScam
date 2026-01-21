@@ -5,15 +5,10 @@ import java.util.List;
 import com.PokeScam.PokeScam.Services.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
-import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.SessionData;
 import com.PokeScam.PokeScam.DTOs.BattleAction;
 import com.PokeScam.PokeScam.DTOs.BattleActionDTO;
@@ -50,6 +45,7 @@ public class EncounterController {
         this.userService = userService;
     }
 
+    /** Encounter path main page */
     @GetMapping("/encounterPath")
     public String encounterPath(Model m) {
         m.addAttribute("encounterProgress", sessionData.getEncounterProgress());
@@ -58,18 +54,22 @@ public class EncounterController {
         return "encounterPath";
     }
 
+    /** Start a random encounter path */
     @PostMapping("/encounterPath/start")
     public String encounterPathStart() {
-        encounterService.getRandomEncounters(); // auto sets sessionData
+        encounterService.getRandomEncounters(); // populates sessionData
         return "redirect:/encounterPath";
     }
 
+    /** Reset the encounter path */
     @PostMapping("/encounterPath/reset")
     public String encounterPathReset() {
         sessionData.setSavedEncounterList(null);
+        sessionData.setEncounterProgress(0);
         return "redirect:/encounterPath";
     }
 
+    /** Show a specific encounter battle */
     @GetMapping("/encounterPath/{encounterIdx}")
     public String encounterPathBattle(Model m, @PathVariable int encounterIdx) {
         EncounterData encounterData;
@@ -97,21 +97,44 @@ public class EncounterController {
         return "encounterBattle";
     }
 
+    /** Execute a battle turn for wild encounters or generic encounters */
     @PostMapping("/encounter/executeTurn")
-    public String executeWildTurn(
+    public String executeTurn(
             @RequestParam BattleAction action,
             @RequestParam(required = false) Integer moveIdx,
             @RequestParam(required = false) Integer switchIdx,
-            @RequestHeader(name = "Referer", defaultValue = "/encounter") String referer,
+            @RequestParam(required = false) Integer itemIdx,
+            @RequestHeader(name = "Referer", defaultValue = "/encounterPath") String referer,
             RedirectAttributes redirectAttributes) {
 
-        BattleActionDTO dto = new BattleActionDTO(action, moveIdx, switchIdx, null);
+        // Determine current encounter index from session data
+        int encounterIdx = sessionData.getEncounterProgress();
 
-        NotificationMsg notifMsg = encounterService.executeTurn(dto);
-        redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
-        return "redirect:" + referer;
+        BattleActionDTO dto = new BattleActionDTO(action, moveIdx, switchIdx, itemIdx);
+        EncounterService.EncounterResult result = encounterService.executeTurn(dto);
+
+        redirectAttributes.addFlashAttribute("notifMsg", result.notification());
+        redirectAttributes.addFlashAttribute("encounterFinished", result.encounterFinished());
+        redirectAttributes.addFlashAttribute("hasNextEncounter", result.hasNextEncounter());
+
+        if (result.encounterFinished()) {
+            // Increment progress if a next encounter exists
+            if (result.hasNextEncounter()) {
+                int nextEncounterIdx = encounterIdx + 1;
+                sessionData.setEncounterProgress(nextEncounterIdx);
+                return "redirect:/encounterPath/" + nextEncounterIdx;
+            } else {
+                // Last encounter finished → return to path
+                sessionData.setEncounterProgress(0); // reset progress
+                return "redirect:/encounterPath";
+            }
+        } else {
+            // Battle not finished → stay on same page
+            return "redirect:/encounterPath/" + encounterIdx;
+        }
     }
 
+    /** Execute a battle action from UI menus */
     @PostMapping("/encounter/executeBattleAction")
     public String executeBattleAction(
             @RequestParam String action,
@@ -130,7 +153,7 @@ public class EncounterController {
             enumAction = null;
         }
 
-        // Handle MENU actions: just set flags to show submenus
+        // Handle MENU actions: set flags to show submenus
         switch (action.toUpperCase()) {
             case "FIGHT_MENU" -> m.addAttribute("showMoves", true);
             case "SWITCH_MENU" -> m.addAttribute("showSwitch", true);
@@ -138,18 +161,31 @@ public class EncounterController {
                 m.addAttribute("showItemMenu", true);
                 m.addAttribute("items", itemService.getBattleItems());
             }
-
             default -> {
                 // Execute actual battle action
                 BattleActionDTO dto = new BattleActionDTO(enumAction, moveIdx, switchIdx, itemIdx);
-                NotificationMsg notifMsg = encounterService.executeTurn(dto);
-                redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
-                // After executing the turn, redirect to the same encounter page
-                return "redirect:/encounterPath/" + encounterIdx;
+                EncounterService.EncounterResult result = encounterService.executeTurn(dto);
+
+                redirectAttributes.addFlashAttribute("notifMsg", result.notification());
+                redirectAttributes.addFlashAttribute("encounterFinished", result.encounterFinished());
+                redirectAttributes.addFlashAttribute("hasNextEncounter", result.hasNextEncounter());
+
+                if (result.encounterFinished()) {
+                    if (result.hasNextEncounter()) {
+                        int nextEncounterIdx = encounterIdx + 1;
+                        sessionData.setEncounterProgress(nextEncounterIdx);
+                        return "redirect:/encounterPath/" + nextEncounterIdx;
+                    } else {
+                        sessionData.setEncounterProgress(0);
+                        return "redirect:/encounterPath";
+                    }
+                } else {
+                    return "redirect:/encounterPath/" + encounterIdx;
+                }
             }
         }
 
-        // Reload encounter data to render submenus
+        // Reload encounter data to render menus
         EncounterData encounterData = encounterService.getEncounterDataAtIdx(encounterIdx);
         List<EncounterDataSinglePkmn> pkmnTeamInfo = encounterService.getPkmnTeamInfo();
         List<EncounterDataSinglePkmn> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
@@ -169,5 +205,4 @@ public class EncounterController {
 
         return "encounterBattle";
     }
-
 }

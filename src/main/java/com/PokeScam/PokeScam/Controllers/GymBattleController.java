@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
-import com.PokeScam.PokeScam.NotificationMsg;
 import com.PokeScam.PokeScam.SessionData;
 import com.PokeScam.PokeScam.DTOs.BattleAction;
 import com.PokeScam.PokeScam.DTOs.BattleActionDTO;
@@ -18,9 +17,9 @@ import com.PokeScam.PokeScam.Services.EncounterService;
 import com.PokeScam.PokeScam.Services.GymService;
 import com.PokeScam.PokeScam.Services.PokedexService;
 import com.PokeScam.PokeScam.Services.PokemonDataService;
+import com.PokeScam.PokeScam.Services.GymProgressService;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
-import com.PokeScam.PokeScam.Services.GymProgressService;
 
 @Controller
 @RequestMapping("/gymBattle")
@@ -42,6 +41,7 @@ public class GymBattleController {
             PokedexService pokedexService,
             CustomUserDetails customUserDetails,
             GymProgressService gymProgressService) {
+
         this.sessionData = sessionData;
         this.gymService = gymService;
         this.encounterService = encounterService;
@@ -51,21 +51,21 @@ public class GymBattleController {
         this.gymProgressService = gymProgressService;
     }
 
-    /** Gym selection page (start battle) */
+    /** Start a gym battle */
     @PostMapping("/start/{gymId}")
     public String startGymBattle(@PathVariable Long gymId) {
         List<EncounterData> gymEncounters = gymService.getGymEncounters(gymId);
         sessionData.setSavedEncounterList(gymEncounters);
         sessionData.setEncounterProgress(0);
-        sessionData.setCurrentGymId(gymId); // new field in SessionData
+        sessionData.setCurrentGymId(gymId);
         return "redirect:/gymBattle/battle/0";
     }
 
-    /** Show current gym battle */
+    /** Show current gym encounter */
     @GetMapping("/battle/{encounterIdx}")
-    public String gymBattle(@PathVariable int encounterIdx, Model m) {
+    public String showGymBattle(@PathVariable int encounterIdx, Model m) {
         EncounterData encounterData = encounterService.getEncounterDataAtIdx(encounterIdx);
-        List<EncounterDataSinglePkmn> pkmnTeamInfo = encounterService.getPkmnTeamInfo();
+        List<EncounterDataSinglePkmn> pkmnTeam = encounterService.getPkmnTeamInfo();
         List<EncounterDataSinglePkmn> encounterList = encounterService.getPokemonToFightListAtIdx(encounterIdx);
         EncounterDataSinglePkmn enemyActivePkmn = encounterService.getEnemyActivePkmnAtIdx(encounterIdx);
         EncounterDataSinglePkmn activePkmn = encounterService.wrapPkmnInEncounterData(
@@ -76,37 +76,63 @@ public class GymBattleController {
         pokedexService.markSeen(user, enemyActivePkmn.pkmn().apiName());
 
         m.addAttribute("encounterData", encounterData);
-        m.addAttribute("pkmnTeam", pkmnTeamInfo);
+        m.addAttribute("pkmnTeam", pkmnTeam);
         m.addAttribute("encounterList", encounterList);
         m.addAttribute("activePkmn", activePkmn);
         m.addAttribute("enemyPkmn", enemyActivePkmn);
 
-        // Check if last encounter of gym
-        if (encounterIdx == sessionData.getSavedEncounterList().size() - 1
-                && encounterData.encounterWon()) {
-            Gym gym = gymService.getGymById(sessionData.getCurrentGymId())
-                    .orElseThrow(() -> new IllegalArgumentException("Gym not found"));
-            gymProgressService.markGymCompleted(user, gym);
-            m.addAttribute("gymCompleted", true);
-        }
-
         return "encounterBattle";
     }
 
-    /** Execute a turn in gym battle */
+    /** Execute a turn in a gym battle */
     @PostMapping("/executeTurn")
     public String executeGymTurn(
-            @RequestParam BattleAction action,
+            @RequestParam String action,
             @RequestParam(required = false) Integer moveIdx,
             @RequestParam(required = false) Integer switchIdx,
-            @RequestHeader(name = "Referer", defaultValue = "/gym") String referer,
+            @RequestParam(required = false) Integer itemIdx,
             RedirectAttributes redirectAttributes) {
 
-        BattleActionDTO dto = new BattleActionDTO(action, moveIdx, switchIdx, null);
+        // Get current encounter index from session
+        int encounterIdx = sessionData.getEncounterProgress();
 
-        NotificationMsg notifMsg = encounterService.executeTurn(dto);
-        redirectAttributes.addFlashAttribute("notifMsg", notifMsg);
-        return "redirect:" + referer;
+        BattleAction enumAction;
+        try {
+            enumAction = BattleAction.valueOf(action.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            enumAction = null;
+        }
+
+        BattleActionDTO dto = new BattleActionDTO(enumAction, moveIdx, switchIdx, itemIdx);
+        EncounterService.EncounterResult result = encounterService.executeTurn(dto);
+
+        redirectAttributes.addFlashAttribute("notifMsg", result.notification());
+        redirectAttributes.addFlashAttribute("encounterFinished", result.encounterFinished());
+        redirectAttributes.addFlashAttribute("hasNextEncounter", result.hasNextEncounter());
+
+        if (result.encounterFinished()) {
+            if (result.hasNextEncounter()) {
+                // Go to next gym encounter
+                int nextIdx = encounterIdx + 1;
+                sessionData.setEncounterProgress(nextIdx);
+                return "redirect:/gymBattle/battle/" + nextIdx;
+            } else {
+                // Last encounter finished → mark gym complete
+                User user = customUserDetails.getThisUser();
+                Gym gym = gymService.getGymById(sessionData.getCurrentGymId())
+                        .orElseThrow(() -> new IllegalArgumentException("Gym not found"));
+                gymProgressService.markGymCompleted(user, gym);
+
+                // Reset progress
+                sessionData.setEncounterProgress(0);
+                sessionData.setSavedEncounterList(null);
+                sessionData.setCurrentGymId(null);
+
+                return "redirect:/gym"; // back to gym selection page
+            }
+        } else {
+            // Battle not finished → stay on same encounter
+            return "redirect:/gymBattle/battle/" + encounterIdx;
+        }
     }
-
 }

@@ -207,33 +207,47 @@ public class EncounterService {
 
     // ==================== ACTION ENTRY POINT ====================
 
-    public NotificationMsg executeTurn(BattleActionDTO action) {
+    public EncounterResult executeTurn(BattleActionDTO action) {
+        NotificationMsg notif;
+
         switch (action.action()) {
             case FIGHT -> {
                 Integer moveIdx = action.moveIdx();
-                if (moveIdx == null)
-                    return new NotificationMsg("No move selected!", false);
-                return executeFight(moveIdx);
+                if (moveIdx == null) {
+                    notif = new NotificationMsg("No move selected!", false);
+                    break;
+                }
+                notif = executeFight(moveIdx);
             }
-            case FLEE -> {
-                return executeFlee();
-            }
+            case FLEE -> notif = executeFlee();
             case SWITCH -> {
                 Integer switchIdx = action.switchIdx();
-                if (switchIdx == null)
-                    return new NotificationMsg("No Pokémon selected to switch!", false);
-                return executeSwitch(switchIdx);
+                if (switchIdx == null) {
+                    notif = new NotificationMsg("No Pokémon selected to switch!", false);
+                    break;
+                }
+                notif = executeSwitch(switchIdx);
             }
             case ITEM -> {
                 Integer itemIdx = action.itemIdx();
-                if (itemIdx == null)
-                    return new NotificationMsg("No item selected!", false);
-                return useItem(itemIdx);
+                if (itemIdx == null) {
+                    notif = new NotificationMsg("No item selected!", false);
+                    break;
+                }
+                notif = useItem(itemIdx);
             }
-            default -> {
-                return new NotificationMsg("Invalid action", false);
-            }
+            default -> notif = new NotificationMsg("Invalid action", false);
         }
+
+        // Check if current encounter finished
+        EncounterData enc = getEncounterDataAtIdx(sessionData.getEncounterProgress());
+        boolean allDefeated = enc.pokemonToFightList().stream().allMatch(EncounterDataSinglePkmn::isDefeated);
+        boolean encounterFinished = notif.success() || allDefeated; // treat success actions as encounter finish if all
+                                                                    // defeated
+
+        boolean hasNext = sessionData.getEncounterProgress() + 1 < sessionData.getSavedEncounterList().size();
+
+        return new EncounterResult(notif, encounterFinished, hasNext);
     }
 
     public NotificationMsg fleeCurrentEncounter() {
@@ -325,7 +339,42 @@ public class EncounterService {
         }
 
         // ==================== ENEMY SETUP ====================
-        EncounterDataSinglePkmn enemyWrap = getEnemyActivePkmnAtIdx(encounterIdx);
+        List<EncounterDataSinglePkmn> enemies = new ArrayList<>(enc.pokemonToFightList());
+
+        // Handle empty enemy list
+        if (enemies.isEmpty()) {
+            if (enc.encounterType() == EncounterType.WildPokemon) {
+                // Generate a wild Pokémon automatically
+                PokemonDTO wild = pokeAPIService.getRandomPokemon();
+                wild = wild.curHp() <= 0 ? wild.withNewHealth(wild.maxHp()) : wild;
+                enemies.add(new EncounterDataSinglePkmn(wild, false));
+            } else {
+                // Trainer has no Pokémon -> auto-win encounter
+                EncounterData updated = enc.withWon(true);
+                sessionData.getSavedEncounterList().set(encounterIdx, updated);
+                sessionData.setEncounterProgress(encounterIdx + 1);
+                return new NotificationMsg("Trainer has no Pokémon! Encounter skipped.", true);
+            }
+            // Update encounter list in session
+            enc = new EncounterData(
+                    enc.order(),
+                    enc.encounterType(),
+                    enemies,
+                    0,
+                    enc.encounterWon,
+                    enc.trainerUsername());
+            sessionData.getSavedEncounterList().set(encounterIdx, enc);
+        }
+
+        // Ensure active index is valid
+        int activeEnemyIdx = enc.activePkmnToFightIdx();
+        if (activeEnemyIdx < 0 || activeEnemyIdx >= enemies.size()) {
+            activeEnemyIdx = 0;
+            enc = enc.withNewActiveIdx(activeEnemyIdx);
+            sessionData.getSavedEncounterList().set(encounterIdx, enc);
+        }
+
+        EncounterDataSinglePkmn enemyWrap = enemies.get(activeEnemyIdx);
         PokemonDTO enemyDTO = enemyWrap.pkmn();
 
         Pokemon enemy = new Pokemon();
@@ -335,7 +384,6 @@ public class EncounterService {
         PokemonDTO_MoveInfo move = myDTO.allMoves().moves().get(moveIdx);
         int dmgToEnemy = pokemonCalcService.calcMoveDamage(myDTO, enemyDTO, move);
         pokemonDataService.adjustPkmnHealth(enemy, -dmgToEnemy);
-
         boolean enemyDefeated = enemy.getCurHp() <= 0;
 
         StringBuilder battleMsg = new StringBuilder();
@@ -344,112 +392,38 @@ public class EncounterService {
                 .append(move.displayName());
 
         // ==================== UPDATE ENEMY STATE ====================
-        List<EncounterDataSinglePkmn> updatedEnemies = new ArrayList<>(enc.pokemonToFightList());
-
-        int activeEnemyIdx = enc.activePkmnToFightIdx();
-        updatedEnemies.set(
-                activeEnemyIdx,
-                new EncounterDataSinglePkmn(
-                        enemyDTO.withNewHealth(Math.max(0, enemy.getCurHp())),
-                        enemyDefeated));
+        enemies.set(activeEnemyIdx,
+                new EncounterDataSinglePkmn(enemyDTO.withNewHealth(Math.max(0, enemy.getCurHp())), enemyDefeated));
 
         EncounterData updatedEncounter = enc;
 
-        // ==================== ENEMY DEFEATED ====================
         if (enemyDefeated) {
+            // Handle enemy defeat and EXP/money
+            updatedEncounter = handleEnemyDefeat(enc, myActive, enemyDTO, battleMsg);
+        } else {
+            // Enemy counterattack
+            List<PokemonDTO_MoveInfo> enemyMoves = enemyDTO.allMoves().moves();
+            if (!enemyMoves.isEmpty()) {
+                PokemonDTO_MoveInfo enemyMove = enemyMoves.get(rnd.nextInt(enemyMoves.size()));
+                int dmgToPlayer = pokemonCalcService.calcMoveDamage(enemyDTO, myDTO, enemyMove);
+                pokemonDataService.adjustPkmnHealth(myActive, -dmgToPlayer);
+                pokemonRepository.save(myActive);
 
-            // ---- EXP ----
-            int expGained = pokemonCalcService.calculateExpGain(myDTO, enemyDTO);
-            String expMsg = pokemonCalcService.gainExpAndCheckLevelUp(myActive, expGained);
-            pokemonRepository.save(myActive);
-
-            battleMsg.append(". ").append(expMsg);
-
-            // ---- FIND NEXT ENEMY ----
-            int nextEnemyIdx = -1;
-            for (int i = activeEnemyIdx + 1; i < updatedEnemies.size(); i++) {
-                if (!updatedEnemies.get(i).isDefeated()) {
-                    nextEnemyIdx = i;
-                    break;
-                }
+                battleMsg.append(". Enemy used ").append(enemyMove.displayName());
             }
-
-            // ---- MORE ENEMIES REMAIN ----
-            if (nextEnemyIdx != -1) {
-                updatedEncounter = new EncounterData(
-                        enc.order(),
-                        enc.encounterType(),
-                        updatedEnemies,
-                        nextEnemyIdx,
-                        false,
-                        enc.trainerUsername());
-            }
-
-            // ---- ENCOUNTER FINISHED ----
-            else {
-                int moneyWon = 0;
-                if (enc.encounterType() == EncounterType.Trainer) {
-                    moneyWon = rewardPlayer(enc);
-                    battleMsg.append(" You earned $").append(moneyWon).append("!");
-                }
-
-                // ---- ENEMY DEFEATED ----
-                else {
-                    nextEnemyIdx = -1;
-                    for (int i = activeEnemyIdx + 1; i < updatedEnemies.size(); i++) {
-                        if (!updatedEnemies.get(i).isDefeated()) {
-                            nextEnemyIdx = i;
-                            break;
-                        }
-                    }
-
-                    if (nextEnemyIdx != -1) {
-                        // More Pokémon in the same trainer, just update active idx
-                        updatedEncounter = enc.withNewActiveIdx(nextEnemyIdx);
-                    } else {
-                        // Trainer finished, move to next trainer
-                        updatedEncounter = enc.withWon(true);
-                        sessionData.getSavedEncounterList().set(encounterIdx, updatedEncounter);
-
-                        sessionData.setEncounterProgress(encounterIdx + 1);
-
-                        // Initialize next trainer if exists
-                        if (sessionData.getEncounterProgress() < sessionData.getSavedEncounterList().size()) {
-                            EncounterData nextTrainer = sessionData.getSavedEncounterList()
-                                    .get(sessionData.getEncounterProgress());
-                            // Reset active Pokémon index for next trainer
-                            sessionData.getSavedEncounterList().set(sessionData.getEncounterProgress(),
-                                    nextTrainer.withNewActiveIdx(0));
-                        }
-                    }
-                }
-
-            }
-        }
-
-        // ==================== ENEMY COUNTERATTACK ====================
-        else {
-            PokemonDTO_MoveInfo enemyMove = enemyDTO.allMoves().moves()
-                    .get(rnd.nextInt(enemyDTO.allMoves().moves().size()));
-
-            int dmgToPlayer = pokemonCalcService.calcMoveDamage(enemyDTO, myDTO, enemyMove);
-            pokemonDataService.adjustPkmnHealth(myActive, -dmgToPlayer);
-            pokemonRepository.save(myActive);
-
-            battleMsg.append(". Enemy used ").append(enemyMove.displayName());
 
             updatedEncounter = new EncounterData(
                     enc.order(),
                     enc.encounterType(),
-                    updatedEnemies,
+                    enemies,
                     activeEnemyIdx,
                     false,
                     enc.trainerUsername());
         }
 
-        // ==================== PERSIST ENCOUNTER ====================
+        // Persist encounter state
         sessionData.getSavedEncounterList().set(encounterIdx, updatedEncounter);
-        sessionData.setBattleMenuState(SessionData.BattleMenuState.ACTION_SELECT);
+        sessionData.setBattleMenuState(BattleMenuState.ACTION_SELECT);
 
         return new NotificationMsg(battleMsg.toString(), false);
     }
@@ -561,13 +535,11 @@ public class EncounterService {
         return new NotificationMsg("You fled successfully!", true);
     }
 
-    private NotificationMsg finalizeEncounterIfDone(EncounterData enc, NotificationMsg previousNotif) {
-        boolean allDefeated = enc.pokemonToFightList()
-                .stream()
-                .allMatch(EncounterDataSinglePkmn::isDefeated);
+    private EncounterResult finalizeEncounterIfDone(EncounterData enc, NotificationMsg previousNotif) {
+        boolean allDefeated = enc.pokemonToFightList().stream().allMatch(EncounterDataSinglePkmn::isDefeated);
 
         if (!allDefeated) {
-            return previousNotif;
+            return new EncounterResult(previousNotif, false, true);
         }
 
         sessionData.getSavedEncounterList().set(
@@ -576,18 +548,31 @@ public class EncounterService {
 
         sessionData.setEncounterProgress(sessionData.getEncounterProgress() + 1);
 
-        // Final reward for encounter if applicable
-        int moneyWon = 0;
-        if (enc.encounterType() == EncounterType.Trainer) {
-            moneyWon = rewardPlayer(enc);
-        }
+        boolean hasNext = sessionData.getEncounterProgress() < sessionData.getSavedEncounterList().size();
 
         String message = previousNotif.msg();
-        if (enc.encounterType() == EncounterType.Trainer && moneyWon > 0) {
+        if (enc.encounterType() == EncounterType.Trainer) {
+            int moneyWon = rewardPlayer(enc);
             message += " Encounter finished! You won $" + moneyWon + "!";
         }
 
-        return new NotificationMsg(message, true);
+        return new EncounterResult(new NotificationMsg(message, true), true, hasNext);
+    }
+
+    public record EncounterResult(NotificationMsg notification, boolean encounterFinished, boolean hasNextEncounter) {
+    }
+
+    public EncounterData goToNextEncounter() {
+        int progress = sessionData.getEncounterProgress();
+        if (progress + 1 >= sessionData.getSavedEncounterList().size()) {
+            return null; // no next encounter, frontend can route back to gym/path
+        }
+
+        sessionData.setEncounterProgress(progress + 1);
+        EncounterData next = sessionData.getSavedEncounterList().get(progress + 1);
+        sessionData.getSavedEncounterList().set(progress + 1, next.withNewActiveIdx(0));
+        sessionData.setBattleMenuState(BattleMenuState.ACTION_SELECT);
+        return next;
     }
 
 }
