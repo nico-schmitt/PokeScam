@@ -66,9 +66,10 @@ public class FriendshipService {
         }
 
         friendship.setStatus(FriendshipStatus.ACCEPTED);
+        friendshipRepo.save(friendship);
     }
 
-    public void rejectRequest(Integer friendshipId, User receiver) {
+    public void declineRequest(Integer friendshipId, User receiver) {
         Friendship friendship = friendshipRepo.findById(friendshipId).orElseThrow();
 
         if (!friendship.getReceiver().equals(receiver)) {
@@ -76,5 +77,6 @@ public class FriendshipService {
         }
 
         friendship.setStatus(FriendshipStatus.DECLINED);
+        friendshipRepo.save(friendship);
     }
 }

@@ -76,6 +76,24 @@
                         <span>Pokédex</span>
                     </a>
                 </li>
+
+                <li th:classappend="${currentPath.startsWith('/friends')} ? 'is-active' : ''">
+                  <a href="/friends">
+                        <span class="icon is-small">
+                        <i class="fa-solid fa-user-group"></i>
+                        </span>
+                    <span>Friends</span>
+                  </a>
+                </li>
+
+                <li th:classappend="${currentPath.startsWith('/inbox')} ? 'is-active' : ''">
+                  <a href="/inbox">
+                        <span class="icon is-small">
+                        <i class="fa-solid fa-envelope"></i>
+                        </span>
+                    <span>Inbox</span>
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

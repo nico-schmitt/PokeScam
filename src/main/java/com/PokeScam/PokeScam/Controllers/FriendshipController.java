@@ -51,7 +51,7 @@ public class FriendshipController {
     }
 
     @PostMapping("/friends/{id}")
-    public String deleteFriendship(Model model, @PathVariable int id) {
+    public String deleteFriendship(@PathVariable int id) {
         friendshipService.removeFriendship(userDetails.getThisUser(), id);
         return "redirect:/friends";
     }
@@ -69,6 +69,18 @@ public class FriendshipController {
         model.addAttribute("pageSize", size);
 
         return "inbox";
+    }
+
+    @PostMapping("/inbox/{id}/accept")
+    public String acceptFriendRequest(@PathVariable int id) {
+        friendshipService.acceptRequest(id, userDetails.getThisUser());
+        return "redirect:/friends";
+    }
+
+    @PostMapping("/inbox/{id}/decline")
+    public String declineFriendRequest(@PathVariable int id) {
+        friendshipService.declineRequest(id, userDetails.getThisUser());
+        return "redirect:/friends";
     }
 
     @GetMapping("/friends/{id}/trade")
