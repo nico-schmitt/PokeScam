@@ -10,10 +10,12 @@
     <div th:each="pokemon : ${pokemons}">
       <tr class="modal-trigger" >
         <td th:text="${pokemon.displayName}"></td>
-        <td th:text="${pokemon.amount}">[[${pokemon.curHp}]]/[[${pokemon.maxHp}]]</td>
-        <form th:action="@{/inventory/item/{itemId}/use/{pkmnId}(itemId=${item.id}, pkmnId=${pokemon.id})}">
-          <button class="button is-primary">Use</button>
-        </form>
+        <td>[[${pokemon.curHp}]]/[[${pokemon.maxHp}]]</td>
+        <td>
+          <form th:action="@{/inventory/item/{itemId}/use/{pkmnId}(itemId=${item.id}, pkmnId=${pokemon.id})}" method="post">
+            <button class="button is-primary">Use</button>
+          </form>
+        </td>
       </tr>
     </div>
     </tbody>

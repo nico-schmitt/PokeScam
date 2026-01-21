@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -66,6 +67,8 @@ public class InventoryController {
 
         List<PokemonDTO> pokemonDTOs = pokemonPage.map(pokeAPIService::fetchPokemonDTO).toList();
         model.addAttribute("pokemons", pokemonDTOs);
+        model.addAttribute("pageInfo", pokemonPage);
+        model.addAttribute("pageSize", size);
 
         return "itemUse";
     }
@@ -81,11 +84,11 @@ public class InventoryController {
         } else if (item instanceof Revive) {
             pokemonDataService.healPkmnForCost(pkmnId, 0, (int) (maxHp * ((Revive) item).getHealPercentageRevive()));
         } else {
-            return "inventory";
+            return "redirect:/inventory";
         }
 
         itemService.decrementItem(item);
 
-        return "inventory";
+        return "redirect:/inventory";
     }
 }
