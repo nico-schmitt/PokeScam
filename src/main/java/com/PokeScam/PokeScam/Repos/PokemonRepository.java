@@ -37,20 +37,22 @@ public interface PokemonRepository extends JpaRepository<Pokemon, Integer> {
     List<Pokemon> findByTrainerOrderByIdAsc(GymTrainer trainer);
 
     @Query("""
-        SELECT p
-        FROM Pokemon p
-        WHERE p.ownerId = :owner
-                and p.curHp < p.maxHp
-        """)
+            SELECT p
+            FROM Pokemon p
+            WHERE p.ownerId = :owner
+                    and p.curHp < p.maxHp
+            """)
     Page<Pokemon> findDamagedPokemons(@Param("owner") User ownerId, Pageable pageable);
 
     @Query("""
-        SELECT p
-        FROM Pokemon p
-        WHERE p.ownerId = :owner
-                and p.curHp = 0
-        """)
+            SELECT p
+            FROM Pokemon p
+            WHERE p.ownerId = :owner
+                    and p.curHp = 0
+            """)
     Page<Pokemon> findFaintedPokemons(@Param("owner") User ownerId, Pageable pageable);
 
     Page<Pokemon> findByOwnerId(User owner, Pageable pageable);
+
+    List<Pokemon> findByOwnerIdAndTrainerIsNull(User owner);
 }

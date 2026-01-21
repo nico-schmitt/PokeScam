@@ -4,7 +4,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.PokeScam.PokeScam.Model.Gym;
+import com.PokeScam.PokeScam.Model.User;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface GymRepository extends JpaRepository<Gym, Long> {
 
@@ -17,4 +20,7 @@ public interface GymRepository extends JpaRepository<Gym, Long> {
     Page<Gym> findByNpcGymTrue(Pageable pageable);
 
     Page<Gym> findByNpcGymFalse(Pageable pageable);
+
+    Optional<Gym> findByOwnerAndNpcGymFalse(User owner);
+
 }

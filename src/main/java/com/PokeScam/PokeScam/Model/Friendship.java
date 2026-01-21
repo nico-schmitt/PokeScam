@@ -1,6 +1,8 @@
 package com.PokeScam.PokeScam.Model;
 
 import com.PokeScam.PokeScam.DTOs.FriendDTO;
+import com.PokeScam.PokeScam.DTOs.InboxItemType;
+import com.PokeScam.PokeScam.DTOs.RequestDTO;
 import com.PokeScam.PokeScam.DTOs.RequestStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,33 +19,23 @@ import java.time.LocalDateTime;
 )
 @Getter
 @Setter
-public class Friendship {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "requester_id", nullable = false)
-    private User requester;
-
-    @ManyToOne
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiver;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private RequestStatus status;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+public class Friendship extends InboxRequest{
+    @Override
+    public String getType() {
+        return "FRIEND";
+    }
 
     public FriendDTO convertToDTO(User currentUser) {
         User otherUser;
-        if (requester.equals(currentUser)) {
-            otherUser = receiver;
+        if (getRequester().equals(currentUser)) {
+            otherUser = getReceiver();
         } else
-            otherUser = requester;
+            otherUser = getRequester();
 
-        return new FriendDTO(this.id, otherUser.getId(), otherUser.getUsername(), otherUser.getRecentActivity(), this.createdAt);
+        return new FriendDTO(id, otherUser.getId(), otherUser.getUsername(), otherUser.getRecentActivity(), createdAt);
+    }
+
+    public RequestDTO convertToRequestDTO() {
+        return new RequestDTO(id, requester, receiver, null, null, createdAt, "FRIEND");
     }
 }

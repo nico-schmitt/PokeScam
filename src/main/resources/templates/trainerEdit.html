@@ -1,0 +1,27 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center mt-3">
+    <h1 class="title" th:text="'Edit ' + ${trainer.name}"></h1>
+
+    <div class="card">
+      <div class="card-content has-text-centered">
+        <form method="post"
+              th:action="@{/player/gym/trainer/{id}(id=${trainer.id})}">
+
+          <div th:each="pkmn : ${availablePokemon}">
+            <label class="checkbox">
+              <input type="checkbox"
+                     name="pokemonIds"
+                     th:value="${pkmn.id}">
+              <span th:text="${pkmn.name}"></span>
+            </label>
+          </div>
+
+          <button class="button is-success mt-3">Save</button>
+          <a href="/player/gym/edit" class="button is-light mt-2">
+            Cancel
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

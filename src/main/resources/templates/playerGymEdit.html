@@ -1,0 +1,70 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center mt-3">
+    <h1 class="title" th:text="${gym.name}">My Gym</h1>
+
+    <div class="columns is-multiline mt-4">
+
+      <!-- Gym Leader Card -->
+      <div class="column">
+        <div class="card">
+          <div class="card-content has-text-centered">
+            <p class="title is-6">Gym Leader</p>
+            <p th:text="${leader.name}"></p>
+
+            <form th:action="@{/player/gym/leader/team}" method="post">
+              <div th:each="pkmn : ${availablePokemon}">
+                <label class="checkbox">
+                  <input type="checkbox"
+                         name="pokemonIds"
+                         th:value="${pkmn.id}">
+                  <span th:text="${pkmn.name}"></span>
+                </label>
+              </div>
+
+              <button class="button is-success mt-2">Save Team</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+        <!-- Hired Trainers -->
+        <div class="column" th:each="trainer : ${trainers}" th:if="${trainer.name != leader.name}">
+        <div class="card">
+            <div class="card-content has-text-centered">
+            <p class="title is-6" th:text="${trainer.name}">Trainer</p>
+
+            <!-- List Pokémon species -->
+            <div th:if="${#lists.isEmpty(trainer.team)}">
+                <p>No Pokémon assigned</p>
+            </div>
+            <ul th:if="${!#lists.isEmpty(trainer.team)}" style="list-style-type:none; padding-left:0;">
+                <li th:each="pkmn : ${trainer.team}" th:text="${pkmn.name}"></li>
+            </ul>
+
+            <a th:href="@{/player/gym/trainer/{id}(id=${trainer.id})}"
+                class="button is-info mt-2">
+                Assign Pokémon
+            </a>
+            </div>
+        </div>
+        </div>
+
+
+      <!-- Hire Trainer -->
+      <div class="column is-one-quarter">
+        <div class="card">
+          <div class="card-content has-text-centered">
+            <p class="title is-6">Hire Trainer</p>
+            <p th:text="'Money: ' + ${money}"></p>
+
+            <a href="/player/gym/hire"
+               class="button is-warning mt-2">
+              Hire New Trainer
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

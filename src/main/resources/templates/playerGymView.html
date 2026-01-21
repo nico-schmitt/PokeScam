@@ -1,0 +1,46 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <div class="is-flex is-flex-direction-column is-align-items-center mt-3">
+    <h1 class="title">My Gym</h1>
+
+    <div class="columns is-multiline mt-4">
+      <!-- Player Gym Card -->
+      <div class="column" th:if="${gym != null}">
+        <div class="card">
+          <div class="card-image">
+            <!-- Optional: Gym image -->
+            <figure class="image is-4by3">
+              <img th:src="@{/images/gyms/player_gym.png}" alt="Player Gym">
+            </figure>
+          </div>
+          <div class="card-content has-text-centered">
+            <p class="title is-6" th:text="${gym.name}">Gym Name</p>
+
+            <!-- Show completed status if available -->
+            <div th:if="${completedGymIds != null and completedGymIds.contains(gym.id)}">
+              Completed!
+            </div>
+
+            <!-- View Gym button -->
+            <a th:href="@{/gyms/{id}(id=${gym.id})}" class="button is-info mt-2">View Gym</a>
+
+            <!-- Challenge Gym button -->
+            <form th:action="@{/gyms/start/{id}(id=${gym.id})}" method="post" class="mt-2">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit" class="button is-success">Challenge Gym</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optional fallback if player has no gym -->
+      <div class="column" th:if="${gym == null}">
+        <div class="card">
+          <div class="card-content has-text-centered">
+            <p class="title is-6">No Gym Found</p>
+            <p>Create one by starting your journey!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

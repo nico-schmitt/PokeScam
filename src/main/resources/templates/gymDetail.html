@@ -19,7 +19,26 @@
           </div>
         </div>
       </div>
+    </div>    
+    <div th:if="${isOwner}">
+    <div style="background-color: purple;">hewwo</div>
     </div>
+    <div th:if="${isOwner}">
+        <hr>
+
+        <div class="buttons is-centered">
+            <a th:href="@{/player/gym/edit}"
+            class="button is-warning">
+            Manage Pokémon
+            </a>
+
+            <a th:href="@{/player/gym/stats/{id}(id=${gym.id})}"
+            class="button is-info">
+            Gym Stats
+            </a>
+        </div>
+        </div>
+
 
     <a href="/gyms">
       <button class="button is-info">Return to Gyms</button>

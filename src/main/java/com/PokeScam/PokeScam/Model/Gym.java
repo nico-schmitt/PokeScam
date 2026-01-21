@@ -1,6 +1,7 @@
 package com.PokeScam.PokeScam.Model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,13 +16,19 @@ public class Gym {
     private String name;
 
     @Column(nullable = false)
-    private boolean npcGym; // true = NPC gym, false = player gym (later)
+    private boolean npcGym; // true = NPC gym, false = player gym
+
+    // Only set for player-owned gyms
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     @OneToMany(mappedBy = "gym", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sequenceNumber ASC")
-    private List<GymTrainer> trainers;
+    private List<GymTrainer> trainers = new ArrayList<>();
 
-    // Getters & setters
+    // ======= GETTERS & SETTERS =======
+
     public Long getId() {
         return id;
     }
@@ -44,6 +51,14 @@ public class Gym {
 
     public void setNpcGym(boolean npcGym) {
         this.npcGym = npcGym;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 
     public List<GymTrainer> getTrainers() {

@@ -3,6 +3,7 @@ package com.PokeScam.PokeScam.Controllers;
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.PokeScam.PokeScam.Services.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,16 +27,19 @@ public class CatchController {
     private final PokeAPIService pokeAPIService;
     private final PokedexService pokedexService;
     private final CustomUserDetails customUserDetails;
+    private final UserService userService;
 
     public CatchController(
             PokemonDataService pkmnData,
             PokeAPIService pokeAPIService,
             PokedexService pokedexService,
-            CustomUserDetails customUserDetails) {
+            CustomUserDetails customUserDetails,
+            UserService userService) {
         this.pkmnDataService = pkmnData;
         this.pokeAPIService = pokeAPIService;
         this.pokedexService = pokedexService;
         this.customUserDetails = customUserDetails;
+        this.userService = userService;
     }
 
     @GetMapping("/catch")
@@ -46,6 +50,8 @@ public class CatchController {
 
         // MARK AS SEEN
         pokedexService.markSeen(user, rndPokemon.apiName());
+
+        userService.updateRecentActivity(user, "Catching Pokemon");
 
         m.addAttribute("encounterPkmn", rndPokemon);
         return "catchRndPkmn";

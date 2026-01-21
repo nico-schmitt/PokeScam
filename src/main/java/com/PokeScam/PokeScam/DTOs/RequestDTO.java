@@ -7,10 +7,11 @@ import java.time.LocalDateTime;
 
 public record RequestDTO(
         int id,
-        User requeser,
+        User requester,
         User receiver,
         Pokemon pkmnRequester,
         Pokemon pkmnReceiver,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String type
 ) {
 }

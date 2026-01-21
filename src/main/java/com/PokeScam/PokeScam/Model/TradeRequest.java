@@ -1,5 +1,7 @@
 package com.PokeScam.PokeScam.Model;
 
+import com.PokeScam.PokeScam.DTOs.InboxItemType;
+import com.PokeScam.PokeScam.DTOs.RequestDTO;
 import com.PokeScam.PokeScam.DTOs.RequestStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,19 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class TradeRequest {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn(name = "requester_id", nullable = false)
-    private User requester;
-
-    @ManyToOne
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiver;
-
+public class TradeRequest extends InboxRequest{
     @ManyToOne
     @JoinColumn(name = "pkmn_requester_id", nullable = false)
     private Pokemon pkmnRequester;
@@ -31,12 +21,12 @@ public class TradeRequest {
     @JoinColumn(name = "pkmn_receiver_id", nullable = false)
     private Pokemon pkmnReceiver;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private RequestStatus status;
+    @Override
+    public String getType() {
+        return "TRADE";
+    }
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    public TradeRequest() {}
 
     public TradeRequest(User requester, User receiver, Pokemon pkmnRequester, Pokemon pkmnReceiver) {
         this.requester = requester;
@@ -45,5 +35,9 @@ public class TradeRequest {
         this.pkmnReceiver = pkmnReceiver;
         this.status = RequestStatus.PENDING;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public RequestDTO convertToDTO() {
+        return new RequestDTO(id, requester, receiver, pkmnRequester, pkmnReceiver, createdAt, "TRADE");
     }
 }

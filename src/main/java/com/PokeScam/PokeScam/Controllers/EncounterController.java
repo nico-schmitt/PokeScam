@@ -2,6 +2,7 @@ package com.PokeScam.PokeScam.Controllers;
 
 import java.util.List;
 
+import com.PokeScam.PokeScam.Services.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,12 +18,8 @@ import com.PokeScam.PokeScam.SessionData;
 import com.PokeScam.PokeScam.DTOs.BattleAction;
 import com.PokeScam.PokeScam.DTOs.BattleActionDTO;
 import com.PokeScam.PokeScam.Model.User;
-import com.PokeScam.PokeScam.Services.EncounterService;
-import com.PokeScam.PokeScam.Services.PokemonDataService;
-import com.PokeScam.PokeScam.Services.PokedexService;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
-import com.PokeScam.PokeScam.Services.ItemService;
 
 @Controller
 public class EncounterController {
@@ -33,6 +30,7 @@ public class EncounterController {
     private final PokedexService pokedexService;
     private final CustomUserDetails customUserDetails;
     private final ItemService itemService;
+    private final UserService userService;
 
     public EncounterController(
             SessionData sessionData,
@@ -40,7 +38,8 @@ public class EncounterController {
             PokemonDataService pokemonDataService,
             PokedexService pokedexService,
             CustomUserDetails customUserDetails,
-            ItemService itemService) {
+            ItemService itemService,
+            UserService userService) {
 
         this.sessionData = sessionData;
         this.encounterService = encounterService;
@@ -48,12 +47,14 @@ public class EncounterController {
         this.pokedexService = pokedexService;
         this.customUserDetails = customUserDetails;
         this.itemService = itemService;
+        this.userService = userService;
     }
 
     @GetMapping("/encounterPath")
     public String encounterPath(Model m) {
         m.addAttribute("encounterProgress", sessionData.getEncounterProgress());
         m.addAttribute("encounterList", sessionData.getSavedEncounterList());
+        userService.updateRecentActivity(customUserDetails.getThisUser(), "Running through the wilderness");
         return "encounterPath";
     }
 

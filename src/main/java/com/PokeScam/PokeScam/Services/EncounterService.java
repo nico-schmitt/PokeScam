@@ -384,6 +384,7 @@ public class EncounterService {
                         false,
                         enc.trainerUsername());
             }
+
             // ---- ENCOUNTER FINISHED ----
             else {
                 int moneyWon = 0;
@@ -392,15 +393,37 @@ public class EncounterService {
                     battleMsg.append(" You earned $").append(moneyWon).append("!");
                 }
 
-                updatedEncounter = new EncounterData(
-                        enc.order(),
-                        enc.encounterType(),
-                        updatedEnemies,
-                        activeEnemyIdx,
-                        true,
-                        enc.trainerUsername());
+                // ---- ENEMY DEFEATED ----
+                else {
+                    nextEnemyIdx = -1;
+                    for (int i = activeEnemyIdx + 1; i < updatedEnemies.size(); i++) {
+                        if (!updatedEnemies.get(i).isDefeated()) {
+                            nextEnemyIdx = i;
+                            break;
+                        }
+                    }
 
-                sessionData.setEncounterProgress(encounterIdx + 1);
+                    if (nextEnemyIdx != -1) {
+                        // More Pokémon in the same trainer, just update active idx
+                        updatedEncounter = enc.withNewActiveIdx(nextEnemyIdx);
+                    } else {
+                        // Trainer finished, move to next trainer
+                        updatedEncounter = enc.withWon(true);
+                        sessionData.getSavedEncounterList().set(encounterIdx, updatedEncounter);
+
+                        sessionData.setEncounterProgress(encounterIdx + 1);
+
+                        // Initialize next trainer if exists
+                        if (sessionData.getEncounterProgress() < sessionData.getSavedEncounterList().size()) {
+                            EncounterData nextTrainer = sessionData.getSavedEncounterList()
+                                    .get(sessionData.getEncounterProgress());
+                            // Reset active Pokémon index for next trainer
+                            sessionData.getSavedEncounterList().set(sessionData.getEncounterProgress(),
+                                    nextTrainer.withNewActiveIdx(0));
+                        }
+                    }
+                }
+
             }
         }
 

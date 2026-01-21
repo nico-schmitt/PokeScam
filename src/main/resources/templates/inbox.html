@@ -41,14 +41,28 @@
         <tbody>
         <tr th:each="request : ${requests}" class="modal-trigger">
             <td th:text="${request.createdAt}"></td>
-            <td>[[${request.name}]] wants to be your friend</td>
-            <td>
-                <form th:action="@{/inbox/{id}/accept(id=${request.id})}" method="post">
-                    <button class="button is-primary">Accept</button>
+            <td th:if="${request != null}" th:switch="${request.type}">
+                <span th:case="'FRIEND'">
+                    [[${request.requester.username}]] wants to be your friend
+                </span>
+                <span th:case="'TRADE'">
+                    Trade request from [[${request.requester.username}]]
+                    ( [[${request.pkmnRequester.name}]] ↔ [[${request.pkmnReceiver.name}]]
+                </span>
+            </td>
+            <td th:if="${request != null}" th:switch="${request.type}">
+                <form th:case="'FRIEND'" th:action="@{/inbox/{id}/acceptFriend(id=${request.id})}" method="post">
+                    <button class="button is-primary">Accept Friend</button>
+                </form>
+                <form th:case="'TRADE'" th:action="@{/inbox/{id}/acceptTrade(id=${request.id})}" method="post">
+                    <button class="button is-primary">Accept Trade</button>
                 </form>
             </td>
-            <td>
-                <form th:action="@{/inbox/{id}/decline(id=${request.id})}" method="post">
+            <td th:if="${request != null}" th:switch="${request.type}">
+                <form th:case="'FRIEND'" th:action="@{/inbox/{id}/declineFriend(id=${request.id})}" method="post">
+                    <button class="button is-danger">Decline</button>
+                </form>
+                <form th:case="'TRADE'" th:action="@{/inbox/{id}/declineTrade(id=${request.id})}" method="post">
                     <button class="button is-danger">Decline</button>
                 </form>
             </td>

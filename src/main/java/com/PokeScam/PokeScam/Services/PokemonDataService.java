@@ -62,12 +62,16 @@ public class PokemonDataService {
         return teamPkmnDTO;
     }
 
-    public List<Pokemon> getPkmnTeamInfo() {
-        List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(userDetails.getThisUser());
+    public List<Pokemon> getPkmnTeamInfo(User user) {
+        List<Pokemon> teamPkmn = pokemonRepo.findByOwnerIdAndInBoxFalse(user);
         while (teamPkmn.size() < POKEMON_TEAM_SIZE) {
-            teamPkmn.add(null);
+            teamPkmn.add(null); // pad with null if less than 6
         }
         return teamPkmn;
+    }
+
+    public List<Pokemon> getPkmnTeamInfo() {
+        return getPkmnTeamInfo(userDetails.getThisUser());
     }
 
     // ==================== HEALTH / HEAL ====================
