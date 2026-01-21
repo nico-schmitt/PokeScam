@@ -9,6 +9,7 @@ import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Model.ItemTypes.Potion;
 import com.PokeScam.PokeScam.Model.ItemTypes.Revive;
 import com.PokeScam.PokeScam.Repos.ItemRepository;
+import com.PokeScam.PokeScam.Repos.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,10 +22,12 @@ import java.util.List;
 public class ItemService {
     private final ItemRepository itemRepo;
     private final CustomUserDetails userDetails;
+    private final UserRepository userRepo;
 
-    public ItemService(ItemRepository itemRepo, CustomUserDetails userDetails) {
+    public ItemService(ItemRepository itemRepo, CustomUserDetails userDetails, UserRepository userRepo) {
         this.itemRepo = itemRepo;
         this.userDetails = userDetails;
+        this.userRepo = userRepo;
     }
 
     public Page<Item> getItemsInPage(int page, int size) {
