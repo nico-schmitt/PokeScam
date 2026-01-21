@@ -1,7 +1,7 @@
 package com.PokeScam.PokeScam.Services;
 
 import com.PokeScam.PokeScam.Model.Friendship;
-import com.PokeScam.PokeScam.DTOs.FriendshipStatus;
+import com.PokeScam.PokeScam.DTOs.RequestStatus;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.FriendshipRepository;
 import org.springframework.data.domain.Page;
@@ -33,7 +33,7 @@ public class FriendshipService {
                             sortBy);
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        return friendshipRepo.findByReceiverAndStatus(user, FriendshipStatus.PENDING, pageable);
+        return friendshipRepo.findByReceiverAndStatus(user, RequestStatus.PENDING, pageable);
     }
 
     public void sendFriendRequest(User from, User to) {
@@ -49,7 +49,7 @@ public class FriendshipService {
         Friendship friendship = new Friendship();
         friendship.setRequester(from);
         friendship.setReceiver(to);
-        friendship.setStatus(FriendshipStatus.PENDING);
+        friendship.setStatus(RequestStatus.PENDING);
         friendship.setCreatedAt(LocalDateTime.now());
 
         friendshipRepo.save(friendship);
@@ -72,7 +72,7 @@ public class FriendshipService {
             throw new IllegalArgumentException("Not your request");
         }
 
-        friendship.setStatus(FriendshipStatus.ACCEPTED);
+        friendship.setStatus(RequestStatus.ACCEPTED);
         friendshipRepo.save(friendship);
     }
 
@@ -83,7 +83,7 @@ public class FriendshipService {
             throw new IllegalArgumentException("Not your request");
         }
 
-        friendship.setStatus(FriendshipStatus.DECLINED);
+        friendship.setStatus(RequestStatus.DECLINED);
         friendshipRepo.save(friendship);
     }
 }

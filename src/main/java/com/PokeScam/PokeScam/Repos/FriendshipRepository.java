@@ -1,7 +1,7 @@
 package com.PokeScam.PokeScam.Repos;
 
 import com.PokeScam.PokeScam.Model.Friendship;
-import com.PokeScam.PokeScam.DTOs.FriendshipStatus;
+import com.PokeScam.PokeScam.DTOs.RequestStatus;
 import com.PokeScam.PokeScam.Model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +21,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Integer>
 
     Page<Friendship> findByReceiverAndStatus(
             User receiver,
-            FriendshipStatus status,
+            RequestStatus status,
             Pageable pageable
     );
 

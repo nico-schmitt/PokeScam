@@ -51,4 +51,6 @@ public interface PokemonRepository extends JpaRepository<Pokemon, Integer> {
                 and p.curHp = 0
         """)
     Page<Pokemon> findFaintedPokemons(@Param("owner") User ownerId, Pageable pageable);
+
+    Page<Pokemon> findByOwnerId(User owner, Pageable pageable);
 }

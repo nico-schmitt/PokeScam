@@ -1,6 +1,5 @@
 package com.PokeScam.PokeScam.Model;
 
-import com.PokeScam.PokeScam.DTOs.FriendDTO;
 import com.PokeScam.PokeScam.DTOs.RequestStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,15 +8,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "friendship",
-        uniqueConstraints = @UniqueConstraint(
-                columnNames = {"requester_id", "receiver_id"}
-        )
-)
 @Getter
 @Setter
-public class Friendship {
+public class TradeRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -30,6 +23,14 @@ public class Friendship {
     @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 
+    @ManyToOne
+    @JoinColumn(name = "pkmn_requester_id", nullable = false)
+    private Pokemon pkmnRequester;
+
+    @ManyToOne
+    @JoinColumn(name = "pkmn_receiver_id", nullable = false)
+    private Pokemon pkmnReceiver;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestStatus status;
@@ -37,13 +38,12 @@ public class Friendship {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public FriendDTO convertToDTO(User currentUser) {
-        User otherUser;
-        if (requester.equals(currentUser)) {
-            otherUser = receiver;
-        } else
-            otherUser = requester;
-
-        return new FriendDTO(this.id, otherUser.getId(), otherUser.getUsername(), otherUser.getRecentActivity(), this.createdAt);
+    public TradeRequest(User requester, User receiver, Pokemon pkmnRequester, Pokemon pkmnReceiver) {
+        this.requester = requester;
+        this.receiver = receiver;
+        this.pkmnRequester = pkmnRequester;
+        this.pkmnReceiver = pkmnReceiver;
+        this.status = RequestStatus.PENDING;
+        this.createdAt = LocalDateTime.now();
     }
 }

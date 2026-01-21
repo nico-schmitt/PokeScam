@@ -16,7 +16,7 @@
       <td th:text="${friend.name}"></td>
       <td th:text="${friend.recentActivity}"></td>
       <td>
-        <form th:action="@{/friends/{id}/trade(id=${friend.id})}">
+        <form th:action="@{/friends/{id}/trade(id=${friend.friendId})}">
           <button class="button is-primary">Trade</button>
         </form>
       </td>

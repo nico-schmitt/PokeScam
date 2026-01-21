@@ -26,6 +26,8 @@ import com.PokeScam.PokeScam.Repos.UserRepository;
 
 import jakarta.transaction.Transactional;
 
+import javax.swing.text.html.Option;
+
 @Service
 public class PokemonDataService {
 
@@ -189,6 +191,16 @@ public class PokemonDataService {
         Pageable pageable = PageRequest.of(page, size);
         return pokemonRepo.findByOwnerIdAndInBoxAndBoxId(userDetails.getThisUser(), true, boxService.getBox(boxId),
                 pageable);
+    }
+
+    public Page<Pokemon> getPkmnByOwnerId(int ownerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Optional<User> owner = userRepo.findById(ownerId);
+
+        if (owner.isPresent()) {
+            return pokemonRepo.findByOwnerId(owner.get(), pageable);
+        }
+        throw new IllegalArgumentException("Owner not found");
     }
 
     public String addPokemon(PokemonDTO pkmnToSave) {

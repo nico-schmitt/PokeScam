@@ -6,6 +6,16 @@
         <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.displayName}" />
       </figure>
     </td>
+    <td th:if="${isFriendsPage != null and isTradeConfirmation == null}">
+      <form th:action="@{/friends/{ownerId}/trade/{pkmnId}(ownerId=${receiverId}, pkmnId=${pkmnInfo.id})}" method="post">
+        <button class="button is-primary">Trade</button>
+      </form>
+    </td>
+    <td th:if="${isTradeConfirmation != null}">
+      <form th:action="@{/friends/{ownerId}/trade/{receiverPkmnId}/{pkmnId}(ownerId=${receiverId}, receiverPkmnId=${receiverPkmnId}, pkmnId=${pkmnInfo.id})}" method="post">
+        <button class="button is-primary">Trade</button>
+      </form>
+    </td>
   </tr>
 
   <div th:replace="~{fragments/pkmnModal :: pkmnModal (pkmnInfo=${pkmnInfo})}"></div>

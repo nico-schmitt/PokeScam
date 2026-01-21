@@ -64,26 +64,28 @@
         </div>
         <p class="subtitle is-3" th:text="${pkmnInfo.flavorText}"></p>
       </section>
-      <footer class="modal-card-foot">
-        <form th:action="@{/pokemon/sell/{id}(id=${pkmnInfo.id})}" th:method="delete" th:if="${pkmnInfo.id != -1}">
-          <button class="button is-danger">Sell for <span class="icon"><i class="fa-solid fa-dollar-sign"></i></span> [[${pkmnInfo.value}]]
-          </button>
-        </form>
-        <form th:action="@{/pokemon/swap/{swapId}(swapId=${pkmnInfo.id})}" method="post" th:if="${pkmnInfo.isInBox}">
-          <button class="button is-primary">Swap</button>
-        </form>
-        <form th:action="@{/pokemon/healcost/{id}(id=${pkmnInfo.id})}" method="post">
-          <button class="button is-success">
-            <span class="icon"><i class="fa-solid fa-dollar-sign"></i>[[${healPkmnForCurrencyHealCost}]]</span>
-            <span></span>
-            <span class="mx-1">Heal</span>
-            <span class="icon"><i class="fa-solid fa-heart"></i>[[${healPkmnForCurrencyHealAmount}]]</span>
-          </button>
-        </form>
-        <form th:action="@{/pokemon/setAsActivePkmn(newActivePkmnId=${pkmnInfo.id})}" method="post" th:if="${!pkmnInfo.isInBox}">
-          <button class="button is-warning">Set as active</button>
-        </form>
-      </footer>
+        <div th:if="${isFriendsPage == null}">
+            <footer class="modal-card-foot">
+                <form th:action="@{/pokemon/sell/{id}(id=${pkmnInfo.id})}" th:method="delete" th:if="${pkmnInfo.id != -1}">
+                    <button class="button is-danger">Sell for <span class="icon"><i class="fa-solid fa-dollar-sign"></i></span> [[${pkmnInfo.value}]]
+                    </button>
+                </form>
+                <form th:action="@{/pokemon/swap/{swapId}(swapId=${pkmnInfo.id})}" method="post" th:if="${pkmnInfo.isInBox}">
+                    <button class="button is-primary">Swap</button>
+                </form>
+                <form th:action="@{/pokemon/healcost/{id}(id=${pkmnInfo.id})}" method="post">
+                    <button class="button is-success">
+                        <span class="icon"><i class="fa-solid fa-dollar-sign"></i>[[${healPkmnForCurrencyHealCost}]]</span>
+                        <span></span>
+                        <span class="mx-1">Heal</span>
+                        <span class="icon"><i class="fa-solid fa-heart"></i>[[${healPkmnForCurrencyHealAmount}]]</span>
+                    </button>
+                </form>
+                <form th:action="@{/pokemon/setAsActivePkmn(newActivePkmnId=${pkmnInfo.id})}" method="post" th:if="${!pkmnInfo.isInBox}">
+                    <button class="button is-warning">Set as active</button>
+                </form>
+            </footer>
+        </div>
     </div>
   </div>
 </div>

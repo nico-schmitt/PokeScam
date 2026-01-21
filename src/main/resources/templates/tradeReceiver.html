@@ -1,0 +1,27 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <h2>Select Pokemon from [[${receiverName}]]</h2>
+
+  <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+    <thead>
+    <tr>
+      <th>Name</th>
+    </tr>
+    </thead>
+    <tbody>
+    <div th:each="pkmn : ${pkmns}">
+      <div th:replace="~{fragments/pkmnBoxRow :: pkmnBoxRow (pkmnInfo=${pkmn})}"></div>
+
+    </div>
+    </tbody>
+  </table>
+
+  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+    <a th:href="${pageInfo.isFirst} ? '' : @{/friends/{id}/trade(id=${receiverId}, page=${pageInfo.number-1}, size=${pageSize})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>
+    <a th:href="${pageInfo.isLast} ? '' : @{/friends/{id}/trade(id=${receiverId}, page=${pageInfo.number+1}, size=${pageSize})}" class="pagination-next" th:classappend="${pageInfo.isLast} ? ' is-disabled' : ''">Next</a>
+    <ul th:if="${pageInfo.totalElements <= 4 and pageInfo.totalElements > 0}" class="pagination-list">
+      <li th:each="i : ${#numbers.sequence(0, pageInfo.totalPages-1)}">
+        <a th:href="@{/friends/{id}/trade(id=${receiverId}, page=${i}, size=${pageSize})}" class="pagination-link" th:classappend="${pageInfo.number == i} ? ' is-current' : ''">[[${i+1}]]</a>
+      </li>
+    </ul>
+  </nav>
+</div>

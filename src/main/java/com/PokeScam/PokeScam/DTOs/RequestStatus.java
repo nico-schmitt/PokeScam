@@ -1,6 +1,6 @@
 package com.PokeScam.PokeScam.DTOs;
 
-public enum FriendshipStatus {
+public enum RequestStatus {
     PENDING,
     ACCEPTED,
     DECLINED

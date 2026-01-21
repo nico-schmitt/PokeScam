@@ -1,0 +1,17 @@
+<div th:fragment="pkmnBoxRow">
+    <tr class="modal-trigger" th:data-target="${pkmnInfo.id}">
+        <td>[[${#strings.capitalize(pkmnInfo.displayName)}]]</td>
+        <td>
+            <figure class="box image" style="width: 200px;">
+                <img th:src="${pkmnInfo.imageURL}" th:alt="${pkmnInfo.displayName}" />
+            </figure>
+        </td>
+        <td>
+            <form th:action="@{/friends/{id}(id=${friend.id})}" method="post">
+                <button class="button is-danger">X</button>
+            </form>
+        </td>
+    </tr>
+
+    <div th:replace="~{fragments/pkmnModal :: pkmnModal (pkmnInfo=${pkmnInfo})}"></div>
+</div>
