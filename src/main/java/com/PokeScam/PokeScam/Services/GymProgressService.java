@@ -1,6 +1,7 @@
 package com.PokeScam.PokeScam.Services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,13 @@ public class GymProgressService {
                 .filter(UserGymStatus::isCompleted)
                 .map(ugs -> ugs.getGym().getId())
                 .toList();
+    }
+
+    public List<Gym> getCompletedGyms(User user) {
+        return userGymStatusRepo.findByUser(user).stream()
+                .filter(UserGymStatus::isCompleted)
+                .map(UserGymStatus::getGym)
+                .collect(Collectors.toList());
     }
 
 }
