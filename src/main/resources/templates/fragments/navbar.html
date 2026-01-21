@@ -53,14 +53,6 @@
                     <span>Encounter</span>
                   </a>
                 </li>
-                <li th:classappend="${currentPath.startsWith('/admin')} ? 'is-active' : ''" sec:authorize="hasRole('ADMIN')">
-                  <a href="/admin">
-                    <span class="icon is-small"
-                      ><i class="fas fa-sliders"></i
-                    ></span>
-                    <span>Admin</span>
-                  </a>
-                </li>
                 <li th:classappend="${currentPath.startsWith('/gyms')} ? ' is-active' : ''">
                     <a href="/gyms">
                         <span class="icon is-small"><i class="fas fa-chess-rook"></i></span>
