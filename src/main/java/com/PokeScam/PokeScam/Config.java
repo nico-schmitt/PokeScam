@@ -24,22 +24,20 @@ import java.util.TimeZone;
 @EnableWebSecurity
 public class Config {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler, LogoutSuccessHandler logoutSuccessHandler) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler,
+            LogoutSuccessHandler logoutSuccessHandler) {
         http
-        .csrf(csrf->csrf.ignoringRequestMatchers("/api/**"))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/register", "/login", "/verify", "/api/**", "/static/**").permitAll()
-            .requestMatchers("/admin/**").hasRole("ADMIN")
-            .anyRequest().authenticated()
-        )
-        .formLogin(form -> form
-            .defaultSuccessUrl("/")
-            .successHandler(loginSuccessHandler)
-            .permitAll()
-        )
-        .logout(logout -> logout
-            .logoutSuccessHandler(logoutSuccessHandler)
-        );
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/register", "/login", "/verify", "/api/**", "/static/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .defaultSuccessUrl("/")
+                        .successHandler(loginSuccessHandler)
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutSuccessHandler(logoutSuccessHandler));
         return http.build();
     }
 
@@ -51,10 +49,10 @@ public class Config {
     @Bean
     public WebClient.Builder webClientBuilder() {
         ExchangeStrategies strategies = ExchangeStrategies.builder()
-        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16 MB
-        .build();
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16 MB
+                .build();
 
-        return WebClient.builder() .exchangeStrategies(strategies);
+        return WebClient.builder().exchangeStrategies(strategies);
     }
 
     @Bean
