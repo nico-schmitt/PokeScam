@@ -4,18 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.PokeScam.PokeScam.Services.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.PokeScam.PokeScam.Model.Gym;
 import com.PokeScam.PokeScam.Model.User;
-import com.PokeScam.PokeScam.Services.EncounterService;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterData;
 import com.PokeScam.PokeScam.Services.EncounterService.EncounterDataSinglePkmn;
-import com.PokeScam.PokeScam.Services.GymProgressService;
-import com.PokeScam.PokeScam.Services.GymService;
-import com.PokeScam.PokeScam.Services.PokemonDataService;
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.SessionData;
 
@@ -29,19 +26,22 @@ public class GymController {
     private final PokemonDataService pokemonDataService;
     private final GymProgressService gymProgressService;
     private final CustomUserDetails customUserDetails;
+    private final UserService userService;
 
     public GymController(GymService gymService,
             SessionData sessionData,
             EncounterService encounterService,
             CustomUserDetails customUserDetails,
             PokemonDataService pokemonDataService,
-            GymProgressService gymProgressService) {
+            GymProgressService gymProgressService,
+            UserService userService) {
         this.gymService = gymService;
         this.sessionData = sessionData;
         this.encounterService = encounterService;
         this.pokemonDataService = pokemonDataService;
         this.customUserDetails = customUserDetails;
         this.gymProgressService = gymProgressService;
+        this.userService = userService;
     }
 
     /** List all gyms: NPC + player gyms */
@@ -73,6 +73,8 @@ public class GymController {
         // Add completed gyms
         List<Long> completedGymIds = gymProgressService.getCompletedGymIdsForUser(currentUser);
         model.addAttribute("completedGymIds", completedGymIds);
+
+        userService.updateRecentActivity(customUserDetails.getThisUser(), "Challenging a gym leader");
 
         return "gyms";
     }
