@@ -4,6 +4,7 @@ import com.PokeScam.PokeScam.Model.Friendship;
 import com.PokeScam.PokeScam.DTOs.RequestStatus;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.FriendshipRepository;
+import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +16,11 @@ import java.time.LocalDateTime;
 @Service
 public class FriendshipService {
     private final FriendshipRepository friendshipRepo;
+    private final MailService mailService;
 
-    public FriendshipService(FriendshipRepository friendshipRepo) {
+    public FriendshipService(FriendshipRepository friendshipRepo, MailService mailService) {
         this.friendshipRepo = friendshipRepo;
+        this.mailService = mailService;
     }
 
     public Page<Friendship> getFriends(User user, int page, int size) {
@@ -42,6 +45,15 @@ public class FriendshipService {
         friendship.setCreatedAt(LocalDateTime.now());
 
         friendshipRepo.save(friendship);
+
+        if (to.getEmail() != null) {
+            try {
+                mailService.sendHtml(to.getEmail(), "PokeScam: New Friend Request",
+                        "<p>" + to.getUsername() + ", you have received a new friend request from " + from.getUsername() + "!</p>");
+            } catch (Exception e) {
+                System.out.println("Error sending new friend request");
+            }
+        }
     }
 
     public void removeFriendship(User user, int friendshipId) {
