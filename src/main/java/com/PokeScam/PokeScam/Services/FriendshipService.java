@@ -25,17 +25,6 @@ public class FriendshipService {
         return friendshipRepo.findFriends(user, pageable);
     }
 
-    public Page<Friendship> getincomingRequests(User user, int page, int size,
-                String sortBy, String direction) {
-        Sort sort = Sort.by(direction.equalsIgnoreCase("desc")
-                                    ? Sort.Direction.DESC
-                                    : Sort.Direction.ASC,
-                            sortBy);
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-        return friendshipRepo.findByReceiverAndStatus(user, RequestStatus.PENDING, pageable);
-    }
-
     public void sendFriendRequest(User from, User to) {
         if (from.equals(to)) {
             throw new IllegalArgumentException("Cannot friend yourself");

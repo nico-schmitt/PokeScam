@@ -1,6 +1,8 @@
 package com.PokeScam.PokeScam.Services;
 
 import com.PokeScam.PokeScam.CustomUserDetails;
+import com.PokeScam.PokeScam.DTOs.RequestStatus;
+import com.PokeScam.PokeScam.Model.Friendship;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.TradeRequest;
 import com.PokeScam.PokeScam.Model.User;
@@ -32,28 +34,42 @@ public class TradeService {
             throw new IllegalArgumentException("Cannot trade with yourself");
         }
 
-        List<Pokemon> pokemons = pokemonRepository.findByOwnerId(requester);
-        Optional<Pokemon> pokemon = pokemonRepository.findById(requesterPkmnId);
-        if (pokemon.isEmpty()) {
+        Pokemon requesterPkmn = pokemonRepository.findByIdAndOwnerId(requesterPkmnId, requester);
+        if (requesterPkmn == null) {
             throw new IllegalArgumentException("Trade requester Pokemon not found");
         }
-        if (!pokemons.contains(pokemon.get())) {
-            throw new IllegalArgumentException("Trade requester doesn't own specified pokemon");
+
+        Pokemon receiverPkmn = pokemonRepository.findByIdAndOwnerId(receiverPkmnId, receiver);
+        if (receiverPkmn == null) {
+            throw new IllegalArgumentException("Trade requester Pokemon not found");
         }
 
-        pokemons = pokemonRepository.findByOwnerId(receiver);
-        pokemon = pokemonRepository.findById(receiverPkmnId);
-        if (pokemon.isEmpty()) {
-            throw new IllegalArgumentException("Trade receiver Pokemon not found");
-        }
-        if (!pokemons.contains(pokemon.get())) {
-            throw new IllegalArgumentException("Trade receiver doesn't own specified pokemon");
-        }
-
-        TradeRequest tradeRequest = new TradeRequest(requester, receiver,
-                pokemonRepository.findById(requesterPkmnId).get(),
-                pokemonRepository.findById(receiverPkmnId).get());
+        TradeRequest tradeRequest = new TradeRequest(requester, receiver, requesterPkmn, receiverPkmn);
 
         tradeRepository.save(tradeRequest);
     }
+
+    /*
+    public void acceptRequest(Integer friendshipId, User receiver) {
+        Friendship friendship = friendshipRepo.findById(friendshipId).orElseThrow();
+
+        if (!friendship.getReceiver().equals(receiver)) {
+            throw new IllegalArgumentException("Not your request");
+        }
+
+        friendship.setStatus(RequestStatus.ACCEPTED);
+        friendshipRepo.save(friendship);
+    }
+
+    public void declineRequest(Integer friendshipId, User receiver) {
+        Friendship friendship = friendshipRepo.findById(friendshipId).orElseThrow();
+
+        if (!friendship.getReceiver().equals(receiver)) {
+            throw new IllegalArgumentException("Not your request");
+        }
+
+        friendship.setStatus(RequestStatus.DECLINED);
+        friendshipRepo.save(friendship);
+    }
+     */
 }

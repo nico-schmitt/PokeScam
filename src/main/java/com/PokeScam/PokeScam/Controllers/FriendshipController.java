@@ -3,14 +3,12 @@ package com.PokeScam.PokeScam.Controllers;
 import com.PokeScam.PokeScam.CustomUserDetails;
 import com.PokeScam.PokeScam.DTOs.FriendDTO;
 import com.PokeScam.PokeScam.DTOs.PokemonDTO;
+import com.PokeScam.PokeScam.DTOs.RequestDTO;
 import com.PokeScam.PokeScam.Model.Friendship;
 import com.PokeScam.PokeScam.Model.Pokemon;
 import com.PokeScam.PokeScam.Model.User;
 import com.PokeScam.PokeScam.Repos.UserRepository;
-import com.PokeScam.PokeScam.Services.FriendshipService;
-import com.PokeScam.PokeScam.Services.PokeAPIService;
-import com.PokeScam.PokeScam.Services.PokemonDataService;
-import com.PokeScam.PokeScam.Services.TradeService;
+import com.PokeScam.PokeScam.Services.*;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,16 +24,18 @@ public class FriendshipController {
     private final PokemonDataService pokemonDataService;
     private final PokeAPIService pokeAPIService;
     private final TradeService tradeService;
+    private final InboxService inboxService;
 
-    public FriendshipController(FriendshipService friendshipService, CustomUserDetails userDetails,
-                                UserRepository userRepository, PokemonDataService pokemonDataService,
-                                PokeAPIService pokeAPIService, TradeService tradeService) {
+    public FriendshipController(FriendshipService friendshipService, CustomUserDetails userDetails, UserRepository userRepository,
+                                PokemonDataService pokemonDataService, PokeAPIService pokeAPIService, TradeService tradeService,
+                                InboxService inboxService) {
         this.friendshipService = friendshipService;
         this.userDetails = userDetails;
         this.userRepository = userRepository;
         this.pokemonDataService = pokemonDataService;
         this.pokeAPIService = pokeAPIService;
         this.tradeService = tradeService;
+        this.inboxService = inboxService;
     }
 
     @GetMapping("/friends")
@@ -74,11 +74,11 @@ public class FriendshipController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String dir) {
         User user = userDetails.getThisUser();
-        Page<Friendship> requests = friendshipService.getincomingRequests(user, page, size, sortBy, dir);
-        List<FriendDTO> requestDTOs = requests.map(r -> r.convertToDTO(user)).toList();
 
-        model.addAttribute("requests", requestDTOs);
-        model.addAttribute("pageInfo", requests);
+        Page<RequestDTO> inbox = inboxService.getInbox(user, page, size, sortBy, dir);
+
+        model.addAttribute("requests", inbox.getContent());
+        model.addAttribute("pageInfo", inbox);
         model.addAttribute("pageSize", size);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("dir", dir);
@@ -86,13 +86,13 @@ public class FriendshipController {
         return "inbox";
     }
 
-    @PostMapping("/inbox/{id}/accept")
+    @PostMapping("/inbox/{id}/acceptFriend")
     public String acceptFriendRequest(@PathVariable int id) {
         friendshipService.acceptRequest(id, userDetails.getThisUser());
         return "redirect:/friends";
     }
 
-    @PostMapping("/inbox/{id}/decline")
+    @PostMapping("/inbox/{id}/declineFriend")
     public String declineFriendRequest(@PathVariable int id) {
         friendshipService.declineRequest(id, userDetails.getThisUser());
         return "redirect:/friends";
@@ -149,11 +149,20 @@ public class FriendshipController {
                              @PathVariable int receiverId,
                              @PathVariable int receiverPkmnId,
                              @PathVariable int requesterPkmnId) {
-        // TODO:    Friend Request zu RequestDTO ändern
-        //          Trade Requests auch in Inbox anzeigen
-        //          Accept und Decline Link abändern bei Trade
         tradeService.sendTradeRequest(userDetails.getThisUser(), userRepository.findById(receiverId).get(),
                 requesterPkmnId, receiverPkmnId);
+        return "redirect:/friends";
+    }
+
+    @PostMapping("/inbox/{id}/acceptTrade")
+    public String acceptTradeRequest(@PathVariable int id) {
+        //friendshipService.acceptRequest(id, userDetails.getThisUser());
+        return "redirect:/friends";
+    }
+
+    @PostMapping("/inbox/{id}/declineTrade")
+    public String declineTradeRequest(@PathVariable int id) {
+        //friendshipService.declineRequest(id, userDetails.getThisUser());
         return "redirect:/friends";
     }
 }
