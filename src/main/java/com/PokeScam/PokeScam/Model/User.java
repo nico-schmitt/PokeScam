@@ -32,4 +32,6 @@ public class User {
     private Instant lastLogout;
     @OneToOne(cascade = CascadeType.ALL)
     private Inventory inventory;
+    @Column(name="recent_activity")
+    private String recentActivity;
 }

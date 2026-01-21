@@ -1,0 +1,41 @@
+<div layout:decorate="~{layout}" layout:fragment="content">
+  <form th:action="@{/friends/request}" method="post">
+    <input type="number" name="userId" placeholder="User ID" required>
+    <button>Add Friend</button>
+  </form>
+
+  <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Recent Activity</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="friend : ${friends}" class="modal-trigger">
+      <td th:text="${friend.name}"></td>
+      <td th:text="${friend.recentActivity}"></td>
+      <td>
+        <form th:action="@{/friends/{id}/trade(id=${friend.id})}">
+          <button class="button is-primary">Trade</button>
+        </form>
+      </td>
+      <td>
+        <form th:action="@{/friends/{id}(id=${friend.id})}" method="post">
+          <button class="button is-danger">X</button>
+        </form>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+    <a th:href="${pageInfo.isFirst} ? '' : @{/friends (page=${pageInfo.number-1}, size=${pageSize})}" class="pagination-previous" th:classappend="${pageInfo.isFirst} ? ' is-disabled' : ''">Previous</a>
+    <a th:href="${pageInfo.isLast} ? '' : @{/friends (page=${pageInfo.number+1}, size=${pageSize})}" class="pagination-next" th:classappend="${pageInfo.isLast} ? ' is-disabled' : ''">Next</a>
+    <ul th:if="${pageInfo.totalElements <= 4 and pageInfo.totalElements > 0}" class="pagination-list">
+      <li th:each="i : ${#numbers.sequence(0, pageInfo.totalPages-1)}">
+        <a th:href="@{/friends (page=${i}, size=${pageSize})}" class="pagination-link" th:classappend="${pageInfo.number == i} ? ' is-current' : ''">[[${i+1}]]</a>
+      </li>
+    </ul>
+  </nav>
+</div>
